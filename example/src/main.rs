@@ -27,7 +27,7 @@ fn main() {
             post {
                 id,
                 title,
-                content
+                content,
             },
             //
             // where id = 5
@@ -36,5 +36,5 @@ fn main() {
     };
     println!("{}", query);
     println!("{:?}", result);
-    result.post.title;
+    println!("{:?}", result.post.content);
 }

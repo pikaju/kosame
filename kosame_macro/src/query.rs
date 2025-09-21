@@ -33,6 +33,17 @@ impl ToTokens for Query {
                 .join("");
             Ident::new(&("Row".to_owned() + &struct_name), Span::call_site())
         }
+        fn field_path_to_module_name(field_path: &[Ident]) -> Ident {
+            let module_name = field_path
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>()
+                .join("_");
+            Ident::new(
+                &("_internal".to_owned() + &module_name).to_lowercase(),
+                Span::call_site(),
+            )
+        }
 
         let mut recurse_tokens = proc_macro2::TokenStream::new();
         fn recurse(
@@ -41,18 +52,6 @@ impl ToTokens for Query {
             field_path: Vec<Ident>,
             body: &QueryNodeBody,
         ) {
-            for field in body.fields.iter() {
-                if let QueryField::Relation(relation) = field {
-                    let field_path = field_path
-                        .iter()
-                        .cloned()
-                        .chain(std::iter::once(relation.name.clone()))
-                        .collect::<Vec<_>>();
-
-                    recurse(tokens, table, field_path, &relation.body);
-                }
-            }
-
             let mut field_path_tokens = proc_macro2::TokenStream::new();
             for field in &field_path {
                 Token![::](Span::call_site()).to_tokens(&mut field_path_tokens);
@@ -66,8 +65,12 @@ impl ToTokens for Query {
             let struct_name = field_path_to_struct_name(&field_path);
             let mut struct_fields = vec![];
 
+            let internal_module_name = field_path_to_module_name(&field_path);
+            let mut internal_module_rows = vec![];
+
             for field in &body.fields {
                 let mut struct_field_tokens = proc_macro2::TokenStream::new();
+                let mut internal_module_row_tokens = proc_macro2::TokenStream::new();
 
                 match field {
                     QueryField::Column(column) => {
@@ -75,6 +78,11 @@ impl ToTokens for Query {
                             #column: super::#table #field_path_tokens::columns::#column::Type
                         }
                         .to_tokens(&mut struct_field_tokens);
+
+                        quote! {
+                            use super::super::#table #field_path_tokens::columns::#column;
+                        }
+                        .to_tokens(&mut internal_module_row_tokens);
                     }
                     QueryField::Relation(relation) => {
                         let mut field_path = field_path.clone();
@@ -86,19 +94,41 @@ impl ToTokens for Query {
                             #name: #r#type
                         }
                         .to_tokens(&mut struct_field_tokens);
+
+                        quote! {
+                            use super::super::#table #field_path_tokens::relations::#name;
+                        }
+                        .to_tokens(&mut internal_module_row_tokens);
                     }
                 }
 
                 struct_fields.push(struct_field_tokens);
+                internal_module_rows.push(internal_module_row_tokens);
             }
 
             quote! {
+                mod #internal_module_name {
+                    #(#internal_module_rows)*
+                }
+
                 #[derive(Default, Debug)]
                 pub struct #struct_name {
                     #(pub #struct_fields,)*
                 }
             }
             .to_tokens(tokens);
+
+            for field in body.fields.iter() {
+                if let QueryField::Relation(relation) = field {
+                    let field_path = field_path
+                        .iter()
+                        .cloned()
+                        .chain(std::iter::once(relation.name.clone()))
+                        .collect::<Vec<_>>();
+
+                    recurse(tokens, table, field_path, &relation.body);
+                }
+            }
         }
 
         recurse(&mut recurse_tokens, table, vec![], body);
@@ -137,16 +167,13 @@ impl ToTokens for Query {
 
         quote! {
             {
-                mod _internal {
+                mod internal {
                     #recurse_tokens
-
-                    use super::#table;
-                    #(use super::#table::columns_and_relations::#field_names;)*
                 }
 
                 let query: String = format!(#query_string, #(#field_paths::NAME),*, #table::NAME);
 
-                let row: _internal::Row = Default::default();
+                let row: internal::Row = Default::default();
                 (row, query)
             }
         }
