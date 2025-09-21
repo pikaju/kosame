@@ -4,13 +4,18 @@ use syn::{
     parse::{Parse, ParseStream},
 };
 
-use crate::keywords;
+use crate::{data_type::DataType, keywords};
 
 pub struct Column {
     name: Ident,
-    r#type: Ident,
+    data_type: DataType,
     not_null: Option<keywords::NotNull>,
     primary_key: Option<keywords::PrimaryKey>,
+}
+impl Column {
+    pub fn name(&self) -> &Ident {
+        &self.name
+    }
 }
 
 impl Parse for Column {
@@ -20,7 +25,7 @@ impl Parse for Column {
 
         Ok(Self {
             name,
-            r#type,
+            data_type: r#type,
             not_null: None,
             primary_key: None,
         })
@@ -31,10 +36,13 @@ impl ToTokens for Column {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let name = &self.name;
         let name_string = name.to_string();
+        let data_type = &self.data_type;
+
         quote! {
             /// kosame column
             pub mod #name {
-                const NAME: &str = #name_string;
+                pub const NAME: &str = #name_string;
+                pub type Type = #data_type;
             }
         }
         .to_tokens(tokens);

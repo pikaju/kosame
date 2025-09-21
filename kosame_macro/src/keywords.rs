@@ -15,43 +15,43 @@ mod kw {
 }
 
 pub struct CreateTable {
-    create: kw::create,
-    table: kw::table,
+    _create: kw::create,
+    _table: kw::table,
 }
 
 impl Parse for CreateTable {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            create: input.parse()?,
-            table: input.parse()?,
+            _create: input.parse()?,
+            _table: input.parse()?,
         })
     }
 }
 
 pub struct NotNull {
-    not: kw::not,
-    null: kw::null,
+    _not: kw::not,
+    _null: kw::null,
 }
 
 impl Parse for NotNull {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            not: input.parse()?,
-            null: input.parse()?,
+            _not: input.parse()?,
+            _null: input.parse()?,
         })
     }
 }
 
 pub struct PrimaryKey {
-    primary: kw::primary,
-    key: kw::key,
+    _primary: kw::primary,
+    _key: kw::key,
 }
 
 impl Parse for PrimaryKey {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            primary: input.parse()?,
-            key: input.parse()?,
+            _primary: input.parse()?,
+            _key: input.parse()?,
         })
     }
 }

@@ -7,12 +7,14 @@ name = "example"
 version = "0.1.0"
 dependencies = [
  "kosame",
- "kosame_macro",
 ]
 
 [[package]]
 name = "kosame"
 version = "0.1.0"
+dependencies = [
+ "kosame_macro",
+]
 
 [[package]]
 name = "kosame_macro"

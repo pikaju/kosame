@@ -5,7 +5,7 @@ use syn::{
     punctuated::Punctuated,
 };
 
-use crate::{column::Column, keywords};
+use crate::{column::Column, keywords, relation::Relation};
 
 pub struct Table {
     _create_table: keywords::CreateTable,
@@ -15,6 +15,8 @@ pub struct Table {
     columns: Punctuated<Column, Token![,]>,
 
     _semi: Token![;],
+
+    relations: Punctuated<Relation, Token![,]>,
 }
 
 impl Parse for Table {
@@ -26,6 +28,7 @@ impl Parse for Table {
             _paren: syn::parenthesized!(content in input),
             columns: content.parse_terminated(Column::parse, Token![,])?,
             _semi: input.parse()?,
+            relations: input.parse_terminated(Relation::parse, Token![,])?,
         })
     }
 }
@@ -35,13 +38,26 @@ impl ToTokens for Table {
         let name = &self.name;
         let name_string = name.to_string();
         let columns = self.columns.iter();
+        let relations = self.relations.iter();
+        let column_names = self.columns.iter().map(Column::name);
+        let relation_names = self.relations.iter().map(Relation::name);
+
         quote! {
             /// kosame table
             pub mod #name {
-                const NAME: &str = #name_string;
+                pub const NAME: &str = #name_string;
 
                 pub mod columns {
                     #(#columns)*
+                }
+
+                pub mod relations {
+                    #(#relations)*
+                }
+
+                pub mod columns_and_relations {
+                    #(pub use super::columns::#column_names;)*
+                    #(pub use super::relations::#relation_names;)*
                 }
             }
         }
