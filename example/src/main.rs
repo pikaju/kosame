@@ -2,6 +2,7 @@ mod schema {
     kosame::table! {
         create table posts (
             id int,
+            title text,
             content text,
         );
     }
@@ -19,10 +20,10 @@ mod schema {
 
 fn main() {
     let (result, query) = kosame::query! {
-        schema::posts {
+        schema::comments {
             id,
             content,
-            posts,
+            posts {},
             //
             // where id = 5
             // order by name

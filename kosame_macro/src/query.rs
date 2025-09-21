@@ -20,19 +20,44 @@ impl Parse for Query {
 impl ToTokens for Query {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let node = &self.root;
-        let table = &node.table;
-        let fields = node.fields.iter();
-        let fields2 = node.fields.iter();
-        let fields3 = node.fields.iter();
+        let table = &node.name;
 
-        let field_paths = node.fields.iter().map(|field| {
-            quote! {
-                #table::columns::#field
+        let column_names = node
+            .fields
+            .iter()
+            .filter_map(|field| match field {
+                QueryField::Column(column) => Some(quote! { #column }),
+                QueryField::Relation(_) => None,
+            })
+            .collect::<Vec<_>>();
+
+        let field_names = node
+            .fields
+            .iter()
+            .map(|field| match field {
+                QueryField::Column(column) => quote! { #column },
+                QueryField::Relation(relation) => {
+                    let name = &relation.name;
+                    quote! { #name }
+                }
+            })
+            .collect::<Vec<_>>();
+
+        let field_paths = node.fields.iter().map(|field| match field {
+            QueryField::Column(column) => quote! {
+                #table::columns::#column
+            },
+            QueryField::Relation(relation) => {
+                let name = &relation.name;
+                quote! {
+                    #table::relations::#name
+                }
             }
         });
         let query_string = format!(
             "select {} from {{}}",
-            fields3
+            field_names
+                .iter()
                 .map(|_| "{}".to_string())
                 .collect::<Vec<String>>()
                 .join(", ")
@@ -42,11 +67,11 @@ impl ToTokens for Query {
             {
                 mod _internal {
                     use super::#table;
-                    #(use super::#table::columns_and_relations::#fields;)*
+                    #(use super::#table::columns_and_relations::#field_names;)*
 
                     #[derive(Default)]
                     pub struct Row {
-                        #(pub #fields2: super::#table::columns::#fields2::Type,)*
+                        #(pub #column_names: super::#table::columns::#column_names::Type,)*
                     }
                 }
 
@@ -61,18 +86,33 @@ impl ToTokens for Query {
 }
 
 pub struct QueryNode {
-    table: syn::Path,
+    name: syn::Path,
     brace: syn::token::Brace,
-    fields: Punctuated<Ident, Token![,]>,
+    fields: Punctuated<QueryField, Token![,]>,
 }
 
 impl Parse for QueryNode {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let content;
         Ok(Self {
-            table: input.parse()?,
+            name: input.parse()?,
             brace: braced!(content in input),
-            fields: content.parse_terminated(Ident::parse, Token![,])?,
+            fields: content.parse_terminated(QueryField::parse, Token![,])?,
         })
+    }
+}
+
+pub enum QueryField {
+    Column(Ident),
+    Relation(QueryNode),
+}
+
+impl Parse for QueryField {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        if input.peek2(syn::token::Brace) {
+            Ok(Self::Relation(input.parse()?))
+        } else {
+            Ok(Self::Column(input.parse()?))
+        }
     }
 }
