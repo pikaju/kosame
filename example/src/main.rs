@@ -23,12 +23,12 @@ fn main() {
         schema::comments {
             id,
             post_id,
-            content,
             post {
                 id,
                 title,
                 content,
             },
+            content,
             //
             // where id = 5
             // order by name
@@ -36,5 +36,5 @@ fn main() {
     };
     println!("{}", query);
     println!("{:?}", result);
-    println!("{:?}", result.post.content);
+    println!("{:?}", result.post.id);
 }

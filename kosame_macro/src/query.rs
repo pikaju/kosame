@@ -1,3 +1,4 @@
+use convert_case::Casing;
 use proc_macro2::Span;
 use quote::{ToTokens, quote};
 use syn::{
@@ -26,23 +27,20 @@ impl ToTokens for Query {
         let body = &self.body;
 
         fn field_path_to_struct_name(field_path: &[Ident]) -> Ident {
-            let struct_name = field_path
-                .iter()
-                .map(ToString::to_string)
-                .collect::<Vec<_>>()
-                .join("");
-            Ident::new(&("Row".to_owned() + &struct_name), Span::call_site())
-        }
-        fn field_path_to_module_name(field_path: &[Ident]) -> Ident {
-            let module_name = field_path
-                .iter()
-                .map(ToString::to_string)
-                .collect::<Vec<_>>()
-                .join("_");
             Ident::new(
-                &("_internal".to_owned() + &module_name).to_lowercase(),
+                &field_path_to_module_name(field_path)
+                    .to_string()
+                    .to_case(convert_case::Case::Pascal),
                 Span::call_site(),
             )
+        }
+        fn field_path_to_module_name(field_path: &[Ident]) -> Ident {
+            let mut module_name = "row".to_string();
+            for segment in field_path {
+                module_name += "_";
+                module_name += &segment.to_string();
+            }
+            Ident::new(&module_name, Span::call_site())
         }
 
         let mut recurse_tokens = proc_macro2::TokenStream::new();
