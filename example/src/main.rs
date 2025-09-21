@@ -14,7 +14,7 @@ mod schema {
             content text,
         );
 
-        posts: (post_id) => posts (id),
+        post: (post_id) => posts (id),
     }
 }
 
@@ -23,7 +23,7 @@ fn main() {
         schema::comments {
             id,
             content,
-            posts {
+            post {
                 id,
                 title,
                 content

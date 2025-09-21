@@ -1,12 +1,10 @@
 use proc_macro2::Span;
-use quote::{ToTokens, TokenStreamExt, quote};
+use quote::{ToTokens, quote};
 use syn::{
     Ident, Token, braced,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
 };
-
-use crate::keywords;
 
 pub struct Query {
     table: syn::Path,
@@ -27,6 +25,15 @@ impl ToTokens for Query {
         let table = &self.table;
         let body = &self.body;
 
+        fn field_path_to_struct_name(field_path: &[Ident]) -> Ident {
+            let struct_name = field_path
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>()
+                .join("");
+            Ident::new(&("Row".to_owned() + &struct_name), Span::call_site())
+        }
+
         let mut recurse_tokens = proc_macro2::TokenStream::new();
         fn recurse(
             tokens: &mut proc_macro2::TokenStream,
@@ -34,7 +41,7 @@ impl ToTokens for Query {
             field_path: Vec<Ident>,
             body: &QueryNodeBody,
         ) {
-            body.fields.iter().for_each(|field| {
+            for field in body.fields.iter() {
                 if let QueryField::Relation(relation) = field {
                     let field_path = field_path
                         .iter()
@@ -44,7 +51,7 @@ impl ToTokens for Query {
 
                     recurse(tokens, table, field_path, &relation.body);
                 }
-            });
+            }
 
             let mut field_path_tokens = proc_macro2::TokenStream::new();
             for field in &field_path {
@@ -56,37 +63,48 @@ impl ToTokens for Query {
                 Ident::new("target_table", Span::call_site()).to_tokens(&mut field_path_tokens);
             }
 
-            let column_names = body
+            let struct_name = field_path_to_struct_name(&field_path);
+            let struct_fields = vec![];
+
+            let columns = body
                 .fields
                 .iter()
                 .filter_map(|field| match field {
-                    QueryField::Column(column) => Some(quote! { #column }),
+                    QueryField::Column(column) => Some(column),
                     QueryField::Relation(_) => None,
                 })
                 .collect::<Vec<_>>();
-
-            let column_paths = body
+            let relations = body
                 .fields
                 .iter()
                 .filter_map(|field| match field {
-                    QueryField::Column(column) => Some(quote! {
-                        super::#table #field_path_tokens::columns::#column
-                    }),
-                    QueryField::Relation(_) => None,
+                    QueryField::Column(_) => None,
+                    QueryField::Relation(relation) => Some(relation),
                 })
                 .collect::<Vec<_>>();
 
-            let struct_name = field_path
-                .iter()
-                .map(ToString::to_string)
-                .collect::<Vec<_>>()
-                .join("");
-            let struct_name = Ident::new(&("Row".to_owned() + &struct_name), Span::call_site());
+            let column_names = columns.iter().map(|column| quote! { #column });
+            let column_types = columns.iter().map(|column| {
+                quote! {
+                    super::#table #field_path_tokens::columns::#column::Type
+                }
+            });
+
+            let relation_names = relations.iter().map(|relation| {
+                let name = &relation.name;
+                quote! { #name }
+            });
+            let relation_types = relations.iter().map(|relation| {
+                let mut field_path = field_path.clone();
+                field_path.push(relation.name.clone());
+                field_path_to_struct_name(&field_path)
+            });
 
             quote! {
                 #[derive(Default, Debug)]
                 pub struct #struct_name {
-                    #(pub #column_names: #column_paths::Type,)*
+                    #(pub #column_names: #column_types,)*
+                    #(pub #relation_names: #relation_types,)*
                 }
             }
             .to_tokens(tokens);
@@ -160,7 +178,7 @@ impl Parse for QueryNode {
 }
 
 pub struct QueryNodeBody {
-    brace: syn::token::Brace,
+    _brace: syn::token::Brace,
     fields: Punctuated<QueryField, Token![,]>,
 }
 
@@ -168,7 +186,7 @@ impl Parse for QueryNodeBody {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let content;
         Ok(Self {
-            brace: braced!(content in input),
+            _brace: braced!(content in input),
             fields: content.parse_terminated(QueryField::parse, Token![,])?,
         })
     }
