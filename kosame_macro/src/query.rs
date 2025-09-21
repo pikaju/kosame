@@ -64,47 +64,38 @@ impl ToTokens for Query {
             }
 
             let struct_name = field_path_to_struct_name(&field_path);
-            let struct_fields = vec![];
+            let mut struct_fields = vec![];
 
-            let columns = body
-                .fields
-                .iter()
-                .filter_map(|field| match field {
-                    QueryField::Column(column) => Some(column),
-                    QueryField::Relation(_) => None,
-                })
-                .collect::<Vec<_>>();
-            let relations = body
-                .fields
-                .iter()
-                .filter_map(|field| match field {
-                    QueryField::Column(_) => None,
-                    QueryField::Relation(relation) => Some(relation),
-                })
-                .collect::<Vec<_>>();
+            for field in &body.fields {
+                let mut struct_field_tokens = proc_macro2::TokenStream::new();
 
-            let column_names = columns.iter().map(|column| quote! { #column });
-            let column_types = columns.iter().map(|column| {
-                quote! {
-                    super::#table #field_path_tokens::columns::#column::Type
+                match field {
+                    QueryField::Column(column) => {
+                        quote! {
+                            #column: super::#table #field_path_tokens::columns::#column::Type
+                        }
+                        .to_tokens(&mut struct_field_tokens);
+                    }
+                    QueryField::Relation(relation) => {
+                        let mut field_path = field_path.clone();
+                        field_path.push(relation.name.clone());
+                        let r#type = field_path_to_struct_name(&field_path);
+                        let name = &relation.name;
+
+                        quote! {
+                            #name: #r#type
+                        }
+                        .to_tokens(&mut struct_field_tokens);
+                    }
                 }
-            });
 
-            let relation_names = relations.iter().map(|relation| {
-                let name = &relation.name;
-                quote! { #name }
-            });
-            let relation_types = relations.iter().map(|relation| {
-                let mut field_path = field_path.clone();
-                field_path.push(relation.name.clone());
-                field_path_to_struct_name(&field_path)
-            });
+                struct_fields.push(struct_field_tokens);
+            }
 
             quote! {
                 #[derive(Default, Debug)]
                 pub struct #struct_name {
-                    #(pub #column_names: #column_types,)*
-                    #(pub #relation_names: #relation_types,)*
+                    #(pub #struct_fields,)*
                 }
             }
             .to_tokens(tokens);

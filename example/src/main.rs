@@ -22,6 +22,7 @@ fn main() {
     let (result, query) = kosame::query! {
         schema::comments {
             id,
+            post_id,
             content,
             post {
                 id,
@@ -35,4 +36,5 @@ fn main() {
     };
     println!("{}", query);
     println!("{:?}", result);
+    result.post.title;
 }
