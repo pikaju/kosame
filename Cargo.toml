@@ -1,0 +1,12 @@
+[workspace]
+resolver = "3"
+members = [
+    "kosame",
+    "kosame_macro",
+    "example",
+]
+
+[workspace.dependencies]
+kosame = { path = "kosame" }
+kosame_macro = { path = "kosame_macro" }
+
