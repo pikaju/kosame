@@ -1,37 +1,100 @@
-use quote::{ToTokens, quote};
+use proc_macro2::Span;
+use quote::{ToTokens, TokenStreamExt, quote};
 use syn::{
     Ident, Token, braced,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
 };
 
+use crate::keywords;
+
 pub struct Query {
-    root: QueryNode,
+    table: syn::Path,
+    body: QueryNodeBody,
 }
 
 impl Parse for Query {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            root: input.parse()?,
+            table: input.parse()?,
+            body: input.parse()?,
         })
     }
 }
 
 impl ToTokens for Query {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        let node = &self.root;
-        let table = &node.name;
+        let table = &self.table;
+        let body = &self.body;
 
-        let column_names = node
-            .fields
-            .iter()
-            .filter_map(|field| match field {
-                QueryField::Column(column) => Some(quote! { #column }),
-                QueryField::Relation(_) => None,
-            })
-            .collect::<Vec<_>>();
+        let mut recurse_tokens = proc_macro2::TokenStream::new();
+        fn recurse(
+            tokens: &mut proc_macro2::TokenStream,
+            table: &syn::Path,
+            field_path: Vec<Ident>,
+            body: &QueryNodeBody,
+        ) {
+            body.fields.iter().for_each(|field| {
+                if let QueryField::Relation(relation) = field {
+                    let field_path = field_path
+                        .iter()
+                        .cloned()
+                        .chain(std::iter::once(relation.name.clone()))
+                        .collect::<Vec<_>>();
 
-        let field_names = node
+                    recurse(tokens, table, field_path, &relation.body);
+                }
+            });
+
+            let mut field_path_tokens = proc_macro2::TokenStream::new();
+            for field in &field_path {
+                Token![::](Span::call_site()).to_tokens(&mut field_path_tokens);
+                Ident::new("relations", Span::call_site()).to_tokens(&mut field_path_tokens);
+                Token![::](Span::call_site()).to_tokens(&mut field_path_tokens);
+                field.to_tokens(&mut field_path_tokens);
+                Token![::](Span::call_site()).to_tokens(&mut field_path_tokens);
+                Ident::new("target_table", Span::call_site()).to_tokens(&mut field_path_tokens);
+            }
+
+            let column_names = body
+                .fields
+                .iter()
+                .filter_map(|field| match field {
+                    QueryField::Column(column) => Some(quote! { #column }),
+                    QueryField::Relation(_) => None,
+                })
+                .collect::<Vec<_>>();
+
+            let column_paths = body
+                .fields
+                .iter()
+                .filter_map(|field| match field {
+                    QueryField::Column(column) => Some(quote! {
+                        super::#table #field_path_tokens::columns::#column
+                    }),
+                    QueryField::Relation(_) => None,
+                })
+                .collect::<Vec<_>>();
+
+            let struct_name = field_path
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>()
+                .join("");
+            let struct_name = Ident::new(&("Row".to_owned() + &struct_name), Span::call_site());
+
+            quote! {
+                #[derive(Default, Debug)]
+                pub struct #struct_name {
+                    #(pub #column_names: #column_paths::Type,)*
+                }
+            }
+            .to_tokens(tokens);
+        }
+
+        recurse(&mut recurse_tokens, table, vec![], body);
+
+        let field_names = body
             .fields
             .iter()
             .map(|field| match field {
@@ -43,7 +106,7 @@ impl ToTokens for Query {
             })
             .collect::<Vec<_>>();
 
-        let field_paths = node.fields.iter().map(|field| match field {
+        let field_paths = body.fields.iter().map(|field| match field {
             QueryField::Column(column) => quote! {
                 #table::columns::#column
             },
@@ -66,13 +129,10 @@ impl ToTokens for Query {
         quote! {
             {
                 mod _internal {
+                    #recurse_tokens
+
                     use super::#table;
                     #(use super::#table::columns_and_relations::#field_names;)*
-
-                    #[derive(Default)]
-                    pub struct Row {
-                        #(pub #column_names: super::#table::columns::#column_names::Type,)*
-                    }
                 }
 
                 let query: String = format!(#query_string, #(#field_paths::NAME),*, #table::NAME);
@@ -86,16 +146,28 @@ impl ToTokens for Query {
 }
 
 pub struct QueryNode {
-    name: syn::Path,
-    brace: syn::token::Brace,
-    fields: Punctuated<QueryField, Token![,]>,
+    name: Ident,
+    body: QueryNodeBody,
 }
 
 impl Parse for QueryNode {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let content;
         Ok(Self {
             name: input.parse()?,
+            body: input.parse()?,
+        })
+    }
+}
+
+pub struct QueryNodeBody {
+    brace: syn::token::Brace,
+    fields: Punctuated<QueryField, Token![,]>,
+}
+
+impl Parse for QueryNodeBody {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let content;
+        Ok(Self {
             brace: braced!(content in input),
             fields: content.parse_terminated(QueryField::parse, Token![,])?,
         })
