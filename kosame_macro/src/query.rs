@@ -78,7 +78,7 @@ impl ToTokens for Query {
                         .to_tokens(&mut struct_field_tokens);
 
                         quote! {
-                            use super::super::#table #field_path_tokens::columns::#column;
+                            use super::super::#table #field_path_tokens::columns_and_relations::#column;
                         }
                         .to_tokens(&mut internal_module_row_tokens);
                     }

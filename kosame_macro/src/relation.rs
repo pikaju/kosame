@@ -10,7 +10,7 @@ pub struct Relation {
     _colon: Token![:],
     _source_paren: syn::token::Paren,
     source_columns: Punctuated<Ident, Token![,]>,
-    _arrow: Token![=>],
+    arrow: Arrow,
     dest_table: syn::Path,
     _dest_paren: syn::token::Paren,
     dest_columns: Punctuated<Ident, Token![,]>,
@@ -31,7 +31,7 @@ impl Parse for Relation {
             _colon: input.parse()?,
             _source_paren: parenthesized!(source_content in input),
             source_columns: source_content.parse_terminated(Ident::parse, Token![,])?,
-            _arrow: input.parse()?,
+            arrow: input.parse()?,
             dest_table: input.parse()?,
             _dest_paren: parenthesized!(dest_content in input),
             dest_columns: dest_content.parse_terminated(Ident::parse, Token![,])?,
@@ -69,5 +69,23 @@ impl ToTokens for Relation {
             }
         }
         .to_tokens(tokens);
+    }
+}
+
+enum Arrow {
+    ManyToOne(Token![=>]),
+    OneToMany(Token![<=]),
+}
+
+impl Parse for Arrow {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let lookahead = input.lookahead1();
+        if lookahead.peek(Token![=>]) {
+            Ok(Self::ManyToOne(input.parse()?))
+        } else if lookahead.peek(Token![<=]) {
+            Ok(Self::OneToMany(input.parse()?))
+        } else {
+            Err(lookahead.error())
+        }
     }
 }
