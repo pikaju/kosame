@@ -3,37 +3,32 @@ use syn::{
     parse::{Parse, ParseStream},
 };
 
-use super::QueryNode;
+use super::QueryNodeBody;
 
 pub enum QueryField {
-    Column(Ident),
-    Relation(QueryNode),
+    Column { name: Ident },
+    Relation { name: Ident, body: QueryNodeBody },
 }
 
 impl QueryField {
-    /// Returns `true` if the query field is [`Column`].
-    ///
-    /// [`Column`]: QueryField::Column
-    #[must_use]
-    pub fn is_column(&self) -> bool {
-        matches!(self, Self::Column(..))
-    }
-
-    /// Returns `true` if the query field is [`Relation`].
-    ///
-    /// [`Relation`]: QueryField::Relation
-    #[must_use]
-    pub fn is_relation(&self) -> bool {
-        matches!(self, Self::Relation(..))
+    pub fn name(&self) -> &Ident {
+        match self {
+            Self::Column { name } => name,
+            Self::Relation { name, .. } => name,
+        }
     }
 }
 
 impl Parse for QueryField {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        if input.peek2(syn::token::Brace) {
-            Ok(Self::Relation(input.parse()?))
+        let name = input.parse()?;
+        if input.peek(syn::token::Brace) {
+            Ok(Self::Relation {
+                name,
+                body: input.parse()?,
+            })
         } else {
-            Ok(Self::Column(input.parse()?))
+            Ok(Self::Column { name })
         }
     }
 }

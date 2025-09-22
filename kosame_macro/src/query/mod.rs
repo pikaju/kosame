@@ -1,9 +1,7 @@
 mod field;
-mod node;
 
 use convert_case::Casing;
 use field::QueryField;
-use node::QueryNode;
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
 use syn::{
@@ -89,26 +87,25 @@ impl ToTokens for Query {
                 let mut internal_module_row_tokens = proc_macro2::TokenStream::new();
 
                 match field {
-                    QueryField::Column(column) => {
+                    QueryField::Column { name } => {
                         let column_module = quote! {
-                            super::#table #field_path_tokens::columns::#column
+                            super::#table #field_path_tokens::columns::#name
                         };
                         quote! {
-                            #column: #column_module::Type
+                            #name: #column_module::Type
                         }
                         .to_tokens(&mut struct_field_tokens);
 
                         quote! {
-                            use super::super::#table #field_path_tokens::columns_and_relations::#column;
+                            use super::super::#table #field_path_tokens::columns_and_relations::#name;
                         }
                         .to_tokens(&mut internal_module_row_tokens);
 
                         slotted_sql_builder.append_slot(quote! { #column_module::NAME });
                     }
-                    QueryField::Relation(relation) => {
+                    QueryField::Relation { name, .. } => {
                         let mut field_path = field_path.clone();
-                        field_path.push(relation.name().clone());
-                        let name = &relation.name();
+                        field_path.push(name.clone());
                         let inner_type = field_path_to_struct_name(&field_path);
                         let wrapper_type = quote! {
                             super::#table #field_path_tokens::relations::#name::Wrapper
@@ -136,10 +133,7 @@ impl ToTokens for Query {
 
             let root_impl = if field_path.is_empty() {
                 let fields = body.fields.iter().enumerate().map(|(index, field)| {
-                    let name = match field {
-                        QueryField::Column(name) => name,
-                        QueryField::Relation(node) => &node.name(),
-                    };
+                    let name = field.name();
                     quote! {
                         #name: row.get(#index)
                     }
@@ -173,20 +167,14 @@ impl ToTokens for Query {
             .to_tokens(tokens);
 
             for field in body.fields.iter() {
-                if let QueryField::Relation(relation) = field {
+                if let QueryField::Relation { name, body } = field {
                     let field_path = field_path
                         .iter()
                         .cloned()
-                        .chain(std::iter::once(relation.name().clone()))
+                        .chain(std::iter::once(name.clone()))
                         .collect::<Vec<_>>();
 
-                    recurse(
-                        tokens,
-                        slotted_sql_builder,
-                        table,
-                        field_path,
-                        relation.body(),
-                    );
+                    recurse(tokens, slotted_sql_builder, table, field_path, body);
                 }
             }
         }
