@@ -27,15 +27,19 @@ fn main() {
             post {
                 id,
                 title,
-                content,
-            },
-            content,
-            post_id,
+                comments {
+                    id,
+                    post {
+                        comments {}
+                    }
+                }
+            }
             //
             // where id = 5
             // order by name
         }
     };
+
     println!("{}", query);
     println!("{:?}", result);
     println!("{:?}", result.post);
