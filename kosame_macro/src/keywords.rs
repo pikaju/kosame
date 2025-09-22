@@ -1,4 +1,7 @@
-use syn::parse::Parse;
+use syn::{
+    Ident, Token,
+    parse::{Parse, ParseStream},
+};
 
 mod kw {
     syn::custom_keyword!(create);
@@ -20,7 +23,7 @@ pub struct CreateTable {
 }
 
 impl Parse for CreateTable {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             _create: input.parse()?,
             _table: input.parse()?,
@@ -34,7 +37,7 @@ pub struct NotNull {
 }
 
 impl Parse for NotNull {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             _not: input.parse()?,
             _null: input.parse()?,
@@ -48,10 +51,30 @@ pub struct PrimaryKey {
 }
 
 impl Parse for PrimaryKey {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             _primary: input.parse()?,
             _key: input.parse()?,
+        })
+    }
+}
+
+pub struct AsIdent {
+    r#as: Token![as],
+    ident: Ident,
+}
+
+impl AsIdent {
+    pub fn ident(&self) -> &Ident {
+        &self.ident
+    }
+}
+
+impl Parse for AsIdent {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        Ok(Self {
+            r#as: input.parse()?,
+            ident: input.parse()?,
         })
     }
 }

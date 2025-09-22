@@ -21,6 +21,7 @@ mod schema {
 }
 
 fn main() {
+    println!("{}", KEK);
     let mut client = postgres::Client::connect(
         "postgres://postgres:postgres@localhost:5432/postgres",
         postgres::NoTls,
@@ -28,7 +29,11 @@ fn main() {
     .unwrap();
 
     println!("==== Query ====");
-    let result = client.query(&internal::Query {}.sql(), &[]).unwrap();
+    println!("{:?}", &internal::Query {}.to_sql_string());
+    println!("========");
+    let result = client
+        .query(&internal::Query {}.to_sql_string(), &[])
+        .unwrap();
     for row in result {
         println!("{:?}", internal::Row::from(row));
     }
@@ -52,7 +57,7 @@ fn main() {
             //
             // where id = 5
             // order by name
-        }
+        } as my_query
     };
 
     // println!("{}", query);

@@ -7,9 +7,12 @@ use syn::{
     punctuated::Punctuated,
 };
 
+use crate::{keywords::AsIdent, slotted_sql::SlottedSqlBuilder};
+
 pub struct Query {
     table: syn::Path,
     body: QueryNodeBody,
+    as_name: Option<AsIdent>,
 }
 
 impl Parse for Query {
@@ -17,6 +20,11 @@ impl Parse for Query {
         Ok(Self {
             table: input.parse()?,
             body: input.parse()?,
+            as_name: if input.is_empty() {
+                None
+            } else {
+                Some(input.parse()?)
+            },
         })
     }
 }
@@ -44,8 +52,11 @@ impl ToTokens for Query {
         }
 
         let mut recurse_tokens = proc_macro2::TokenStream::new();
+        let mut slotted_sql_builder = SlottedSqlBuilder::new();
+
         fn recurse(
             tokens: &mut proc_macro2::TokenStream,
+            slotted_sql_builder: &mut SlottedSqlBuilder,
             table: &syn::Path,
             field_path: Vec<Ident>,
             body: &QueryNodeBody,
@@ -66,7 +77,9 @@ impl ToTokens for Query {
             let internal_module_name = field_path_to_module_name(&field_path);
             let mut internal_module_rows = vec![];
 
-            for field in &body.fields {
+            slotted_sql_builder.append_str("select ");
+
+            for (index, field) in body.fields.iter().enumerate() {
                 let mut struct_field_tokens = proc_macro2::TokenStream::new();
                 let mut internal_module_row_tokens = proc_macro2::TokenStream::new();
 
@@ -105,6 +118,10 @@ impl ToTokens for Query {
 
                 struct_fields.push(struct_field_tokens);
                 internal_module_rows.push(internal_module_row_tokens);
+
+                if index < body.fields.len() - 1 {
+                    slotted_sql_builder.append_str(", ");
+                }
             }
 
             let root_impl = if field_path.is_empty() {
@@ -153,12 +170,24 @@ impl ToTokens for Query {
                         .chain(std::iter::once(relation.name.clone()))
                         .collect::<Vec<_>>();
 
-                    recurse(tokens, table, field_path, &relation.body);
+                    recurse(
+                        tokens,
+                        slotted_sql_builder,
+                        table,
+                        field_path,
+                        &relation.body,
+                    );
                 }
             }
         }
 
-        recurse(&mut recurse_tokens, table, vec![], body);
+        recurse(
+            &mut recurse_tokens,
+            &mut slotted_sql_builder,
+            table,
+            vec![],
+            body,
+        );
 
         let field_names = body
             .fields
@@ -192,6 +221,8 @@ impl ToTokens for Query {
                 .join(", ")
         );
 
+        let sql_tokens = slotted_sql_builder.build();
+
         quote! {
                 mod internal {
                     #recurse_tokens
@@ -200,7 +231,9 @@ impl ToTokens for Query {
                     }
 
                     impl Query {
-                        pub fn sql(&self) -> String {
+                        const SQL: &str = #sql_tokens;
+
+                        pub fn to_sql_string(&self) -> String {
                             format!(#query_string, #(#field_paths::NAME),*, super::#table::NAME)
                         }
                     }

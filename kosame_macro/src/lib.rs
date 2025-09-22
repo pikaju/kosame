@@ -4,6 +4,7 @@ pub(crate) mod docs;
 pub(crate) mod keywords;
 pub(crate) mod query;
 pub(crate) mod relation;
+pub(crate) mod slotted_sql;
 pub(crate) mod table;
 
 use quote::quote;
