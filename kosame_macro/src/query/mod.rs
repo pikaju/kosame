@@ -1,15 +1,16 @@
 mod field;
 mod node;
+mod relation_path;
 
 use convert_case::Casing;
 use field::QueryField;
 use node::QueryNode;
-use proc_macro2::{Span, TokenStream};
+use proc_macro2::Span;
 use quote::{ToTokens, quote};
+use relation_path::RelationPath;
 use syn::{
-    Ident, Token, braced,
+    Ident, Token,
     parse::{Parse, ParseStream},
-    punctuated::Punctuated,
 };
 
 use crate::{keywords::AsIdent, slotted_sql::SlottedSqlBuilder};
@@ -39,23 +40,6 @@ impl ToTokens for Query {
         let table = &self.table;
         let body = &self.body;
 
-        fn field_path_to_struct_name(field_path: &[Ident]) -> Ident {
-            Ident::new(
-                &field_path_to_module_name(field_path)
-                    .to_string()
-                    .to_case(convert_case::Case::Pascal),
-                Span::call_site(),
-            )
-        }
-        fn field_path_to_module_name(field_path: &[Ident]) -> Ident {
-            let mut module_name = "row".to_string();
-            for segment in field_path {
-                module_name += "_";
-                module_name += &segment.to_string();
-            }
-            Ident::new(&module_name, Span::call_site())
-        }
-
         let mut recurse_tokens = proc_macro2::TokenStream::new();
         let mut slotted_sql_builder = SlottedSqlBuilder::new();
 
@@ -63,23 +47,23 @@ impl ToTokens for Query {
             tokens: &mut proc_macro2::TokenStream,
             slotted_sql_builder: &mut SlottedSqlBuilder,
             table: &syn::Path,
-            field_path: Vec<Ident>,
+            relation_path: RelationPath,
             node: &QueryNode,
         ) {
-            let mut field_path_tokens = proc_macro2::TokenStream::new();
-            for field in &field_path {
-                Token![::](Span::call_site()).to_tokens(&mut field_path_tokens);
-                Ident::new("relations", Span::call_site()).to_tokens(&mut field_path_tokens);
-                Token![::](Span::call_site()).to_tokens(&mut field_path_tokens);
-                field.to_tokens(&mut field_path_tokens);
-                Token![::](Span::call_site()).to_tokens(&mut field_path_tokens);
-                Ident::new("target_table", Span::call_site()).to_tokens(&mut field_path_tokens);
+            let mut relation_path_tokens = proc_macro2::TokenStream::new();
+            for field in relation_path.segments() {
+                Token![::](Span::call_site()).to_tokens(&mut relation_path_tokens);
+                Ident::new("relations", Span::call_site()).to_tokens(&mut relation_path_tokens);
+                Token![::](Span::call_site()).to_tokens(&mut relation_path_tokens);
+                field.to_tokens(&mut relation_path_tokens);
+                Token![::](Span::call_site()).to_tokens(&mut relation_path_tokens);
+                Ident::new("target_table", Span::call_site()).to_tokens(&mut relation_path_tokens);
             }
 
-            let struct_name = field_path_to_struct_name(&field_path);
+            let struct_name = relation_path.to_struct_name("Row");
             let mut struct_fields = vec![];
 
-            let internal_module_name = field_path_to_module_name(&field_path);
+            let internal_module_name = relation_path.to_module_name("row");
             let mut internal_module_rows = vec![];
 
             slotted_sql_builder.append_str("select ");
@@ -91,7 +75,7 @@ impl ToTokens for Query {
                 match field {
                     QueryField::Column { name } => {
                         let column_module = quote! {
-                            super::#table #field_path_tokens::columns::#name
+                            super::#table #relation_path_tokens::columns::#name
                         };
                         quote! {
                             #name: #column_module::Type
@@ -99,18 +83,18 @@ impl ToTokens for Query {
                         .to_tokens(&mut struct_field_tokens);
 
                         quote! {
-                            use super::super::#table #field_path_tokens::columns_and_relations::#name;
+                            use super::super::#table #relation_path_tokens::columns_and_relations::#name;
                         }
                         .to_tokens(&mut internal_module_row_tokens);
 
                         slotted_sql_builder.append_slot(quote! { #column_module::NAME });
                     }
                     QueryField::Relation { name, .. } => {
-                        let mut field_path = field_path.clone();
-                        field_path.push(name.clone());
-                        let inner_type = field_path_to_struct_name(&field_path);
+                        let mut relation_path = relation_path.clone();
+                        relation_path.append(name.clone());
+                        let inner_type = relation_path.to_struct_name("Row");
                         let wrapper_type = quote! {
-                            super::#table #field_path_tokens::relations::#name::Wrapper
+                            super::#table #relation_path_tokens::relations::#name::Wrapper
                         };
 
                         quote! {
@@ -119,7 +103,7 @@ impl ToTokens for Query {
                         .to_tokens(&mut struct_field_tokens);
 
                         quote! {
-                            use super::super::#table #field_path_tokens::relations::#name;
+                            use super::super::#table #relation_path_tokens::relations::#name;
                         }
                         .to_tokens(&mut internal_module_row_tokens);
                     }
@@ -133,11 +117,9 @@ impl ToTokens for Query {
                 }
             }
 
-            let root_impl = if field_path.is_empty() {
-                node.to_from_row_impl(&struct_name)
-            } else {
-                quote! {}
-            };
+            let root_impl = relation_path
+                .is_empty()
+                .then(|| node.to_from_row_impl(&struct_name));
 
             quote! {
                 mod #internal_module_name {
@@ -155,13 +137,9 @@ impl ToTokens for Query {
 
             for field in node.fields().iter() {
                 if let QueryField::Relation { name, node } = field {
-                    let field_path = field_path
-                        .iter()
-                        .cloned()
-                        .chain(std::iter::once(name.clone()))
-                        .collect::<Vec<_>>();
-
-                    recurse(tokens, slotted_sql_builder, table, field_path, node);
+                    let mut relation_path = relation_path.clone();
+                    relation_path.append(name.clone());
+                    recurse(tokens, slotted_sql_builder, table, relation_path, node);
                 }
             }
         }
@@ -170,7 +148,7 @@ impl ToTokens for Query {
             &mut recurse_tokens,
             &mut slotted_sql_builder,
             table,
-            vec![],
+            RelationPath::new(),
             body,
         );
 
@@ -192,7 +170,6 @@ impl ToTokens for Query {
                     impl Query {
                         pub fn sql_string(&self) -> String {
                             #sql_tokens
-                            // format!(#query_string, #(#field_paths::NAME),*, super::#table::NAME)
                         }
                     }
                 }

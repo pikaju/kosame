@@ -41,17 +41,9 @@ fn main() {
             id,
             title,
             content,
-            // post {
+            // comments {
             //     id,
-            //     title,
-            //     comments {
-            //         id,
-            //         post {
-            //             comments {}
-            //         }
-            //     }
             // }
-            //
             // where id = 5
             // order by name
         } as my_query
