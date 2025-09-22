@@ -16,6 +16,10 @@ impl Column {
     pub fn name(&self) -> &Ident {
         &self.name
     }
+
+    pub fn data_type(&self) -> &DataType {
+        &self.data_type
+    }
 }
 
 impl Parse for Column {

@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use quote::{ToTokens, quote};
 use syn::parse::{Parse, ParseStream};
 
@@ -35,6 +37,15 @@ impl ToTokens for DataType {
             DataType::Text(_) => {
                 quote! { ::std::string::String }.to_tokens(tokens);
             }
+        }
+    }
+}
+
+impl Display for DataType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Int(inner) => f.write_str(&inner.to_token_stream().to_string()),
+            Self::Text(inner) => f.write_str(&inner.to_token_stream().to_string()),
         }
     }
 }

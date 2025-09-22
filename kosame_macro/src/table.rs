@@ -42,8 +42,29 @@ impl ToTokens for Table {
         let column_names = self.columns.iter().map(Column::name);
         let relation_names = self.relations.iter().map(Relation::name);
 
+        let column_docs = self
+            .columns
+            .iter()
+            .map(|column| {
+                let name = column.name();
+                let data_type = column.data_type();
+                format!("   {name} {data_type},")
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+        let docs = format!(
+            r"## {name_string} (Kosame Table)
+
+```sql
+create table (
+{column_docs}
+);
+```
+"
+        );
+
         quote! {
-            /// kosame table
+            #[doc = #docs]
             pub mod #name {
                 pub const NAME: &str = #name_string;
 
