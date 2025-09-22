@@ -1,9 +1,13 @@
+use std::fmt::{Display, Write};
+
 use quote::{ToTokens, quote};
 use syn::{
     Ident, Token, parenthesized,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
 };
+
+use crate::docs::{Docs, ToDocsTokens};
 
 pub struct Relation {
     name: Ident,
@@ -55,8 +59,10 @@ impl ToTokens for Relation {
             Arrow::OneToMany(_) => quote! { ::kosame::relation::OneToMany<T> },
         };
 
+        let docs = self.to_docs_token_stream();
+
         quote! {
-            /// kosame relation
+            #docs
             pub mod #name {
                 pub const NAME: &str = #name_string;
                 pub type Wrapper<T> = #wrapper_type;
@@ -94,5 +100,51 @@ impl Parse for Arrow {
         } else {
             Err(lookahead.error())
         }
+    }
+}
+
+impl Docs for Relation {
+    fn docs(&self) -> String {
+        let name = &self.name;
+        format!(
+            "## {name} (Kosame Relation)
+
+```sql
+{self}
+```"
+        )
+    }
+}
+
+impl Display for Relation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.name, f)?;
+        f.write_str(": (")?;
+        f.write_str(
+            &self
+                .source_columns
+                .iter()
+                .map(|column| column.to_string())
+                .collect::<Vec<_>>()
+                .join(", "),
+        )?;
+        f.write_str(") ")?;
+        match self.arrow {
+            Arrow::ManyToOne(_) => f.write_str("=>")?,
+            Arrow::OneToMany(_) => f.write_str("<=")?,
+        };
+        f.write_str(" ")?;
+        f.write_str(&self.dest_table.to_token_stream().to_string())?;
+        f.write_str(" (")?;
+        f.write_str(
+            &self
+                .dest_columns
+                .iter()
+                .map(|column| column.to_string())
+                .collect::<Vec<_>>()
+                .join(", "),
+        )?;
+        f.write_str(")")?;
+        Ok(())
     }
 }

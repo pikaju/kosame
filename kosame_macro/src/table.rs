@@ -1,3 +1,5 @@
+use std::fmt::{Display, Write};
+
 use quote::{ToTokens, quote};
 use syn::{
     Ident, Token,
@@ -5,7 +7,12 @@ use syn::{
     punctuated::Punctuated,
 };
 
-use crate::{column::Column, keywords, relation::Relation};
+use crate::{
+    column::Column,
+    docs::{Docs, ToDocsTokens},
+    keywords,
+    relation::Relation,
+};
 
 pub struct Table {
     _create_table: keywords::CreateTable,
@@ -42,29 +49,10 @@ impl ToTokens for Table {
         let column_names = self.columns.iter().map(Column::name);
         let relation_names = self.relations.iter().map(Relation::name);
 
-        let column_docs = self
-            .columns
-            .iter()
-            .map(|column| {
-                let name = column.name();
-                let data_type = column.data_type();
-                format!("   {name} {data_type},")
-            })
-            .collect::<Vec<_>>()
-            .join("\n");
-        let docs = format!(
-            r"## {name_string} (Kosame Table)
-
-```sql
-create table (
-{column_docs}
-);
-```
-"
-        );
+        let docs = self.to_docs_token_stream();
 
         quote! {
-            #[doc = #docs]
+            #docs
             pub mod #name {
                 pub const NAME: &str = #name_string;
 
@@ -83,5 +71,38 @@ create table (
             }
         }
         .to_tokens(tokens);
+    }
+}
+
+impl Docs for Table {
+    fn docs(&self) -> String {
+        let name = &self.name;
+        format!(
+            "## {name} (Kosame Table)
+
+```sql
+{self}
+```"
+        )
+    }
+}
+
+impl Display for Table {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("create table ")?;
+        Display::fmt(&self.name, f)?;
+        f.write_str(" (\n")?;
+        for column in &self.columns {
+            f.write_str("    ")?;
+            column.fmt(f)?;
+            f.write_str(",\n")?;
+        }
+        f.write_str(");\n")?;
+        f.write_str("\n\n")?;
+        for relation in &self.relations {
+            Display::fmt(relation, f)?;
+            f.write_str("\n")?;
+        }
+        Ok(())
     }
 }

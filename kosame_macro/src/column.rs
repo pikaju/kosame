@@ -1,10 +1,16 @@
-use quote::{ToTokens, quote};
+use std::fmt::{Display, Write};
+
+use quote::{IdentFragment, ToTokens, quote};
 use syn::{
     Ident,
     parse::{Parse, ParseStream},
 };
 
-use crate::{data_type::DataType, keywords};
+use crate::{
+    data_type::DataType,
+    docs::{Docs, ToDocsTokens},
+    keywords,
+};
 
 pub struct Column {
     name: Ident,
@@ -41,14 +47,37 @@ impl ToTokens for Column {
         let name = &self.name;
         let name_string = name.to_string();
         let data_type = &self.data_type;
+        let docs = self.to_docs_token_stream();
 
         quote! {
-            /// kosame column
+            #docs
             pub mod #name {
                 pub const NAME: &str = #name_string;
                 pub type Type = #data_type;
             }
         }
         .to_tokens(tokens);
+    }
+}
+
+impl Docs for Column {
+    fn docs(&self) -> String {
+        let name = &self.name;
+        format!(
+            "## {name} (Kosame Column)
+
+```sql
+{self}
+```"
+        )
+    }
+}
+
+impl Display for Column {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.name, f)?;
+        f.write_str(" ")?;
+        Display::fmt(&self.data_type, f)?;
+        Ok(())
     }
 }

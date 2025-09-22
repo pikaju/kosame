@@ -44,7 +44,6 @@ fn main() {
         schema::posts {
             id,
             title,
-            content,
             comments {
                 id,
             },
