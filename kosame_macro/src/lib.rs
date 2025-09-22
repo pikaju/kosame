@@ -2,6 +2,7 @@ pub(crate) mod column;
 pub(crate) mod data_type;
 pub(crate) mod docs;
 pub(crate) mod keywords;
+pub(crate) mod path_ext;
 pub(crate) mod query;
 pub(crate) mod relation;
 pub(crate) mod slotted_sql;
