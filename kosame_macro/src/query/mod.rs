@@ -1,7 +1,9 @@
 mod field;
+mod node;
 
 use convert_case::Casing;
 use field::QueryField;
+use node::QueryNode;
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
 use syn::{
@@ -82,7 +84,7 @@ impl ToTokens for Query {
 
             slotted_sql_builder.append_str("select ");
 
-            for (index, field) in node.fields.iter().enumerate() {
+            for (index, field) in node.fields().iter().enumerate() {
                 let mut struct_field_tokens = proc_macro2::TokenStream::new();
                 let mut internal_module_row_tokens = proc_macro2::TokenStream::new();
 
@@ -126,13 +128,13 @@ impl ToTokens for Query {
                 struct_fields.push(struct_field_tokens);
                 internal_module_rows.push(internal_module_row_tokens);
 
-                if index < node.fields.len() - 1 {
+                if index < node.fields().len() - 1 {
                     slotted_sql_builder.append_str(", ");
                 }
             }
 
             let root_impl = if field_path.is_empty() {
-                let fields = node.fields.iter().enumerate().map(|(index, field)| {
+                let fields = node.fields().iter().enumerate().map(|(index, field)| {
                     let name = field.name();
                     quote! {
                         #name: row.get(#index)
@@ -166,7 +168,7 @@ impl ToTokens for Query {
             }
             .to_tokens(tokens);
 
-            for field in node.fields.iter() {
+            for field in node.fields().iter() {
                 if let QueryField::Relation { name, node } = field {
                     let field_path = field_path
                         .iter()
@@ -212,24 +214,4 @@ impl ToTokens for Query {
         }
         .to_tokens(tokens);
     }
-}
-
-pub struct QueryNode {
-    _brace: syn::token::Brace,
-    fields: Punctuated<QueryField, Token![,]>,
-}
-
-impl Parse for QueryNode {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let content;
-        Ok(Self {
-            _brace: braced!(content in input),
-            fields: content.parse_terminated(QueryField::parse, Token![,])?,
-        })
-    }
-}
-
-struct Context {}
-impl QueryNode {
-    fn to_tokens_with_cx(&self, tokens: &mut TokenStream, cx: Context) {}
 }
