@@ -1,8 +1,11 @@
-use syn::Path;
+use proc_macro2::Span;
+use syn::{Ident, Path, PathSegment, Token, punctuated::Punctuated};
 
 pub trait PathExt {
     fn is_absolute(&self) -> bool;
+    #[allow(dead_code)]
     fn is_relative(&self) -> bool;
+    fn to_call_site(&self, nesting_levels: usize) -> Path;
 }
 
 impl PathExt for Path {
@@ -17,5 +20,22 @@ impl PathExt for Path {
 
     fn is_relative(&self) -> bool {
         !self.is_absolute()
+    }
+
+    fn to_call_site(&self, nesting_levels: usize) -> Path {
+        if self.is_absolute() {
+            self.clone()
+        } else {
+            let mut result = Path {
+                leading_colon: None,
+                segments: Punctuated::<PathSegment, Token![::]>::new(),
+            };
+            result.segments.extend(std::iter::repeat_n(
+                PathSegment::from(Ident::new("super", Span::call_site())),
+                nesting_levels,
+            ));
+            result.segments.extend(self.segments.iter().cloned());
+            result
+        }
     }
 }

@@ -1,4 +1,4 @@
-mod schema {
+pub mod schema {
     kosame::table! {
         create table posts (
             id int,
@@ -16,38 +16,38 @@ mod schema {
             content text,
         );
 
-        post: (post_id) => posts (id),
+        post: (post_id) => crate::schema::posts (id),
     }
 }
 
 fn main() {
-    let mut client = postgres::Client::connect(
-        "postgres://postgres:postgres@localhost:5432/postgres",
-        postgres::NoTls,
-    )
-    .unwrap();
+    // let mut client = postgres::Client::connect(
+    //     "postgres://postgres:postgres@localhost:5432/postgres",
+    //     postgres::NoTls,
+    // )
+    // .unwrap();
+    //
+    // println!("==== Query ====");
+    // println!("{:?}", &my_query::Query {}.sql_string());
+    // println!("========");
+    // let result = client.query(&my_query::Query {}.sql_string(), &[]).unwrap();
+    // for row in result {
+    //     println!("{:?}", my_query::Row::from(row));
+    // }
+    // println!("==== End ====");
 
-    println!("==== Query ====");
-    println!("{:?}", &my_query::Query {}.sql_string());
-    println!("========");
-    let result = client.query(&my_query::Query {}.sql_string(), &[]).unwrap();
-    for row in result {
-        println!("{:?}", my_query::Row::from(row));
-    }
-    println!("==== End ====");
-
-    kosame::query! {
-        schema::posts {
-            id,
-            title,
-            content,
-            // comments {
-            //     id,
-            // }
-            // where id = 5
-            // order by name
-        } as my_query
-    };
+    // kosame::query! {
+    //     schema::posts {
+    //         id,
+    //         title,
+    //         content,
+    //         // comments {
+    //         //     id,
+    //         // }
+    //         // where id = 5
+    //         // order by name
+    //     } as my_query
+    // };
 
     // println!("{}", query);
     // println!("{:?}", result);

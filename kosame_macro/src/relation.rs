@@ -7,7 +7,10 @@ use syn::{
     punctuated::Punctuated,
 };
 
-use crate::docs::{Docs, ToDocsTokens};
+use crate::{
+    docs::{Docs, ToDocsTokens},
+    path_ext::PathExt,
+};
 
 pub struct Relation {
     name: Ident,
@@ -49,7 +52,7 @@ impl ToTokens for Relation {
         let name_string = name.to_string();
 
         let target = &self.dest_table;
-        let target_path = quote! { super::super::super::#target};
+        let target_path = target.to_call_site(4);
 
         let source_columns = self.source_columns.iter();
         let dest_columns = self.dest_columns.iter();
@@ -67,12 +70,12 @@ impl ToTokens for Relation {
                 pub const NAME: &str = #name_string;
                 pub type Wrapper<T> = #wrapper_type;
 
-                pub mod source_columns {
-                    #(pub use super::super::super::columns::#source_columns;)*
+                pub mod target_table {
+                    pub use #target_path::*;
                 }
 
-                pub mod target_table {
-                    pub use super::#target_path::*;
+                pub mod source_columns {
+                    #(pub use super::super::super::columns::#source_columns;)*
                 }
 
                 pub mod target_columns {
