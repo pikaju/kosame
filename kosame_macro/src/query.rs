@@ -107,6 +107,30 @@ impl ToTokens for Query {
                 internal_module_rows.push(internal_module_row_tokens);
             }
 
+            let root_impl = if field_path.is_empty() {
+                let fields = body.fields.iter().enumerate().map(|(index, field)| {
+                    let name = match field {
+                        QueryField::Column(name) => name,
+                        QueryField::Relation(node) => &node.name,
+                    };
+                    quote! {
+                        #name: row.get(#index)
+                    }
+                });
+
+                quote! {
+                    impl From<::postgres::Row> for #struct_name {
+                        fn from(row: ::postgres::Row) -> Self {
+                            Self {
+                                #(#fields),*
+                            }
+                        }
+                    }
+                }
+            } else {
+                quote! {}
+            };
+
             quote! {
                 mod #internal_module_name {
                     #(#internal_module_rows)*
@@ -116,6 +140,8 @@ impl ToTokens for Query {
                 pub struct #struct_name {
                     #(pub #struct_fields,)*
                 }
+
+                #root_impl
             }
             .to_tokens(tokens);
 
