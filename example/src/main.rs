@@ -29,16 +29,11 @@ fn main() {
     )
     .unwrap();
 
-    println!("==== Query ====");
-    let result = client.query("select id from posts", &[]).unwrap();
-    for row in result {
-        println!("{:?}", row);
-    }
-    println!("==== End ====");
-
-    let (result, query) = kosame::query! {
-        schema::comments {
+    kosame::query! {
+        schema::posts {
             id,
+            content,
+            title,
             // post {
             //     id,
             //     title,
@@ -55,8 +50,17 @@ fn main() {
         }
     };
 
-    println!("{}", query);
-    println!("{:?}", result);
+    println!("==== Query ====");
+    let result = client
+        .query("select id, content, title from posts", &[])
+        .unwrap();
+    for row in result {
+        println!("{:?}", internal::Row::from(row));
+    }
+    println!("==== End ====");
+
+    // println!("{}", query);
+    // println!("{:?}", result);
 
     // let (result, query) = kosame::query! {
     //     schema::posts {

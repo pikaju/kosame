@@ -193,16 +193,14 @@ impl ToTokens for Query {
         );
 
         quote! {
-            {
                 mod internal {
                     #recurse_tokens
                 }
 
-                let query: String = format!(#query_string, #(#field_paths::NAME),*, #table::NAME);
-
-                let row: internal::Row = Default::default();
-                (row, query)
-            }
+                // let query: String = format!(#query_string, #(#field_paths::NAME),*, #table::NAME);
+                //
+                // let row: internal::Row = Default::default();
+                // (row, query)
         }
         .to_tokens(tokens);
     }
