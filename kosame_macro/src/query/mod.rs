@@ -1,5 +1,10 @@
+mod field;
+mod node;
+
 use convert_case::Casing;
-use proc_macro2::Span;
+use field::QueryField;
+use node::QueryNode;
+use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
 use syn::{
     Ident, Token, braced,
@@ -102,8 +107,8 @@ impl ToTokens for Query {
                     }
                     QueryField::Relation(relation) => {
                         let mut field_path = field_path.clone();
-                        field_path.push(relation.name.clone());
-                        let name = &relation.name;
+                        field_path.push(relation.name().clone());
+                        let name = &relation.name();
                         let inner_type = field_path_to_struct_name(&field_path);
                         let wrapper_type = quote! {
                             super::#table #field_path_tokens::relations::#name::Wrapper
@@ -133,7 +138,7 @@ impl ToTokens for Query {
                 let fields = body.fields.iter().enumerate().map(|(index, field)| {
                     let name = match field {
                         QueryField::Column(name) => name,
-                        QueryField::Relation(node) => &node.name,
+                        QueryField::Relation(node) => &node.name(),
                     };
                     quote! {
                         #name: row.get(#index)
@@ -172,7 +177,7 @@ impl ToTokens for Query {
                     let field_path = field_path
                         .iter()
                         .cloned()
-                        .chain(std::iter::once(relation.name.clone()))
+                        .chain(std::iter::once(relation.name().clone()))
                         .collect::<Vec<_>>();
 
                     recurse(
@@ -180,7 +185,7 @@ impl ToTokens for Query {
                         slotted_sql_builder,
                         table,
                         field_path,
-                        &relation.body,
+                        relation.body(),
                     );
                 }
             }
@@ -221,20 +226,6 @@ impl ToTokens for Query {
     }
 }
 
-pub struct QueryNode {
-    name: Ident,
-    body: QueryNodeBody,
-}
-
-impl Parse for QueryNode {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        Ok(Self {
-            name: input.parse()?,
-            body: input.parse()?,
-        })
-    }
-}
-
 pub struct QueryNodeBody {
     _brace: syn::token::Brace,
     fields: Punctuated<QueryField, Token![,]>,
@@ -250,17 +241,7 @@ impl Parse for QueryNodeBody {
     }
 }
 
-pub enum QueryField {
-    Column(Ident),
-    Relation(QueryNode),
-}
-
-impl Parse for QueryField {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        if input.peek2(syn::token::Brace) {
-            Ok(Self::Relation(input.parse()?))
-        } else {
-            Ok(Self::Column(input.parse()?))
-        }
-    }
+struct Context {}
+impl QueryNodeBody {
+    fn to_tokens_with_cx(&self, tokens: &mut TokenStream, cx: Context) {}
 }
