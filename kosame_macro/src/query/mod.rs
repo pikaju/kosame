@@ -134,22 +134,7 @@ impl ToTokens for Query {
             }
 
             let root_impl = if field_path.is_empty() {
-                let fields = node.fields().iter().enumerate().map(|(index, field)| {
-                    let name = field.name();
-                    quote! {
-                        #name: row.get(#index)
-                    }
-                });
-
-                quote! {
-                    impl From<::postgres::Row> for #struct_name {
-                        fn from(row: ::postgres::Row) -> Self {
-                            Self {
-                                #(#fields),*
-                            }
-                        }
-                    }
-                }
+                node.to_from_row_impl(&struct_name)
             } else {
                 quote! {}
             };
