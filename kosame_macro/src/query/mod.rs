@@ -14,7 +14,7 @@ use crate::{keywords::AsIdent, slotted_sql::SlottedSqlBuilder};
 
 pub struct Query {
     table: syn::Path,
-    body: QueryNodeBody,
+    body: QueryNode,
     as_name: Option<AsIdent>,
 }
 
@@ -62,7 +62,7 @@ impl ToTokens for Query {
             slotted_sql_builder: &mut SlottedSqlBuilder,
             table: &syn::Path,
             field_path: Vec<Ident>,
-            body: &QueryNodeBody,
+            node: &QueryNode,
         ) {
             let mut field_path_tokens = proc_macro2::TokenStream::new();
             for field in &field_path {
@@ -82,7 +82,7 @@ impl ToTokens for Query {
 
             slotted_sql_builder.append_str("select ");
 
-            for (index, field) in body.fields.iter().enumerate() {
+            for (index, field) in node.fields.iter().enumerate() {
                 let mut struct_field_tokens = proc_macro2::TokenStream::new();
                 let mut internal_module_row_tokens = proc_macro2::TokenStream::new();
 
@@ -126,13 +126,13 @@ impl ToTokens for Query {
                 struct_fields.push(struct_field_tokens);
                 internal_module_rows.push(internal_module_row_tokens);
 
-                if index < body.fields.len() - 1 {
+                if index < node.fields.len() - 1 {
                     slotted_sql_builder.append_str(", ");
                 }
             }
 
             let root_impl = if field_path.is_empty() {
-                let fields = body.fields.iter().enumerate().map(|(index, field)| {
+                let fields = node.fields.iter().enumerate().map(|(index, field)| {
                     let name = field.name();
                     quote! {
                         #name: row.get(#index)
@@ -166,15 +166,15 @@ impl ToTokens for Query {
             }
             .to_tokens(tokens);
 
-            for field in body.fields.iter() {
-                if let QueryField::Relation { name, body } = field {
+            for field in node.fields.iter() {
+                if let QueryField::Relation { name, node } = field {
                     let field_path = field_path
                         .iter()
                         .cloned()
                         .chain(std::iter::once(name.clone()))
                         .collect::<Vec<_>>();
 
-                    recurse(tokens, slotted_sql_builder, table, field_path, body);
+                    recurse(tokens, slotted_sql_builder, table, field_path, node);
                 }
             }
         }
@@ -214,12 +214,12 @@ impl ToTokens for Query {
     }
 }
 
-pub struct QueryNodeBody {
+pub struct QueryNode {
     _brace: syn::token::Brace,
     fields: Punctuated<QueryField, Token![,]>,
 }
 
-impl Parse for QueryNodeBody {
+impl Parse for QueryNode {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let content;
         Ok(Self {
@@ -230,6 +230,6 @@ impl Parse for QueryNodeBody {
 }
 
 struct Context {}
-impl QueryNodeBody {
+impl QueryNode {
     fn to_tokens_with_cx(&self, tokens: &mut TokenStream, cx: Context) {}
 }

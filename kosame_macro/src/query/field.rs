@@ -3,11 +3,11 @@ use syn::{
     parse::{Parse, ParseStream},
 };
 
-use super::QueryNodeBody;
+use super::QueryNode;
 
 pub enum QueryField {
     Column { name: Ident },
-    Relation { name: Ident, body: QueryNodeBody },
+    Relation { name: Ident, node: QueryNode },
 }
 
 impl QueryField {
@@ -25,7 +25,7 @@ impl Parse for QueryField {
         if input.peek(syn::token::Brace) {
             Ok(Self::Relation {
                 name,
-                body: input.parse()?,
+                node: input.parse()?,
             })
         } else {
             Ok(Self::Column { name })
