@@ -1,5 +1,3 @@
-use postgres::GenericClient;
-
 mod schema {
     kosame::table! {
         create table posts (
@@ -29,11 +27,18 @@ fn main() {
     )
     .unwrap();
 
+    println!("==== Query ====");
+    let result = client.query(&internal::Query {}.sql(), &[]).unwrap();
+    for row in result {
+        println!("{:?}", internal::Row::from(row));
+    }
+    println!("==== End ====");
+
     kosame::query! {
         schema::posts {
             id,
-            content,
             title,
+            content,
             // post {
             //     id,
             //     title,
@@ -49,15 +54,6 @@ fn main() {
             // order by name
         }
     };
-
-    println!("==== Query ====");
-    let result = client
-        .query("select id, content, title from posts", &[])
-        .unwrap();
-    for row in result {
-        println!("{:?}", internal::Row::from(row));
-    }
-    println!("==== End ====");
 
     // println!("{}", query);
     // println!("{:?}", result);

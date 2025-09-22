@@ -174,12 +174,12 @@ impl ToTokens for Query {
 
         let field_paths = body.fields.iter().map(|field| match field {
             QueryField::Column(column) => quote! {
-                #table::columns::#column
+                super::#table::columns::#column
             },
             QueryField::Relation(relation) => {
                 let name = &relation.name;
                 quote! {
-                    #table::relations::#name
+                    super::#table::relations::#name
                 }
             }
         });
@@ -195,12 +195,16 @@ impl ToTokens for Query {
         quote! {
                 mod internal {
                     #recurse_tokens
-                }
 
-                // let query: String = format!(#query_string, #(#field_paths::NAME),*, #table::NAME);
-                //
-                // let row: internal::Row = Default::default();
-                // (row, query)
+                    pub struct Query {
+                    }
+
+                    impl Query {
+                        pub fn sql(&self) -> String {
+                            format!(#query_string, #(#field_paths::NAME),*, super::#table::NAME)
+                        }
+                    }
+                }
         }
         .to_tokens(tokens);
     }

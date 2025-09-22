@@ -1,6 +1,6 @@
 use std::fmt::{Display, Write};
 
-use quote::{IdentFragment, ToTokens, quote};
+use quote::{ToTokens, quote};
 use syn::{
     Ident,
     parse::{Parse, ParseStream},
