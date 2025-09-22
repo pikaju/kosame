@@ -38,7 +38,7 @@ fn main() {
     };
     println!("{}", query);
     println!("{:?}", result);
-    println!("{:?}", result.post.id);
+    println!("{:?}", result.post);
 
     let (result, query) = kosame::query! {
         schema::posts {
@@ -55,5 +55,5 @@ fn main() {
     };
     println!("{}", query);
     println!("{:?}", result);
-    println!("{:?}", result.comments.id);
+    println!("{:?}", result.comments);
 }

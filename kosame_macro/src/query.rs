@@ -85,11 +85,14 @@ impl ToTokens for Query {
                     QueryField::Relation(relation) => {
                         let mut field_path = field_path.clone();
                         field_path.push(relation.name.clone());
-                        let r#type = field_path_to_struct_name(&field_path);
                         let name = &relation.name;
+                        let inner_type = field_path_to_struct_name(&field_path);
+                        let wrapper_type = quote! {
+                            super::#table #field_path_tokens::relations::#name::Wrapper
+                        };
 
                         quote! {
-                            #name: #r#type
+                            #name: #wrapper_type<#inner_type>
                         }
                         .to_tokens(&mut struct_field_tokens);
 

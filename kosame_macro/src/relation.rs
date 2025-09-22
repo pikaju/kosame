@@ -50,10 +50,16 @@ impl ToTokens for Relation {
         let source_columns = self.source_columns.iter();
         let dest_columns = self.dest_columns.iter();
 
+        let wrapper_type = match self.arrow {
+            Arrow::ManyToOne(_) => quote! { ::kosame::relation::ManyToOne<T> },
+            Arrow::OneToMany(_) => quote! { ::kosame::relation::OneToMany<T> },
+        };
+
         quote! {
             /// kosame relation
             pub mod #name {
                 pub const NAME: &str = #name_string;
+                pub type Wrapper<T> = #wrapper_type;
 
                 pub mod source_columns {
                     #(pub use super::super::super::columns::#source_columns;)*
@@ -72,6 +78,7 @@ impl ToTokens for Relation {
     }
 }
 
+#[allow(dead_code)]
 enum Arrow {
     ManyToOne(Token![=>]),
     OneToMany(Token![<=]),
