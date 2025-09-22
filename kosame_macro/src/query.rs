@@ -85,8 +85,11 @@ impl ToTokens for Query {
 
                 match field {
                     QueryField::Column(column) => {
+                        let column_module = quote! {
+                            super::#table #field_path_tokens::columns::#column
+                        };
                         quote! {
-                            #column: super::#table #field_path_tokens::columns::#column::Type
+                            #column: #column_module::Type
                         }
                         .to_tokens(&mut struct_field_tokens);
 
@@ -94,6 +97,8 @@ impl ToTokens for Query {
                             use super::super::#table #field_path_tokens::columns_and_relations::#column;
                         }
                         .to_tokens(&mut internal_module_row_tokens);
+
+                        slotted_sql_builder.append_slot(quote! { #column_module::NAME });
                     }
                     QueryField::Relation(relation) => {
                         let mut field_path = field_path.clone();
@@ -189,52 +194,25 @@ impl ToTokens for Query {
             body,
         );
 
-        let field_names = body
-            .fields
-            .iter()
-            .map(|field| match field {
-                QueryField::Column(column) => quote! { #column },
-                QueryField::Relation(relation) => {
-                    let name = &relation.name;
-                    quote! { #name }
-                }
-            })
-            .collect::<Vec<_>>();
-
-        let field_paths = body.fields.iter().map(|field| match field {
-            QueryField::Column(column) => quote! {
-                super::#table::columns::#column
-            },
-            QueryField::Relation(relation) => {
-                let name = &relation.name;
-                quote! {
-                    super::#table::relations::#name
-                }
-            }
-        });
-        let query_string = format!(
-            "select {} from {{}}",
-            field_names
-                .iter()
-                .map(|_| "{}".to_string())
-                .collect::<Vec<String>>()
-                .join(", ")
-        );
-
+        let module_name = self
+            .as_name
+            .as_ref()
+            .map_or(quote! { internal }, |as_name| {
+                as_name.ident().to_token_stream()
+            });
         let sql_tokens = slotted_sql_builder.build();
 
         quote! {
-                mod internal {
+                mod #module_name {
                     #recurse_tokens
 
                     pub struct Query {
                     }
 
                     impl Query {
-                        const SQL: &str = #sql_tokens;
-
-                        pub fn to_sql_string(&self) -> String {
-                            format!(#query_string, #(#field_paths::NAME),*, super::#table::NAME)
+                        pub fn sql_string(&self) -> String {
+                            #sql_tokens
+                            // format!(#query_string, #(#field_paths::NAME),*, super::#table::NAME)
                         }
                     }
                 }

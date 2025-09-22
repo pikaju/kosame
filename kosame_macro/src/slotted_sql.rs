@@ -34,7 +34,7 @@ impl SlottedSqlBuilder {
         self.flush();
         let segments = self.segments;
         quote! {
-            ::kosame::concatcp!(#(#segments),*)
+            String::new() + #(#segments)+*
         }
     }
 }
