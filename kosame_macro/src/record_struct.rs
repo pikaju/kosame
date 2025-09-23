@@ -12,7 +12,7 @@ impl RecordStruct {
         Self { name, fields }
     }
 
-    pub fn to_from_row_impl(&self, tokens: &mut TokenStream) {
+    fn to_from_row_impl(&self, tokens: &mut TokenStream) {
         let name = &self.name;
         let fields = self.fields.iter().enumerate().map(|(index, field)| {
             let name = &field.name;
@@ -33,7 +33,7 @@ impl RecordStruct {
         .to_tokens(tokens);
     }
 
-    pub fn to_from_sql_impl(&self, tokens: &mut TokenStream) {
+    fn to_from_sql_impl(&self, tokens: &mut TokenStream) {
         let name = &self.name;
         let field_count = self.fields.len() as i32;
         let fields = self.fields.iter().map(|field| {
@@ -92,6 +92,9 @@ impl ToTokens for RecordStruct {
             }
         }
         .to_tokens(tokens);
+
+        self.to_from_row_impl(tokens);
+        self.to_from_sql_impl(tokens);
     }
 }
 

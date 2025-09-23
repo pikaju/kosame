@@ -1,8 +1,8 @@
 use std::fmt::Display;
 
 use proc_macro_error::emit_error;
-use proc_macro2::{Span, TokenStream};
-use quote::{ToTokens, quote, quote_spanned};
+use proc_macro2::TokenStream;
+use quote::{ToTokens, quote};
 use syn::{
     Ident, Token, parenthesized,
     parse::{Parse, ParseStream},
@@ -71,8 +71,6 @@ impl Relation {
         quote! {
             // #docs
             pub mod #name {
-                pub type Relation<T> = #relation_type;
-
                 pub mod target_table {
                     pub use #target_path::*;
                 }
@@ -87,6 +85,8 @@ impl Relation {
 
                 pub const NAME: &str = #name_string;
                 pub const JOIN_CONDITION: &str = #join_string;
+
+                pub type Relation<T> = #relation_type;
             }
         }
     }

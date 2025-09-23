@@ -53,11 +53,11 @@ impl QueryNode {
 
         record_struct.to_tokens(tokens);
 
-        if node_path.is_empty() {
-            record_struct.to_from_row_impl(tokens);
-        } else {
-            record_struct.to_from_sql_impl(tokens);
-        }
+        // if node_path.is_empty() {
+        //     record_struct.to_from_row_impl(tokens);
+        // } else {
+        //     record_struct.to_from_sql_impl(tokens);
+        // }
 
         // Recursively call to_tokens on child nodes.
         for field in &self.fields {

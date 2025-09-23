@@ -1,7 +1,8 @@
-use std::fmt::{Display, Write};
+use std::fmt::Display;
 
 use super::data_type::DataType;
 use crate::docs::{Docs, ToDocsTokens};
+use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::{
     Ident,
@@ -19,8 +20,21 @@ impl Column {
         &self.name
     }
 
-    pub fn data_type(&self) -> &DataType {
+    pub fn data_type_not_null(&self) -> &DataType {
         &self.data_type
+    }
+
+    pub fn data_type_nullable(&self) -> TokenStream {
+        let data_type = self.data_type_not_null();
+        quote! { Option<#data_type> }
+    }
+
+    pub fn data_type_auto(&self) -> TokenStream {
+        if !self.constraints.has_not_null() && !self.constraints.has_primary_key() {
+            self.data_type_not_null().to_token_stream()
+        } else {
+            self.data_type_nullable()
+        }
     }
 }
 
@@ -41,12 +55,7 @@ impl ToTokens for Column {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let name = &self.name;
         let name_string = name.to_string();
-        let data_type = &self.data_type;
-        let data_type = if !self.constraints.has_not_null() && !self.constraints.has_primary_key() {
-            quote! { Option<#data_type> }
-        } else {
-            quote! { #data_type }
-        };
+        let data_type = &self.data_type_auto();
         let docs = self.to_docs_token_stream();
 
         quote! {

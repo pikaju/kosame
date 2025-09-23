@@ -1,7 +1,11 @@
 use std::fmt::Display;
 
 use super::{column::Column, relation::Relation};
-use crate::docs::{Docs, ToDocsTokens};
+use crate::{
+    docs::{Docs, ToDocsTokens},
+    record_struct::{RecordStruct, RecordStructField},
+};
+use proc_macro2::Span;
 use quote::{ToTokens, quote};
 use syn::{
     Ident, Token,
@@ -49,13 +53,42 @@ impl ToTokens for Table {
         let column_names = self.columns.iter().map(Column::name);
         let relation_names = self.relations.iter().map(Relation::name);
 
+        let select_struct = RecordStruct::new(
+            Ident::new("Select", Span::call_site()),
+            self.columns
+                .iter()
+                .map(|column| {
+                    RecordStructField::new(column.name().clone(), column.data_type_auto())
+                })
+                .collect(),
+        );
+        let insert_struct = RecordStruct::new(
+            Ident::new("Insert", Span::call_site()),
+            self.columns
+                .iter()
+                .map(|column| {
+                    RecordStructField::new(
+                        column.name().clone(),
+                        column.data_type_not_null().to_token_stream(),
+                    )
+                })
+                .collect(),
+        );
+        let update_struct = RecordStruct::new(
+            Ident::new("Update", Span::call_site()),
+            self.columns
+                .iter()
+                .map(|column| {
+                    RecordStructField::new(column.name().clone(), column.data_type_nullable())
+                })
+                .collect(),
+        );
+
         let docs = self.to_docs_token_stream();
 
         quote! {
             // #docs
             pub mod #name {
-                pub const NAME: &str = #name_string;
-
                 pub mod columns {
                     #(#columns)*
                 }
@@ -68,6 +101,12 @@ impl ToTokens for Table {
                     #(pub use super::columns::#column_names;)*
                     #(pub use super::relations::#relation_names;)*
                 }
+
+                pub const NAME: &str = #name_string;
+
+                #select_struct
+                #insert_struct
+                #update_struct
             }
         }
         .to_tokens(tokens);
