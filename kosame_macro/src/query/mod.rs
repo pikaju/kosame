@@ -8,7 +8,7 @@ use proc_macro2::Span;
 use quote::{ToTokens, quote};
 use relation_path::RelationPath;
 use syn::{
-    Ident, Token,
+    Ident,
     parse::{Parse, ParseStream},
 };
 
@@ -61,8 +61,6 @@ impl ToTokens for Query {
                 path
             };
 
-            slotted_sql_builder.append_str("select ");
-
             node.to_tokens(node_tokens, &current_table_path, &relation_path);
 
             for field in node.fields().iter() {
@@ -87,6 +85,9 @@ impl ToTokens for Query {
             RelationPath::new(),
             body,
         );
+
+        self.body
+            .to_sql_select(&mut slotted_sql_builder, &self.table, RelationPath::new());
 
         let module_name = self
             .as_name

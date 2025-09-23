@@ -113,6 +113,40 @@ impl QueryNode {
             }
         }
     }
+
+    pub fn to_sql_select(
+        &self,
+        builder: &mut SlottedSqlBuilder,
+        table_path: &Path,
+        relation_path: RelationPath,
+    ) {
+        let table_path_call_site = table_path.to_call_site(1);
+
+        builder.append_str("select ");
+        for (index, field) in self.fields.iter().enumerate() {
+            match field {
+                QueryField::Column { name } => {
+                    builder.append_slot(quote! {
+                        #table_path_call_site::columns::#name::NAME
+                    });
+                }
+                QueryField::Relation { name, node } => {
+                    let mut relation_path = relation_path.clone();
+                    relation_path.append(name.clone());
+                    builder.append_str("array[");
+                    node.to_sql_select(builder, table_path, relation_path);
+                    builder.append_str("]");
+                }
+            }
+
+            if index != self.fields.len() - 1 {
+                builder.append_str(", ");
+            }
+        }
+
+        builder.append_str(" from ");
+        builder.append_slot(quote! { #table_path_call_site::NAME });
+    }
 }
 
 impl Parse for QueryNode {
