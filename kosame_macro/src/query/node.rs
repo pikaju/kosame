@@ -1,6 +1,6 @@
 use super::*;
 use proc_macro2::TokenStream;
-use quote::{ToTokens, quote};
+use quote::{ToTokens, TokenStreamExt, quote};
 use syn::{
     Path, Token, braced,
     parse::{Parse, ParseStream},
@@ -17,11 +17,25 @@ impl QueryNode {
         &self.fields
     }
 
-    pub fn to_autocomplete_module(
+    pub fn to_tokens(
         &self,
-        module_name: impl ToTokens,
+        tokens: &mut TokenStream,
         table_path: &Path,
-    ) -> TokenStream {
+        relation_path: &RelationPath,
+    ) {
+        let struct_name = relation_path.to_struct_name("Row");
+
+        tokens.extend(
+            self.to_autocomplete_module(relation_path.to_module_name("autocomplete"), table_path),
+        );
+        tokens.extend(self.to_struct_definition(&struct_name, table_path, &relation_path));
+
+        if relation_path.is_empty() {
+            tokens.extend(self.to_from_row_impl(&struct_name));
+        }
+    }
+
+    fn to_autocomplete_module(&self, module_name: impl ToTokens, table_path: &Path) -> TokenStream {
         let table_path = table_path.to_call_site(2);
         let mut module_rows = vec![];
 
@@ -42,7 +56,7 @@ impl QueryNode {
         }
     }
 
-    pub fn to_struct_definition(
+    fn to_struct_definition(
         &self,
         struct_name: impl ToTokens,
         table_path: &Path,
@@ -78,7 +92,7 @@ impl QueryNode {
         }
     }
 
-    pub fn to_from_row_impl(&self, struct_name: impl ToTokens) -> TokenStream {
+    fn to_from_row_impl(&self, struct_name: impl ToTokens) -> TokenStream {
         let fields = self.fields.iter().enumerate().map(|(index, field)| {
             let name = field.name();
             quote! {

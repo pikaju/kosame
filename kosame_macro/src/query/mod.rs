@@ -63,24 +63,7 @@ impl ToTokens for Query {
 
             slotted_sql_builder.append_str("select ");
 
-            let autocomplete_module_tokens = node.to_autocomplete_module(
-                relation_path.to_module_name("autocomplete"),
-                &current_table_path,
-            );
-            let struct_name = relation_path.to_struct_name("Row");
-            let struct_tokens =
-                node.to_struct_definition(&struct_name, &current_table_path, &relation_path);
-
-            let from_row_impl = relation_path
-                .is_empty()
-                .then(|| node.to_from_row_impl(&struct_name));
-
-            quote! {
-                #autocomplete_module_tokens
-                #struct_tokens
-                #from_row_impl
-            }
-            .to_tokens(tokens);
+            node.to_tokens(tokens, &current_table_path, &relation_path);
 
             for field in node.fields().iter() {
                 if let QueryField::Relation { name, node } = field {
