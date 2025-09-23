@@ -34,7 +34,6 @@ fn main() {
     let result = client.query(&query.to_sql_string(), &[]).unwrap();
     for row in result {
         let row = my_query::Row::from(row);
-        println!("{:?}", row.comments[0].post);
         println!("{:?}", row);
     }
     println!("==== End ====");

@@ -178,7 +178,7 @@ impl QueryNode {
         builder.append_str("select ");
 
         if !relation_path.is_empty() {
-            builder.append_str("row(");
+            builder.append_str("array_agg(row(");
         }
 
         for (index, field) in self.fields.iter().enumerate() {
@@ -203,9 +203,9 @@ impl QueryNode {
                         .segments
                         .push(Ident::new("target_table", Span::call_site()).into());
 
-                    builder.append_str("array[(");
+                    builder.append_str("(");
                     node.to_sql_select(builder, &table_path, relation_path);
-                    builder.append_str(")]");
+                    builder.append_str(")");
                 }
             }
 
@@ -215,7 +215,7 @@ impl QueryNode {
         }
 
         if !relation_path.is_empty() {
-            builder.append_str(")");
+            builder.append_str("))");
         }
 
         builder.append_str(" from ");
