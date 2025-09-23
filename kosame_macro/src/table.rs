@@ -52,7 +52,7 @@ impl ToTokens for Table {
         let docs = self.to_docs_token_stream();
 
         quote! {
-            #docs
+            // #docs
             pub mod #name {
                 pub const NAME: &str = #name_string;
 
