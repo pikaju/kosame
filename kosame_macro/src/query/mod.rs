@@ -36,56 +36,11 @@ impl Parse for Query {
 
 impl ToTokens for Query {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        let table = &self.table;
-        let body = &self.body;
-
         let mut node_tokens = proc_macro2::TokenStream::new();
         let mut slotted_sql_builder = SlottedSqlBuilder::new();
 
-        fn recursive_to_tokens(
-            node_tokens: &mut proc_macro2::TokenStream,
-            slotted_sql_builder: &mut SlottedSqlBuilder,
-            table: &syn::Path,
-            relation_path: RelationPath,
-            node: &QueryNode,
-        ) {
-            let current_table_path = {
-                let mut path = table.clone();
-                for field in relation_path.segments() {
-                    path.segments
-                        .push(Ident::new("relations", Span::call_site()).into());
-                    path.segments.push(field.clone().into());
-                    path.segments
-                        .push(Ident::new("target_table", Span::call_site()).into());
-                }
-                path
-            };
-
-            node.to_tokens(node_tokens, &current_table_path, &relation_path);
-
-            for field in node.fields().iter() {
-                if let QueryField::Relation { name, node } = field {
-                    let mut relation_path = relation_path.clone();
-                    relation_path.append(name.clone());
-                    recursive_to_tokens(
-                        node_tokens,
-                        slotted_sql_builder,
-                        table,
-                        relation_path,
-                        node,
-                    );
-                }
-            }
-        }
-
-        recursive_to_tokens(
-            &mut node_tokens,
-            &mut slotted_sql_builder,
-            table,
-            RelationPath::new(),
-            body,
-        );
-
+        self.body
+            .to_tokens(&mut node_tokens, &self.table, &RelationPath::new());
         self.body
             .to_sql_select(&mut slotted_sql_builder, &self.table, RelationPath::new());
 

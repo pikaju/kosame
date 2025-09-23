@@ -2,7 +2,7 @@ use super::*;
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::{
-    Path, Token, braced,
+    Path, PathSegment, Token, braced,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
 };
@@ -31,10 +31,29 @@ impl QueryNode {
                 table_path,
             ),
         );
-        tokens.extend(self.to_struct_definition(&struct_name, table_path, relation_path));
+        tokens.extend(self.to_struct_definition(&struct_name, table_path, &relation_path));
 
         if relation_path.is_empty() {
             tokens.extend(self.to_from_row_impl(&struct_name));
+        }
+
+        // Recursively call to_tokens on child nodes.
+        for field in &self.fields {
+            if let QueryField::Relation { name, node } = field {
+                let mut relation_path = relation_path.clone();
+                relation_path.append(name.clone());
+
+                let mut table_path = table_path.clone();
+                table_path
+                    .segments
+                    .push(Ident::new("relations", Span::call_site()).into());
+                table_path.segments.push(PathSegment::from(name.clone()));
+                table_path
+                    .segments
+                    .push(Ident::new("target_table", Span::call_site()).into());
+
+                node.to_tokens(tokens, &table_path, &relation_path);
+            }
         }
     }
 
