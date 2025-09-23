@@ -2,14 +2,13 @@ mod field;
 mod node;
 mod relation_path;
 
-use convert_case::Casing;
 use field::QueryField;
 use node::QueryNode;
 use proc_macro2::Span;
 use quote::{ToTokens, quote};
 use relation_path::RelationPath;
 use syn::{
-    Ident, PathSegment, Token,
+    Ident, Token,
     parse::{Parse, ParseStream},
 };
 
@@ -50,16 +49,6 @@ impl ToTokens for Query {
             relation_path: RelationPath,
             node: &QueryNode,
         ) {
-            let mut relation_path_tokens = proc_macro2::TokenStream::new();
-            for field in relation_path.segments() {
-                Token![::](Span::call_site()).to_tokens(&mut relation_path_tokens);
-                Ident::new("relations", Span::call_site()).to_tokens(&mut relation_path_tokens);
-                Token![::](Span::call_site()).to_tokens(&mut relation_path_tokens);
-                field.to_tokens(&mut relation_path_tokens);
-                Token![::](Span::call_site()).to_tokens(&mut relation_path_tokens);
-                Ident::new("target_table", Span::call_site()).to_tokens(&mut relation_path_tokens);
-            }
-
             let current_table_path = {
                 let mut path = table.clone();
                 for field in relation_path.segments() {
@@ -73,52 +62,6 @@ impl ToTokens for Query {
             };
 
             slotted_sql_builder.append_str("select ");
-
-            for (index, field) in node.fields().iter().enumerate() {
-                let mut struct_field_tokens = proc_macro2::TokenStream::new();
-                let mut internal_module_row_tokens = proc_macro2::TokenStream::new();
-
-                match field {
-                    QueryField::Column { name } => {
-                        let column_module = quote! {
-                            super::#table #relation_path_tokens::columns::#name
-                        };
-                        quote! {
-                            #name: #column_module::Type
-                        }
-                        .to_tokens(&mut struct_field_tokens);
-
-                        quote! {
-                            use super::super::#table #relation_path_tokens::columns_and_relations::#name;
-                        }
-                        .to_tokens(&mut internal_module_row_tokens);
-
-                        slotted_sql_builder.append_slot(quote! { #column_module::NAME });
-                    }
-                    QueryField::Relation { name, .. } => {
-                        let mut relation_path = relation_path.clone();
-                        relation_path.append(name.clone());
-                        let inner_type = relation_path.to_struct_name("Row");
-                        let wrapper_type = quote! {
-                            super::#table #relation_path_tokens::relations::#name::Wrapper
-                        };
-
-                        quote! {
-                            #name: #wrapper_type<#inner_type>
-                        }
-                        .to_tokens(&mut struct_field_tokens);
-
-                        quote! {
-                            use super::super::#table #relation_path_tokens::relations::#name;
-                        }
-                        .to_tokens(&mut internal_module_row_tokens);
-                    }
-                }
-
-                if index < node.fields().len() - 1 {
-                    slotted_sql_builder.append_str(", ");
-                }
-            }
 
             let autocomplete_module_tokens = node.to_autocomplete_module(
                 relation_path.to_module_name("autocomplete"),
