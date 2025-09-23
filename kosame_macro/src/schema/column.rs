@@ -1,23 +1,19 @@
 use std::fmt::{Display, Write};
 
+use super::data_type::DataType;
+use crate::docs::{Docs, ToDocsTokens};
 use quote::{ToTokens, quote};
 use syn::{
     Ident,
     parse::{Parse, ParseStream},
 };
 
-use crate::{
-    data_type::DataType,
-    docs::{Docs, ToDocsTokens},
-    keywords,
-};
-
 pub struct Column {
     name: Ident,
     data_type: DataType,
-    not_null: Option<keywords::NotNull>,
-    primary_key: Option<keywords::PrimaryKey>,
+    constraints: super::column_constraint::ColumnConstraints,
 }
+
 impl Column {
     pub fn name(&self) -> &Ident {
         &self.name
@@ -36,8 +32,7 @@ impl Parse for Column {
         Ok(Self {
             name,
             data_type: r#type,
-            not_null: None,
-            primary_key: None,
+            constraints: input.parse()?,
         })
     }
 }
@@ -47,6 +42,11 @@ impl ToTokens for Column {
         let name = &self.name;
         let name_string = name.to_string();
         let data_type = &self.data_type;
+        let data_type = if !self.constraints.has_not_null() && !self.constraints.has_primary_key() {
+            quote! { Option<#data_type> }
+        } else {
+            quote! { #data_type }
+        };
         let docs = self.to_docs_token_stream();
 
         quote! {
@@ -78,6 +78,10 @@ impl Display for Column {
         Display::fmt(&self.name, f)?;
         f.write_str(" ")?;
         Display::fmt(&self.data_type, f)?;
+        for constraint in self.constraints.iter() {
+            f.write_str(" ")?;
+            Display::fmt(&constraint, f)?;
+        }
         Ok(())
     }
 }

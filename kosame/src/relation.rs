@@ -1,8 +1,5 @@
 use std::ops::{Deref, DerefMut};
 
-// pub type ManyToOne<T> = Option<T>;
-// pub type OneToMany<T> = Vec<T>;
-
 #[derive(Debug, Default)]
 pub struct ManyToOne<T>(Option<T>);
 
@@ -11,7 +8,7 @@ impl<T> ManyToOne<T> {
         Self(inner)
     }
 
-    pub fn into_inner(self) -> Option<T> {
+    pub fn into_option(self) -> Option<T> {
         self.0
     }
 }
@@ -52,7 +49,7 @@ impl<T> OneToMany<T> {
         Self(inner)
     }
 
-    pub fn into_inner(self) -> Vec<T> {
+    pub fn into_vec(self) -> Vec<T> {
         self.0
     }
 }

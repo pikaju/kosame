@@ -1,8 +1,8 @@
 pub mod schema {
     kosame::table! {
         create table posts (
-            id int,
-            title text,
+            id int primary key,
+            title text not null,
             content text,
         );
 

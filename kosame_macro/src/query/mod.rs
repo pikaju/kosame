@@ -5,14 +5,13 @@ mod node_path;
 use field::QueryField;
 use node::QueryNode;
 use node_path::QueryNodePath;
-use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::{
     Ident,
     parse::{Parse, ParseStream},
 };
 
-use crate::{keywords::AsIdent, path_ext::PathExt, slotted_sql::SlottedSqlBuilder};
+use crate::{as_ident::AsIdent, path_ext::PathExt, slotted_sql::SlottedSqlBuilder};
 
 pub struct Query {
     table: syn::Path,

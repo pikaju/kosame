@@ -1,5 +1,7 @@
-use std::fmt::{Display, Write};
+use std::fmt::Display;
 
+use super::{column::Column, relation::Relation};
+use crate::docs::{Docs, ToDocsTokens};
 use quote::{ToTokens, quote};
 use syn::{
     Ident, Token,
@@ -7,15 +9,8 @@ use syn::{
     punctuated::Punctuated,
 };
 
-use crate::{
-    column::Column,
-    docs::{Docs, ToDocsTokens},
-    keywords,
-    relation::Relation,
-};
-
 pub struct Table {
-    _create_table: keywords::CreateTable,
+    _create_table: CreateTable,
     _paren: syn::token::Paren,
 
     name: Ident,
@@ -109,5 +104,24 @@ impl Display for Table {
             f.write_str("\n")?;
         }
         Ok(())
+    }
+}
+
+mod kw {
+    syn::custom_keyword!(create);
+    syn::custom_keyword!(table);
+}
+
+pub struct CreateTable {
+    _create: kw::create,
+    _table: kw::table,
+}
+
+impl Parse for CreateTable {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        Ok(Self {
+            _create: input.parse()?,
+            _table: input.parse()?,
+        })
     }
 }
