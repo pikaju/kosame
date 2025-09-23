@@ -7,6 +7,7 @@ use syn::{
     Path, PathSegment, Token, braced,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
+    spanned::Spanned,
 };
 
 pub struct QueryNode {
@@ -178,9 +179,21 @@ impl QueryNode {
 impl Parse for QueryNode {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let content;
-        Ok(Self {
-            _brace: braced!(content in input),
-            fields: content.parse_terminated(QueryField::parse, Token![,])?,
-        })
+        let _brace = braced!(content in input);
+        let fields = content.parse_terminated(QueryField::parse, Token![,])?;
+
+        let mut existing = vec![];
+        for field in &fields {
+            let name = field.name().to_string();
+            if existing.contains(&name) {
+                return Err(syn::Error::new(
+                    field.name().span(),
+                    format!("duplicate field `{}`", name),
+                ));
+            }
+            existing.push(name);
+        }
+
+        Ok(Self { _brace, fields })
     }
 }

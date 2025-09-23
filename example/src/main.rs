@@ -48,7 +48,7 @@ fn main() {
                 post {
                     id,
                     title,
-                }
+                },
             }
             // where id = 5
             // order by name
