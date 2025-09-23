@@ -39,11 +39,11 @@ impl ToTokens for Query {
         let table = &self.table;
         let body = &self.body;
 
-        let mut recurse_tokens = proc_macro2::TokenStream::new();
+        let mut node_tokens = proc_macro2::TokenStream::new();
         let mut slotted_sql_builder = SlottedSqlBuilder::new();
 
-        fn recurse(
-            tokens: &mut proc_macro2::TokenStream,
+        fn recursive_to_tokens(
+            node_tokens: &mut proc_macro2::TokenStream,
             slotted_sql_builder: &mut SlottedSqlBuilder,
             table: &syn::Path,
             relation_path: RelationPath,
@@ -63,19 +63,25 @@ impl ToTokens for Query {
 
             slotted_sql_builder.append_str("select ");
 
-            node.to_tokens(tokens, &current_table_path, &relation_path);
+            node.to_tokens(node_tokens, &current_table_path, &relation_path);
 
             for field in node.fields().iter() {
                 if let QueryField::Relation { name, node } = field {
                     let mut relation_path = relation_path.clone();
                     relation_path.append(name.clone());
-                    recurse(tokens, slotted_sql_builder, table, relation_path, node);
+                    recursive_to_tokens(
+                        node_tokens,
+                        slotted_sql_builder,
+                        table,
+                        relation_path,
+                        node,
+                    );
                 }
             }
         }
 
-        recurse(
-            &mut recurse_tokens,
+        recursive_to_tokens(
+            &mut node_tokens,
             &mut slotted_sql_builder,
             table,
             RelationPath::new(),
@@ -92,7 +98,7 @@ impl ToTokens for Query {
 
         quote! {
                 mod #module_name {
-                    #recurse_tokens
+                    #node_tokens
 
                     pub struct Query {
                     }

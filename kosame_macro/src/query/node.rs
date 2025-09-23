@@ -1,6 +1,6 @@
 use super::*;
 use proc_macro2::TokenStream;
-use quote::{ToTokens, TokenStreamExt, quote};
+use quote::{ToTokens, quote};
 use syn::{
     Path, Token, braced,
     parse::{Parse, ParseStream},
@@ -26,9 +26,12 @@ impl QueryNode {
         let struct_name = relation_path.to_struct_name("Row");
 
         tokens.extend(
-            self.to_autocomplete_module(relation_path.to_module_name("autocomplete"), table_path),
+            self.to_autocomplete_module(
+                relation_path.to_module_name("autocomplete_row"),
+                table_path,
+            ),
         );
-        tokens.extend(self.to_struct_definition(&struct_name, table_path, &relation_path));
+        tokens.extend(self.to_struct_definition(&struct_name, table_path, relation_path));
 
         if relation_path.is_empty() {
             tokens.extend(self.to_from_row_impl(&struct_name));
