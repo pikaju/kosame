@@ -1,9 +1,9 @@
-use std::fmt::{Display, Write};
+use std::fmt::Display;
 
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
 use syn::{
-    Ident, Path, Token, parenthesized,
+    Ident, Token, parenthesized,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
 };
@@ -69,9 +69,6 @@ impl Relation {
         quote! {
             // #docs
             pub mod #name {
-                pub const NAME: &str = #name_string;
-                pub const JOIN_CONDITION: &str = #join_string;
-
                 pub type Relation<T> = #relation_type;
 
                 pub mod target_table {
@@ -85,6 +82,9 @@ impl Relation {
                 pub mod target_columns {
                     #(pub use super::target_table::columns::#dest_columns;)*
                 }
+
+                pub const NAME: &str = #name_string;
+                pub const JOIN_CONDITION: &str = #join_string;
             }
         }
     }
@@ -105,18 +105,18 @@ impl Parse for Relation {
             dest_columns: dest_content.parse_terminated(Ident::parse, Token![,])?,
         };
 
-        if result.source_columns.len() == 0 {
+        if result.source_columns.is_empty() {
             return Err(syn::Error::new(
                 Span::call_site(),
                 "at least one column must be specified",
             ));
         }
-        if result.source_columns.len() != result.dest_columns.len() {
-            return Err(syn::Error::new(
-                Span::call_site(),
-                "number of columns must match on both side of the relation",
-            ));
-        }
+        // if result.source_columns.len() != result.dest_columns.len() {
+        //     return Err(syn::Error::new(
+        //         Span::call_site(),
+        //         "number of columns must match on both side of the relation",
+        //     ));
+        // }
 
         Ok(result)
     }
