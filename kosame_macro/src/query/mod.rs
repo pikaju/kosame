@@ -36,21 +36,26 @@ impl Parse for Query {
 
 impl ToTokens for Query {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        let mut node_tokens = proc_macro2::TokenStream::new();
-        let mut slotted_sql_builder = SlottedSqlBuilder::new();
-
-        self.body
-            .to_tokens(&mut node_tokens, &self.table, &RelationPath::new());
-        self.body
-            .to_sql_select(&mut slotted_sql_builder, &self.table, RelationPath::new());
-
         let module_name = self
             .as_name
             .as_ref()
             .map_or(quote! { internal }, |as_name| {
                 as_name.ident().to_token_stream()
             });
-        let sql_tokens = slotted_sql_builder.build();
+
+        let node_tokens = {
+            let mut tokens = proc_macro2::TokenStream::new();
+            self.body
+                .to_tokens(&mut tokens, &self.table, &RelationPath::new());
+            tokens
+        };
+
+        let sql_tokens = {
+            let mut slotted_sql_builder = SlottedSqlBuilder::new();
+            self.body
+                .to_sql_select(&mut slotted_sql_builder, &self.table, RelationPath::new());
+            slotted_sql_builder.build()
+        };
 
         quote! {
                 mod #module_name {
