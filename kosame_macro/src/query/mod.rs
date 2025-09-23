@@ -4,7 +4,7 @@ mod relation_path;
 
 use field::QueryField;
 use node::QueryNode;
-use proc_macro2::{Span, TokenStream};
+use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use relation_path::RelationPath;
 use syn::{

@@ -1,5 +1,5 @@
 use super::*;
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
 use syn::{
     Path, PathSegment, Token, braced,
@@ -154,7 +154,6 @@ impl QueryNode {
                     ty: &::kosame::pg::internal::Type,
                     raw: &[u8],
                 ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
-                    println!("{:?}", raw);
                     let mut reader = raw;
                     let column_count = ::kosame::pg::internal::int4_from_sql(&reader[..4])?;
                     reader = &reader[4..];

@@ -29,7 +29,7 @@ pub mod internal {
                 .map(|v| T::from_sql_nullable(ty, v))
                 .collect()?;
 
-            Ok(Self(inner))
+            Ok(Self::new(inner))
         }
     }
 
@@ -63,7 +63,7 @@ pub mod internal {
 
             let inner = array.values().map(|v| T::from_sql_nullable(ty, v)).next()?;
 
-            Ok(Self(inner))
+            Ok(Self::new(inner))
         }
     }
 

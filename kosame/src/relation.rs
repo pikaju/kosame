@@ -4,7 +4,17 @@ use std::ops::{Deref, DerefMut};
 // pub type OneToMany<T> = Vec<T>;
 
 #[derive(Debug, Default)]
-pub struct ManyToOne<T>(pub Option<T>);
+pub struct ManyToOne<T>(Option<T>);
+
+impl<T> ManyToOne<T> {
+    pub(crate) fn new(inner: Option<T>) -> Self {
+        Self(inner)
+    }
+
+    pub fn into_inner(self) -> Option<T> {
+        self.0
+    }
+}
 
 impl<T> Deref for ManyToOne<T> {
     type Target = Option<T>;
@@ -21,7 +31,7 @@ impl<T> DerefMut for ManyToOne<T> {
 }
 
 #[derive(Debug, Default)]
-pub struct OneToMany<T>(pub Vec<T>);
+pub struct OneToMany<T>(Vec<T>);
 
 impl<T> Deref for OneToMany<T> {
     type Target = Vec<T>;
@@ -34,5 +44,15 @@ impl<T> Deref for OneToMany<T> {
 impl<T> DerefMut for OneToMany<T> {
     fn deref_mut(&mut self) -> &mut <Self as Deref>::Target {
         &mut self.0
+    }
+}
+
+impl<T> OneToMany<T> {
+    pub(crate) fn new(inner: Vec<T>) -> Self {
+        Self(inner)
+    }
+
+    pub fn into_inner(self) -> Vec<T> {
+        self.0
     }
 }
