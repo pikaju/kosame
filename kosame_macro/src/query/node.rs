@@ -13,10 +13,6 @@ pub struct QueryNode {
 }
 
 impl QueryNode {
-    pub fn fields(&self) -> &Punctuated<QueryField, Token![,]> {
-        &self.fields
-    }
-
     pub fn to_tokens(
         &self,
         tokens: &mut TokenStream,
@@ -142,6 +138,11 @@ impl QueryNode {
         let table_path_call_site = table_path.to_call_site(1);
 
         builder.append_str("select ");
+
+        if !relation_path.is_empty() {
+            builder.append_str("row(");
+        }
+
         for (index, field) in self.fields.iter().enumerate() {
             match field {
                 QueryField::Column { name } => {
@@ -152,15 +153,19 @@ impl QueryNode {
                 QueryField::Relation { name, node } => {
                     let mut relation_path = relation_path.clone();
                     relation_path.append(name.clone());
-                    builder.append_str("array[");
+                    builder.append_str("array[(");
                     node.to_sql_select(builder, table_path, relation_path);
-                    builder.append_str("]");
+                    builder.append_str(")]");
                 }
             }
 
             if index != self.fields.len() - 1 {
                 builder.append_str(", ");
             }
+        }
+
+        if !relation_path.is_empty() {
+            builder.append_str(")");
         }
 
         builder.append_str(" from ");
