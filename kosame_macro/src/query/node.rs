@@ -45,6 +45,11 @@ impl QueryNode {
                                 quote! { #table_path::relations::#name::Relation<#inner_type> },
                             )
                         }
+
+                        QueryField::Star(_) => RecordStructField::new(
+                            Ident::new("_star", Span::call_site()),
+                            quote! { i32 },
+                        ),
                     })
                     .collect(),
             )
@@ -86,6 +91,7 @@ impl QueryNode {
             let name = match field {
                 QueryField::Column { name } => name,
                 QueryField::Relation { name, .. } => name,
+                QueryField::Star(_) => continue,
             };
             module_rows.push(quote! {
                 use #table_path::columns_and_relations::#name;
@@ -142,6 +148,9 @@ impl QueryNode {
                     node.to_sql_select(builder, &table_path, node_path, Some(&relation_path));
                     builder.append_str(")");
                 }
+                QueryField::Star(_) => {
+                    builder.append_str("*");
+                }
             }
 
             if index != self.fields.len() - 1 {
@@ -181,16 +190,25 @@ impl Parse for QueryNode {
         let _brace = braced!(content in input);
         let fields = content.parse_terminated(QueryField::parse, Token![,])?;
 
+        let mut star_used = false;
         let mut existing = vec![];
         for field in &fields {
-            let name = field.name().to_string();
-            if existing.contains(&name) {
+            let Some(name) = field.name() else {
+                if star_used {
+                    return Err(syn::Error::new(field.span(), "duplicate use of `*`"));
+                }
+                star_used = true;
+                continue;
+            };
+
+            let name_string = name.to_string();
+            if existing.contains(&name_string) {
                 return Err(syn::Error::new(
-                    field.name().span(),
+                    name.span(),
                     format!("duplicate field `{}`", name),
                 ));
             }
-            existing.push(name);
+            existing.push(name_string);
         }
 
         Ok(Self { _brace, fields })

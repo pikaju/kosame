@@ -40,6 +40,7 @@ fn main() {
 
     kosame::query! {
         schema::posts {
+            *,
             id,
             content,
             comments {
