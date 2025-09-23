@@ -33,6 +33,40 @@ pub mod internal {
         }
     }
 
+    impl<'a, T> FromSql<'a> for crate::relation::ManyToOne<T>
+    where
+        T: FromSql<'a>,
+    {
+        fn accepts(ty: &Type) -> bool {
+            ty.name() == "_record"
+        }
+
+        fn from_sql(
+            ty: &Type,
+            raw: &'a [u8],
+        ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
+            if ty.name() != "_record" {
+                panic!("expected _record type");
+            };
+
+            let array = postgres_protocol::types::array_from_sql(raw)?;
+            let mut dimensions = array.dimensions();
+            let Some(dimension) = dimensions.next()? else {
+                return Err("array has no dimensions".into());
+            };
+            if dimensions.next()?.is_some() {
+                return Err("array has too many dimensions".into());
+            }
+            if dimension.len > 1 {
+                return Err("many to one relationship must have at most one element".into());
+            }
+
+            let inner = array.values().map(|v| T::from_sql_nullable(ty, v)).next()?;
+
+            Ok(Self(inner))
+        }
+    }
+
     pub fn record_field_from_sql<'a, T>(
         buf: &'a [u8],
     ) -> Result<(T, usize), Box<dyn std::error::Error + Sync + Send>>

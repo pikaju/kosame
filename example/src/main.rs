@@ -34,25 +34,10 @@ fn main() {
     let result = client.query(&query.to_sql_string(), &[]).unwrap();
     for row in result {
         let row = my_query::Row::from(row);
-        println!("{:?}", row.comments[0].post[0].title);
+        println!("{:?}", row.comments[0].post);
         println!("{:?}", row);
     }
     println!("==== End ====");
-
-    // impl<'a> ::kosame::pg::FromSql<'a> for my_query::RowComments {
-    //     fn accepts(ty: &::kosame::pg::Type) -> bool {
-    //         ty.name() == "record"
-    //     }
-    //
-    //     fn from_sql(
-    //         ty: &::kosame::pg::Type,
-    //         raw: &[u8],
-    //     ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
-    //         Ok(Self {
-    //             ..Default::default()
-    //         })
-    //     }
-    // }
 
     kosame::query! {
         schema::posts {
@@ -70,22 +55,4 @@ fn main() {
             // order by name
         } as my_query
     };
-
-    // println!("{}", query);
-    // println!("{:?}", result);
-
-    // let (result, query) = kosame::query! {
-    //     schema::posts {
-    //         id,
-    //         title,
-    //         comments {
-    //             id,
-    //         },
-    //         //
-    //         // where id = 5
-    //         // order by name
-    //     }
-    // };
-    // println!("{}", query);
-    // println!("{:?}", result);
 }
