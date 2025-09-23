@@ -31,6 +31,13 @@ pub mod internal {
 
             Ok(Self::new(inner))
         }
+
+        fn from_sql_null(ty: &Type) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
+            if ty.name() != "_record" {
+                panic!("expected _record type");
+            };
+            Ok(Self::new(vec![]))
+        }
     }
 
     impl<'a, T> FromSql<'a> for crate::relation::ManyToOne<T>
@@ -64,6 +71,13 @@ pub mod internal {
             let inner = array.values().map(|v| T::from_sql_nullable(ty, v)).next()?;
 
             Ok(Self::new(inner))
+        }
+
+        fn from_sql_null(ty: &Type) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
+            if ty.name() != "_record" {
+                panic!("expected _record type");
+            };
+            Ok(Self::new(None))
         }
     }
 

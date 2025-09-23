@@ -17,19 +17,16 @@ impl QueryNode {
         &self,
         tokens: &mut TokenStream,
         table_path: &Path,
-        relation_path: &RelationPath,
+        node_path: &QueryNodePath,
     ) {
-        let struct_name = relation_path.to_struct_name("Row");
+        let struct_name = node_path.to_struct_name("Row");
 
         tokens.extend(
-            self.to_autocomplete_module(
-                relation_path.to_module_name("autocomplete_row"),
-                table_path,
-            ),
+            self.to_autocomplete_module(node_path.to_module_name("autocomplete_row"), table_path),
         );
-        tokens.extend(self.to_struct_definition(&struct_name, table_path, relation_path));
+        tokens.extend(self.to_struct_definition(&struct_name, table_path, node_path));
 
-        if relation_path.is_empty() {
+        if node_path.is_empty() {
             tokens.extend(self.to_from_row_impl(&struct_name));
         } else {
             tokens.extend(self.to_from_sql_impl(&struct_name));
@@ -38,8 +35,8 @@ impl QueryNode {
         // Recursively call to_tokens on child nodes.
         for field in &self.fields {
             if let QueryField::Relation { name, node } = field {
-                let mut relation_path = relation_path.clone();
-                relation_path.append(name.clone());
+                let mut node_path = node_path.clone();
+                node_path.append(name.clone());
 
                 let mut table_path = table_path.clone();
                 table_path
@@ -50,7 +47,7 @@ impl QueryNode {
                     .segments
                     .push(Ident::new("target_table", Span::call_site()).into());
 
-                node.to_tokens(tokens, &table_path, &relation_path);
+                node.to_tokens(tokens, &table_path, &node_path);
             }
         }
     }
@@ -80,7 +77,7 @@ impl QueryNode {
         &self,
         struct_name: impl ToTokens,
         table_path: &Path,
-        relation_path: &RelationPath,
+        node_path: &QueryNodePath,
     ) -> TokenStream {
         let table_path = table_path.to_call_site(1);
         let mut struct_fields = vec![];
@@ -93,11 +90,11 @@ impl QueryNode {
                     }
                 }
                 QueryField::Relation { name, .. } => {
-                    let mut relation_path = relation_path.clone();
-                    relation_path.append(name.clone());
-                    let inner_type = relation_path.to_struct_name("Row");
+                    let mut node_path = node_path.clone();
+                    node_path.append(name.clone());
+                    let inner_type = node_path.to_struct_name("Row");
                     quote! {
-                        #name: #table_path::relations::#name::Wrapper<#inner_type>
+                        #name: #table_path::relations::#name::Relation<#inner_type>
                     }
                 }
             };
@@ -171,13 +168,14 @@ impl QueryNode {
         &self,
         builder: &mut SlottedSqlBuilder,
         table_path: &Path,
-        relation_path: RelationPath,
+        node_path: QueryNodePath,
+        join_condition: Option<&Path>,
     ) {
         let table_path_call_site = table_path.to_call_site(1);
 
         builder.append_str("select ");
 
-        if !relation_path.is_empty() {
+        if !node_path.is_empty() {
             builder.append_str("array_agg(row(");
         }
 
@@ -191,20 +189,22 @@ impl QueryNode {
                     // });
                 }
                 QueryField::Relation { name, node } => {
-                    let mut relation_path = relation_path.clone();
-                    relation_path.append(name.clone());
+                    let mut node_path = node_path.clone();
+                    node_path.append(name.clone());
 
-                    let mut table_path = table_path.clone();
-                    table_path
+                    let mut relation_path = table_path.clone();
+                    relation_path
                         .segments
                         .push(Ident::new("relations", Span::call_site()).into());
-                    table_path.segments.push(PathSegment::from(name.clone()));
+                    relation_path.segments.push(PathSegment::from(name.clone()));
+
+                    let mut table_path = relation_path.clone();
                     table_path
                         .segments
                         .push(Ident::new("target_table", Span::call_site()).into());
 
                     builder.append_str("(");
-                    node.to_sql_select(builder, &table_path, relation_path);
+                    node.to_sql_select(builder, &table_path, node_path, Some(&relation_path));
                     builder.append_str(")");
                 }
             }
@@ -214,7 +214,7 @@ impl QueryNode {
             }
         }
 
-        if !relation_path.is_empty() {
+        if !node_path.is_empty() {
             builder.append_str("))");
         }
 
@@ -231,6 +231,12 @@ impl QueryNode {
         //
         // For renamed tables:
         builder.append_slot(quote! { #table_path_call_site::NAME });
+
+        if let Some(join_condition) = join_condition {
+            let path = join_condition.to_call_site(1);
+            builder.append_str(" where ");
+            builder.append_slot(quote! { #path::JOIN_CONDITION });
+        }
     }
 }
 

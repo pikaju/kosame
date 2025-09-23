@@ -44,8 +44,13 @@ impl ToTokens for Table {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let name = &self.name;
         let name_string = name.to_string();
+
         let columns = self.columns.iter();
-        let relations = self.relations.iter();
+        let relations = self
+            .relations
+            .iter()
+            .map(|relation| relation.to_token_stream(&self.name));
+
         let column_names = self.columns.iter().map(Column::name);
         let relation_names = self.relations.iter().map(Relation::name);
 

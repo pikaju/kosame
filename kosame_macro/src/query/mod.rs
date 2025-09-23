@@ -1,12 +1,12 @@
 mod field;
 mod node;
-mod relation_path;
+mod node_path;
 
 use field::QueryField;
 use node::QueryNode;
+use node_path::QueryNodePath;
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
-use relation_path::RelationPath;
 use syn::{
     Ident,
     parse::{Parse, ParseStream},
@@ -46,14 +46,18 @@ impl ToTokens for Query {
         let node_tokens = {
             let mut tokens = proc_macro2::TokenStream::new();
             self.body
-                .to_tokens(&mut tokens, &self.table, &RelationPath::new());
+                .to_tokens(&mut tokens, &self.table, &QueryNodePath::new());
             tokens
         };
 
         let sql_tokens = {
             let mut slotted_sql_builder = SlottedSqlBuilder::new();
-            self.body
-                .to_sql_select(&mut slotted_sql_builder, &self.table, RelationPath::new());
+            self.body.to_sql_select(
+                &mut slotted_sql_builder,
+                &self.table,
+                QueryNodePath::new(),
+                None,
+            );
             slotted_sql_builder.build()
         };
 

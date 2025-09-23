@@ -1,8 +1,9 @@
 use std::fmt::{Display, Write};
 
+use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
 use syn::{
-    Ident, Token, parenthesized,
+    Ident, Path, Token, parenthesized,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
 };
@@ -27,29 +28,30 @@ impl Relation {
     pub fn name(&self) -> &Ident {
         &self.name
     }
-}
 
-impl Parse for Relation {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let source_content;
-        let dest_content;
-        Ok(Self {
-            name: input.parse()?,
-            _colon: input.parse()?,
-            _source_paren: parenthesized!(source_content in input),
-            source_columns: source_content.parse_terminated(Ident::parse, Token![,])?,
-            arrow: input.parse()?,
-            dest_table: input.parse()?,
-            _dest_paren: parenthesized!(dest_content in input),
-            dest_columns: dest_content.parse_terminated(Ident::parse, Token![,])?,
-        })
-    }
-}
-
-impl ToTokens for Relation {
-    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+    pub fn to_token_stream(&self, source_table: &Ident) -> TokenStream {
         let name = &self.name;
         let name_string = name.to_string();
+
+        let source_table_string = source_table.to_string();
+        let dest_table_string = self.dest_table.segments.last().unwrap().ident.to_string();
+
+        let join_string = self
+            .source_columns
+            .iter()
+            .zip(self.dest_columns.iter())
+            .map(|(source_column, dest_column)| {
+                String::new()
+                    + &source_table_string
+                    + "."
+                    + &source_column.to_string()
+                    + " = "
+                    + &dest_table_string
+                    + "."
+                    + &dest_column.to_string()
+            })
+            .collect::<Vec<_>>()
+            .join(" and ");
 
         let target = &self.dest_table;
         let target_path = target.to_call_site(4);
@@ -57,7 +59,7 @@ impl ToTokens for Relation {
         let source_columns = self.source_columns.iter();
         let dest_columns = self.dest_columns.iter();
 
-        let wrapper_type = match self.arrow {
+        let relation_type = match self.arrow {
             Arrow::ManyToOne(_) => quote! { ::kosame::relation::ManyToOne<T> },
             Arrow::OneToMany(_) => quote! { ::kosame::relation::OneToMany<T> },
         };
@@ -68,7 +70,9 @@ impl ToTokens for Relation {
             // #docs
             pub mod #name {
                 pub const NAME: &str = #name_string;
-                pub type Wrapper<T> = #wrapper_type;
+                pub const JOIN_CONDITION: &str = #join_string;
+
+                pub type Relation<T> = #relation_type;
 
                 pub mod target_table {
                     pub use #target_path::*;
@@ -83,7 +87,38 @@ impl ToTokens for Relation {
                 }
             }
         }
-        .to_tokens(tokens);
+    }
+}
+
+impl Parse for Relation {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let source_content;
+        let dest_content;
+        let result = Self {
+            name: input.parse()?,
+            _colon: input.parse()?,
+            _source_paren: parenthesized!(source_content in input),
+            source_columns: source_content.parse_terminated(Ident::parse, Token![,])?,
+            arrow: input.parse()?,
+            dest_table: input.parse()?,
+            _dest_paren: parenthesized!(dest_content in input),
+            dest_columns: dest_content.parse_terminated(Ident::parse, Token![,])?,
+        };
+
+        if result.source_columns.len() == 0 {
+            return Err(syn::Error::new(
+                Span::call_site(),
+                "at least one column must be specified",
+            ));
+        }
+        if result.source_columns.len() != result.dest_columns.len() {
+            return Err(syn::Error::new(
+                Span::call_site(),
+                "number of columns must match on both side of the relation",
+            ));
+        }
+
+        Ok(result)
     }
 }
 

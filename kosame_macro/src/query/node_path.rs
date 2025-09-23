@@ -3,11 +3,11 @@ use proc_macro2::Span;
 use syn::Ident;
 
 #[derive(Clone)]
-pub struct RelationPath {
+pub struct QueryNodePath {
     segments: Vec<Ident>,
 }
 
-impl RelationPath {
+impl QueryNodePath {
     pub fn new() -> Self {
         Self { segments: vec![] }
     }

@@ -159,8 +159,6 @@ version = "0.1.0"
 dependencies = [
  "kosame",
  "postgres",
- "postgres-protocol",
- "postgres-types",
 ]
 
 [[package]]
