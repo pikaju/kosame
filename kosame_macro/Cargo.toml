@@ -6,8 +6,15 @@ edition = "2024"
 [lib]
 proc-macro = true
 
+[features]
+default = []
+serde = ["serde-serialize", "serde-deserialize"]
+serde-serialize = ["dep:serde"]
+serde-deserialize = ["dep:serde"]
+
 [dependencies]
 convert_case = "0.8.0"
 proc-macro2 = "1.0.101"
 quote = "1.0.40"
+serde = { version = "1.0.226", optional = true }
 syn = "2.0.106"

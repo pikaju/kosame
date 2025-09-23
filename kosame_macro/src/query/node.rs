@@ -101,8 +101,17 @@ impl QueryNode {
             struct_fields.push(tokens);
         }
 
+        let derives = [
+            quote! { Default },
+            quote! { Debug },
+            #[cfg(feature = "serde-serialize")]
+            quote! { ::serde::Serialize },
+            #[cfg(feature = "serde-deserialize")]
+            quote! { ::serde::Deserialize },
+        ];
+
         quote! {
-            #[derive(Default, Debug)]
+            #[derive(#(#derives),*)]
             pub struct #struct_name {
                 #(pub #struct_fields,)*
             }

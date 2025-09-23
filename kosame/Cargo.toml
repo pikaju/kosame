@@ -3,9 +3,16 @@ name = "kosame"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+default = []
+serde = ["serde-serialize", "serde-deserialize", "kosame_macro/serde"]
+serde-serialize = ["dep:serde", "kosame_macro/serde-serialize"]
+serde-deserialize = ["dep:serde", "kosame_macro/serde-deserialize"]
+
 [dependencies]
 const_format = "0.2.34"
 fallible-iterator = "0.2.0"
 kosame_macro.workspace = true
 postgres-protocol = "0.6.8"
 postgres-types = "0.2.9"
+serde = { version = "1.0.226", optional = true }
