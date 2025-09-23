@@ -1,11 +1,13 @@
 use std::fmt::Display;
 
+use proc_macro_error::emit_error;
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
 use syn::{
     Ident, Token, parenthesized,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
+    spanned::Spanned,
 };
 
 use crate::{
@@ -106,17 +108,17 @@ impl Parse for Relation {
         };
 
         if result.source_columns.is_empty() {
-            return Err(syn::Error::new(
-                Span::call_site(),
-                "at least one column must be specified",
-            ));
+            emit_error!(
+                result._source_paren.span.span(),
+                "at least one column must be specified"
+            );
         }
-        // if result.source_columns.len() != result.dest_columns.len() {
-        //     return Err(syn::Error::new(
-        //         Span::call_site(),
-        //         "number of columns must match on both side of the relation",
-        //     ));
-        // }
+        if result.source_columns.len() != result.dest_columns.len() {
+            emit_error!(
+                result._dest_paren.span.span(),
+                "number of columns must match on both side of the relation",
+            );
+        }
 
         Ok(result)
     }
