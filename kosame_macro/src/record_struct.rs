@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
-use syn::{Ident, Path, Token};
+use syn::Ident;
 
 pub struct RecordStruct {
     name: Ident,

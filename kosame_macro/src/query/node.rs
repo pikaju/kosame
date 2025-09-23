@@ -7,7 +7,6 @@ use syn::{
     Path, PathSegment, Token, braced,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
-    spanned::Spanned,
 };
 
 pub struct QueryNode {
