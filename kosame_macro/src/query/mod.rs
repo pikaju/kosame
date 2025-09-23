@@ -72,12 +72,6 @@ impl ToTokens for Query {
                 path
             };
 
-            let struct_name = relation_path.to_struct_name("Row");
-            let mut struct_fields = vec![];
-
-            let internal_module_name = relation_path.to_module_name("row");
-            let mut internal_module_rows = vec![];
-
             slotted_sql_builder.append_str("select ");
 
             for (index, field) in node.fields().iter().enumerate() {
@@ -121,16 +115,16 @@ impl ToTokens for Query {
                     }
                 }
 
-                struct_fields.push(struct_field_tokens);
-                internal_module_rows.push(internal_module_row_tokens);
-
                 if index < node.fields().len() - 1 {
                     slotted_sql_builder.append_str(", ");
                 }
             }
 
-            let autocomplete_module_tokens =
-                node.to_autocomplete_module(&internal_module_name, &current_table_path);
+            let autocomplete_module_tokens = node.to_autocomplete_module(
+                relation_path.to_module_name("autocomplete"),
+                &current_table_path,
+            );
+            let struct_name = relation_path.to_struct_name("Row");
             let struct_tokens =
                 node.to_struct_definition(&struct_name, &current_table_path, &relation_path);
 

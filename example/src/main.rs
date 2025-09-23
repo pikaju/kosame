@@ -46,7 +46,7 @@ fn main() {
                 content,
                 post {
                     id,
-                }
+                },
             }
             // where id = 5
             // order by name
