@@ -2,6 +2,7 @@ pub(crate) mod as_ident;
 pub(crate) mod docs;
 pub(crate) mod path_ext;
 pub(crate) mod query;
+pub(crate) mod record_struct;
 pub(crate) mod schema;
 pub(crate) mod slotted_sql;
 
