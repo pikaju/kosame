@@ -30,9 +30,22 @@ impl SlottedSqlBuilder {
         }
     }
 
+    pub fn build_static(mut self) -> TokenStream {
+        assert!(
+            self.segments.is_empty(),
+            "build_static was called after adding dynamic SQL segments"
+        );
+        self.flush();
+        let segments = self.segments;
+        quote! {
+            #(#segments)+*
+        }
+    }
+
     pub fn build(mut self) -> TokenStream {
         self.flush();
         let segments = self.segments;
+
         quote! {
             String::new() + #(#segments)+*
         }

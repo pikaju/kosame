@@ -4,7 +4,7 @@ mod relation_path;
 
 use field::QueryField;
 use node::QueryNode;
-use proc_macro2::Span;
+use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
 use relation_path::RelationPath;
 use syn::{
@@ -54,7 +54,7 @@ impl ToTokens for Query {
             let mut slotted_sql_builder = SlottedSqlBuilder::new();
             self.body
                 .to_sql_select(&mut slotted_sql_builder, &self.table, RelationPath::new());
-            slotted_sql_builder.build()
+            slotted_sql_builder.build_static()
         };
 
         quote! {
@@ -65,8 +65,10 @@ impl ToTokens for Query {
                     }
 
                     impl Query {
-                        pub fn sql_string(&self) -> String {
-                            #sql_tokens
+                        const SQL: &str = #sql_tokens;
+
+                        pub fn as_sql_str(&self) -> &'static str {
+                            Self::SQL
                         }
                     }
                 }

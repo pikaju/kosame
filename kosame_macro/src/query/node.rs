@@ -146,9 +146,11 @@ impl QueryNode {
         for (index, field) in self.fields.iter().enumerate() {
             match field {
                 QueryField::Column { name } => {
-                    builder.append_slot(quote! {
-                        #table_path_call_site::columns::#name::NAME
-                    });
+                    builder.append_str(&name.to_string());
+                    // For renamed columns:
+                    // builder.append_slot(quote! {
+                    //     #table_path_call_site::columns::#name::NAME
+                    // });
                 }
                 QueryField::Relation { name, node } => {
                     let mut relation_path = relation_path.clone();
@@ -169,7 +171,17 @@ impl QueryNode {
         }
 
         builder.append_str(" from ");
-        builder.append_slot(quote! { #table_path_call_site::NAME });
+
+        builder.append_str(
+            &table_path_call_site
+                .segments
+                .last()
+                .unwrap()
+                .ident
+                .to_string(),
+        );
+        // For renamed tables:
+        // builder.append_slot(quote! { #table_path_call_site::NAME });
     }
 }
 

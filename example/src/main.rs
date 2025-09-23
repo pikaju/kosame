@@ -28,9 +28,10 @@ fn main() {
     .unwrap();
 
     println!("==== Query ====");
-    println!("{:?}", &my_query::Query {}.sql_string());
+    let query = my_query::Query {};
+    println!("{:?}", query.as_sql_str());
     println!("========");
-    let result = client.query(&my_query::Query {}.sql_string(), &[]).unwrap();
+    let result = client.query(query.as_sql_str(), &[]).unwrap();
     for row in result {
         println!("{:?}", my_query::Row::from(row));
     }
