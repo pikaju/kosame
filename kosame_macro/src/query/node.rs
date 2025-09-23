@@ -27,10 +27,12 @@ impl QueryNode {
                 table_path,
             ),
         );
-        tokens.extend(self.to_struct_definition(&struct_name, table_path, &relation_path));
+        tokens.extend(self.to_struct_definition(&struct_name, table_path, relation_path));
 
         if relation_path.is_empty() {
             tokens.extend(self.to_from_row_impl(&struct_name));
+        } else {
+            tokens.extend(self.to_from_sql_impl(&struct_name));
         }
 
         // Recursively call to_tokens on child nodes.
@@ -129,6 +131,43 @@ impl QueryNode {
         }
     }
 
+    fn to_from_sql_impl(&self, struct_name: impl ToTokens) -> TokenStream {
+        let field_count = self.fields.len() as i32;
+        let fields = self.fields.iter().enumerate().map(|(index, field)| {
+            let name = field.name();
+            quote! {
+                #name: {
+                    let (field, length) = ::kosame::pg::internal::record_field_from_sql(&reader)?;
+                    reader = &reader[length..];
+                    field
+                }
+            }
+        });
+
+        quote! {
+            impl<'a> ::kosame::pg::internal::FromSql<'a> for #struct_name {
+                fn accepts(ty: &::kosame::pg::internal::Type) -> bool {
+                    ty.name() == "_record"
+                }
+
+                fn from_sql(
+                    ty: &::kosame::pg::internal::Type,
+                    raw: &[u8],
+                ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
+                    println!("{:?}", raw);
+                    let mut reader = raw;
+                    let column_count = ::kosame::pg::internal::int4_from_sql(&reader[..4])?;
+                    reader = &reader[4..];
+                    assert_eq!(column_count, #field_count);
+
+                    Ok(Self {
+                        #(#fields),*
+                    })
+                }
+            }
+        }
+    }
+
     pub fn to_sql_select(
         &self,
         builder: &mut SlottedSqlBuilder,
@@ -155,8 +194,18 @@ impl QueryNode {
                 QueryField::Relation { name, node } => {
                     let mut relation_path = relation_path.clone();
                     relation_path.append(name.clone());
+
+                    let mut table_path = table_path.clone();
+                    table_path
+                        .segments
+                        .push(Ident::new("relations", Span::call_site()).into());
+                    table_path.segments.push(PathSegment::from(name.clone()));
+                    table_path
+                        .segments
+                        .push(Ident::new("target_table", Span::call_site()).into());
+
                     builder.append_str("array[(");
-                    node.to_sql_select(builder, table_path, relation_path);
+                    node.to_sql_select(builder, &table_path, relation_path);
                     builder.append_str(")]");
                 }
             }
@@ -172,16 +221,17 @@ impl QueryNode {
 
         builder.append_str(" from ");
 
-        builder.append_str(
-            &table_path_call_site
-                .segments
-                .last()
-                .unwrap()
-                .ident
-                .to_string(),
-        );
+        // builder.append_str(
+        //     &table_path_call_site
+        //         .segments
+        //         .last()
+        //         .unwrap()
+        //         .ident
+        //         .to_string(),
+        // );
+        //
         // For renamed tables:
-        // builder.append_slot(quote! { #table_path_call_site::NAME });
+        builder.append_slot(quote! { #table_path_call_site::NAME });
     }
 }
 

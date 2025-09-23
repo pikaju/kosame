@@ -6,3 +6,5 @@ edition = "2024"
 [dependencies]
 kosame.workspace = true
 postgres = "0.19.10"
+postgres-protocol = "0.6.8"
+postgres-types = "0.2.9"

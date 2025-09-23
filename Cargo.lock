@@ -159,6 +159,8 @@ version = "0.1.0"
 dependencies = [
  "kosame",
  "postgres",
+ "postgres-protocol",
+ "postgres-types",
 ]
 
 [[package]]
@@ -284,7 +286,10 @@ name = "kosame"
 version = "0.1.0"
 dependencies = [
  "const_format",
+ "fallible-iterator",
  "kosame_macro",
+ "postgres-protocol",
+ "postgres-types",
 ]
 
 [[package]]

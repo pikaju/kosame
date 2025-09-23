@@ -54,7 +54,7 @@ impl ToTokens for Query {
             let mut slotted_sql_builder = SlottedSqlBuilder::new();
             self.body
                 .to_sql_select(&mut slotted_sql_builder, &self.table, RelationPath::new());
-            slotted_sql_builder.build_static()
+            slotted_sql_builder.build()
         };
 
         quote! {
@@ -65,10 +65,8 @@ impl ToTokens for Query {
                     }
 
                     impl Query {
-                        const SQL: &str = #sql_tokens;
-
-                        pub fn as_sql_str(&self) -> &'static str {
-                            Self::SQL
+                        pub fn to_sql_string(&self) -> String {
+                            #sql_tokens
                         }
                     }
                 }
