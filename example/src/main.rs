@@ -21,33 +21,37 @@ pub mod schema {
 }
 
 fn main() {
-    // let mut client = postgres::Client::connect(
-    //     "postgres://postgres:postgres@localhost:5432/postgres",
-    //     postgres::NoTls,
-    // )
-    // .unwrap();
-    //
-    // println!("==== Query ====");
-    // println!("{:?}", &my_query::Query {}.sql_string());
-    // println!("========");
-    // let result = client.query(&my_query::Query {}.sql_string(), &[]).unwrap();
-    // for row in result {
-    //     println!("{:?}", my_query::Row::from(row));
-    // }
-    // println!("==== End ====");
+    let mut client = postgres::Client::connect(
+        "postgres://postgres:postgres@localhost:5432/postgres",
+        postgres::NoTls,
+    )
+    .unwrap();
 
-    // kosame::query! {
-    //     schema::posts {
-    //         id,
-    //         title,
-    //         content,
-    //         // comments {
-    //         //     id,
-    //         // }
-    //         // where id = 5
-    //         // order by name
-    //     } as my_query
-    // };
+    println!("==== Query ====");
+    println!("{:?}", &my_query::Query {}.sql_string());
+    println!("========");
+    let result = client.query(&my_query::Query {}.sql_string(), &[]).unwrap();
+    for row in result {
+        println!("{:?}", my_query::Row::from(row));
+    }
+    println!("==== End ====");
+
+    kosame::query! {
+        schema::posts {
+            id,
+            title,
+            content,
+            comments {
+                id,
+                content,
+                post {
+                    id,
+                }
+            }
+            // where id = 5
+            // order by name
+        } as my_query
+    };
 
     // println!("{}", query);
     // println!("{:?}", result);

@@ -9,11 +9,11 @@ use proc_macro2::Span;
 use quote::{ToTokens, quote};
 use relation_path::RelationPath;
 use syn::{
-    Ident, Token,
+    Ident, PathSegment, Token,
     parse::{Parse, ParseStream},
 };
 
-use crate::{keywords::AsIdent, slotted_sql::SlottedSqlBuilder};
+use crate::{keywords::AsIdent, path_ext::PathExt, slotted_sql::SlottedSqlBuilder};
 
 pub struct Query {
     table: syn::Path,
@@ -59,6 +59,18 @@ impl ToTokens for Query {
                 Token![::](Span::call_site()).to_tokens(&mut relation_path_tokens);
                 Ident::new("target_table", Span::call_site()).to_tokens(&mut relation_path_tokens);
             }
+
+            let current_table_path = {
+                let mut path = table.clone();
+                for field in relation_path.segments() {
+                    path.segments
+                        .push(Ident::new("relations", Span::call_site()).into());
+                    path.segments.push(field.clone().into());
+                    path.segments
+                        .push(Ident::new("target_table", Span::call_site()).into());
+                }
+                path
+            };
 
             let struct_name = relation_path.to_struct_name("Row");
             let mut struct_fields = vec![];
@@ -117,21 +129,19 @@ impl ToTokens for Query {
                 }
             }
 
-            let root_impl = relation_path
+            let autocomplete_module_tokens =
+                node.to_autocomplete_module(&internal_module_name, &current_table_path);
+            let struct_tokens =
+                node.to_struct_definition(&struct_name, &current_table_path, &relation_path);
+
+            let from_row_impl = relation_path
                 .is_empty()
                 .then(|| node.to_from_row_impl(&struct_name));
 
             quote! {
-                mod #internal_module_name {
-                    #(#internal_module_rows)*
-                }
-
-                #[derive(Default, Debug)]
-                pub struct #struct_name {
-                    #(pub #struct_fields,)*
-                }
-
-                #root_impl
+                #autocomplete_module_tokens
+                #struct_tokens
+                #from_row_impl
             }
             .to_tokens(tokens);
 
