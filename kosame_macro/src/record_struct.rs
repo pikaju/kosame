@@ -3,13 +3,18 @@ use quote::{ToTokens, quote};
 use syn::{Attribute, Ident};
 
 pub struct RecordStruct {
+    attrs: Vec<Attribute>,
     name: Ident,
     fields: Vec<RecordStructField>,
 }
 
 impl RecordStruct {
-    pub fn new(name: Ident, fields: Vec<RecordStructField>) -> Self {
-        Self { name, fields }
+    pub fn new(attrs: Vec<Attribute>, name: Ident, fields: Vec<RecordStructField>) -> Self {
+        Self {
+            attrs,
+            name,
+            fields,
+        }
     }
 
     fn to_from_row_impl(&self, tokens: &mut TokenStream) {
@@ -77,6 +82,8 @@ impl ToTokens for RecordStruct {
         let name = &self.name;
         let fields = &self.fields;
 
+        let attrs = &self.attrs;
+
         let derives = [
             quote! { Debug },
             #[cfg(feature = "serde-serialize")]
@@ -87,6 +94,7 @@ impl ToTokens for RecordStruct {
 
         quote! {
             #[derive(#(#derives),*)]
+            #(#attrs)*
             pub struct #name {
                 #(#fields,)*
             }
@@ -99,27 +107,15 @@ impl ToTokens for RecordStruct {
 }
 
 pub struct RecordStructField {
-    attributes: Vec<Attribute>,
+    attrs: Vec<Attribute>,
     name: Ident,
     r#type: TokenStream,
 }
 
 impl RecordStructField {
-    pub fn new(name: Ident, r#type: TokenStream) -> Self {
+    pub fn new(attrs: Vec<Attribute>, name: Ident, r#type: TokenStream) -> Self {
         Self {
-            attributes: vec![],
-            name,
-            r#type,
-        }
-    }
-
-    pub fn new_with_attributes(
-        attributes: Vec<Attribute>,
-        name: Ident,
-        r#type: TokenStream,
-    ) -> Self {
-        Self {
-            attributes,
+            attrs,
             name,
             r#type,
         }
@@ -128,7 +124,7 @@ impl RecordStructField {
 
 impl ToTokens for RecordStructField {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        for attribute in &self.attributes {
+        for attribute in &self.attrs {
             attribute.to_tokens(tokens);
         }
         syn::token::Pub::default().to_tokens(tokens);

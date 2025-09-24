@@ -7,13 +7,14 @@ use node::QueryNode;
 use node_path::QueryNodePath;
 use quote::{ToTokens, quote};
 use syn::{
-    Ident,
+    Attribute, Ident,
     parse::{Parse, ParseStream},
 };
 
 use crate::{as_ident::AsIdent, path_ext::PathExt, slotted_sql::SlottedSqlBuilder};
 
 pub struct Query {
+    attrs: Vec<Attribute>,
     table: syn::Path,
     body: QueryNode,
     as_name: Option<AsIdent>,
@@ -22,6 +23,7 @@ pub struct Query {
 impl Parse for Query {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
+            attrs: input.call(Attribute::parse_outer)?,
             table: input.parse()?,
             body: input.parse()?,
             as_name: if input.is_empty() {
@@ -45,7 +47,7 @@ impl ToTokens for Query {
         let node_tokens = {
             let mut tokens = proc_macro2::TokenStream::new();
             self.body
-                .to_tokens(&mut tokens, &self.table, &QueryNodePath::new());
+                .to_tokens(&mut tokens, self, &self.table, &QueryNodePath::new());
             tokens
         };
 

@@ -54,20 +54,23 @@ impl ToTokens for Table {
         let relation_names = self.relations.iter().map(Relation::name);
 
         let select_struct = RecordStruct::new(
+            vec![],
             Ident::new("Select", Span::call_site()),
             self.columns
                 .iter()
                 .map(|column| {
-                    RecordStructField::new(column.name().clone(), column.data_type_auto())
+                    RecordStructField::new(vec![], column.name().clone(), column.data_type_auto())
                 })
                 .collect(),
         );
         let insert_struct = RecordStruct::new(
+            vec![],
             Ident::new("Insert", Span::call_site()),
             self.columns
                 .iter()
                 .map(|column| {
                     RecordStructField::new(
+                        vec![],
                         column.name().clone(),
                         column.data_type_not_null().to_token_stream(),
                     )
@@ -75,11 +78,16 @@ impl ToTokens for Table {
                 .collect(),
         );
         let update_struct = RecordStruct::new(
+            vec![],
             Ident::new("Update", Span::call_site()),
             self.columns
                 .iter()
                 .map(|column| {
-                    RecordStructField::new(column.name().clone(), column.data_type_nullable())
+                    RecordStructField::new(
+                        vec![],
+                        column.name().clone(),
+                        column.data_type_nullable(),
+                    )
                 })
                 .collect(),
         );

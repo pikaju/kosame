@@ -20,6 +20,7 @@ impl QueryNode {
     pub fn to_tokens(
         &self,
         tokens: &mut TokenStream,
+        query: &Query,
         table_path: &Path,
         node_path: &QueryNodePath,
     ) {
@@ -31,7 +32,7 @@ impl QueryNode {
             let table_path = table_path.to_call_site(1);
 
             let star_field = self.star.iter().map(|_| {
-                RecordStructField::new_with_attributes(
+                RecordStructField::new(
                     vec![
                         #[cfg(any(feature = "serde-serialize", feature = "serde-deserialize"))]
                         parse_quote! { #[serde(flatten)] },
@@ -42,10 +43,12 @@ impl QueryNode {
             });
 
             RecordStruct::new(
+                query.attrs.clone(),
                 node_path.to_struct_name("Row"),
                 star_field
                     .chain(self.fields.iter().map(|field| match field {
                         QueryField::Column { name } => RecordStructField::new(
+                            vec![],
                             name.clone(),
                             quote! { #table_path::columns::#name::Type },
                         ),
@@ -54,6 +57,7 @@ impl QueryNode {
                             node_path.append(name.clone());
                             let inner_type = node_path.to_struct_name("Row");
                             RecordStructField::new(
+                                vec![],
                                 name.clone(),
                                 quote! { #table_path::relations::#name::Relation<#inner_type> },
                             )
@@ -86,7 +90,7 @@ impl QueryNode {
                     .segments
                     .push(Ident::new("target_table", Span::call_site()).into());
 
-                node.to_tokens(tokens, &table_path, &node_path);
+                node.to_tokens(tokens, query, &table_path, &node_path);
             }
         }
     }

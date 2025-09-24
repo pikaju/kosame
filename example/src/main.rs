@@ -40,11 +40,18 @@ fn main() {
         println!("========");
     }
 
+    // #[derive(serde::Serialize)]
+    // #[serde(rename_all)]
+    // struct Kek {
+    //     x_pip: i32,
+    // }
+    //
     kosame::query! {
+        #[serde(rename_all = "camelCase")]
         schema::posts {
             *,
             comments {
-                content,
+                post_id,
                 post {
                     *,
                 },
