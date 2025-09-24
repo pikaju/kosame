@@ -1,7 +1,7 @@
 use super::QueryNode;
 use crate::{
-    alias::Alias, as_type::AsType, path_ext::PathExt, query::node_path::QueryNodePath,
-    row_struct::RowStructField,
+    alias::Alias, path_ext::PathExt, query::node_path::QueryNodePath, row_struct::RowStructField,
+    type_override::TypeOverride,
 };
 use proc_macro2::Span;
 use quote::{ToTokens, quote};
@@ -16,7 +16,7 @@ pub enum QueryField {
         attrs: Vec<Attribute>,
         name: Ident,
         alias: Option<Alias>,
-        type_override: Option<AsType>,
+        type_override: Option<TypeOverride>,
     },
     Relation {
         attrs: Vec<Attribute>,
@@ -125,7 +125,7 @@ impl Parse for QueryField {
                 attrs,
                 name,
                 alias: input.call(Alias::parse_optional)?,
-                type_override: input.call(AsType::parse_optional)?,
+                type_override: input.call(TypeOverride::parse_optional)?,
             })
         }
     }
