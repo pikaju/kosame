@@ -4,7 +4,7 @@ use syn::{
 };
 
 pub struct AsType {
-    r#type: Token![type],
+    _type: Token![type],
     type_path: Path,
 }
 
@@ -14,7 +14,7 @@ impl AsType {
     }
 
     pub fn parse_optional(input: ParseStream) -> syn::Result<Option<Self>> {
-        Ok(if input.peek(Token![:]) {
+        Ok(if input.peek(Token![type]) {
             Some(input.parse()?)
         } else {
             None
@@ -25,7 +25,7 @@ impl AsType {
 impl Parse for AsType {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            r#type: input.parse()?,
+            _type: input.parse()?,
             type_path: input.parse()?,
         })
     }

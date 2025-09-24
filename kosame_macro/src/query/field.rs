@@ -3,10 +3,11 @@ use crate::{
     as_ident::AsIdent, as_type::AsType, query::node_path::QueryNodePath, row_struct::RowStructField,
 };
 use proc_macro2::Span;
-use quote::quote;
+use quote::{ToTokens, quote};
 use syn::{
     Attribute, Ident, Path,
     parse::{Parse, ParseStream},
+    parse_quote,
 };
 
 pub enum QueryField {
@@ -21,7 +22,6 @@ pub enum QueryField {
         name: Ident,
         node: QueryNode,
         alias: Option<AsIdent>,
-        type_override: Option<AsType>,
     },
 }
 
@@ -62,7 +62,11 @@ impl QueryField {
     ) -> RowStructField {
         match self {
             QueryField::Column {
-                attrs, name, alias, ..
+                attrs,
+                name,
+                alias,
+                type_override,
+                ..
             } => {
                 let alias_or_name = alias
                     .as_ref()
@@ -70,10 +74,15 @@ impl QueryField {
                     .unwrap_or(name)
                     .clone();
 
+                let type_override_or_default = type_override
+                    .as_ref()
+                    .map(|type_override| type_override.type_path().clone())
+                    .unwrap_or_else(|| parse_quote! { #table_path::columns::#name::Type });
+
                 RowStructField::new(
                     attrs.clone(),
                     alias_or_name,
-                    quote! { #table_path::columns::#name::Type },
+                    type_override_or_default.to_token_stream(),
                 )
             }
             QueryField::Relation {
@@ -109,7 +118,6 @@ impl Parse for QueryField {
                 name,
                 node: input.parse()?,
                 alias: input.call(AsIdent::parse_optional)?,
-                type_override: input.call(AsType::parse_optional)?,
             })
         } else {
             Ok(Self::Column {
