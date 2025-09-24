@@ -27,11 +27,7 @@ impl Parse for Query {
             attrs: input.call(Attribute::parse_outer)?,
             table: input.parse()?,
             body: input.parse()?,
-            as_name: if input.is_empty() {
-                None
-            } else {
-                Some(input.parse()?)
-            },
+            as_name: input.call(AsIdent::parse_optional)?,
         })
     }
 }

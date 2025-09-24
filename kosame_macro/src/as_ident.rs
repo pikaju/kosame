@@ -12,6 +12,14 @@ impl AsIdent {
     pub fn ident(&self) -> &Ident {
         &self.ident
     }
+
+    pub fn parse_optional(input: ParseStream) -> syn::Result<Option<Self>> {
+        Ok(if input.peek(Token![as]) {
+            Some(input.parse()?)
+        } else {
+            None
+        })
+    }
 }
 
 impl Parse for AsIdent {
