@@ -1,4 +1,4 @@
-pub(crate) mod as_ident;
+pub(crate) mod alias;
 pub(crate) mod as_type;
 pub(crate) mod docs;
 pub(crate) mod path_ext;

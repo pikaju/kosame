@@ -3,12 +3,12 @@ use syn::{
     parse::{Parse, ParseStream},
 };
 
-pub struct AsIdent {
+pub struct Alias {
     _as: Token![as],
     ident: Ident,
 }
 
-impl AsIdent {
+impl Alias {
     pub fn ident(&self) -> &Ident {
         &self.ident
     }
@@ -22,7 +22,7 @@ impl AsIdent {
     }
 }
 
-impl Parse for AsIdent {
+impl Parse for Alias {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             _as: input.parse()?,

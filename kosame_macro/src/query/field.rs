@@ -1,6 +1,6 @@
 use super::QueryNode;
 use crate::{
-    as_ident::AsIdent, as_type::AsType, path_ext::PathExt, query::node_path::QueryNodePath,
+    alias::Alias, as_type::AsType, path_ext::PathExt, query::node_path::QueryNodePath,
     row_struct::RowStructField,
 };
 use proc_macro2::Span;
@@ -15,14 +15,14 @@ pub enum QueryField {
     Column {
         attrs: Vec<Attribute>,
         name: Ident,
-        alias: Option<AsIdent>,
+        alias: Option<Alias>,
         type_override: Option<AsType>,
     },
     Relation {
         attrs: Vec<Attribute>,
         name: Ident,
         node: QueryNode,
-        alias: Option<AsIdent>,
+        alias: Option<Alias>,
     },
 }
 
@@ -34,7 +34,7 @@ impl QueryField {
         }
     }
 
-    pub fn alias(&self) -> Option<&AsIdent> {
+    pub fn alias(&self) -> Option<&Alias> {
         match self {
             Self::Column { alias, .. } => alias.as_ref(),
             Self::Relation { alias, .. } => alias.as_ref(),
@@ -118,13 +118,13 @@ impl Parse for QueryField {
                 attrs,
                 name,
                 node: input.parse()?,
-                alias: input.call(AsIdent::parse_optional)?,
+                alias: input.call(Alias::parse_optional)?,
             })
         } else {
             Ok(Self::Column {
                 attrs,
                 name,
-                alias: input.call(AsIdent::parse_optional)?,
+                alias: input.call(Alias::parse_optional)?,
                 type_override: input.call(AsType::parse_optional)?,
             })
         }
