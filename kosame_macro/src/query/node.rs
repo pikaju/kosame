@@ -40,23 +40,11 @@ impl QueryNode {
                 query.attrs.clone(),
                 node_path.to_struct_name("Row"),
                 star_field
-                    .chain(self.fields.iter().map(|field| match field {
-                        QueryField::Column { attrs, name, .. } => RecordStructField::new(
-                            attrs.clone(),
-                            name.clone(),
-                            quote! { #table_path::columns::#name::Type },
-                        ),
-                        QueryField::Relation { attrs, name, .. } => {
-                            let mut node_path = node_path.clone();
-                            node_path.append(name.clone());
-                            let inner_type = node_path.to_struct_name("Row");
-                            RecordStructField::new(
-                                attrs.clone(),
-                                name.clone(),
-                                quote! { #table_path::relations::#name::Relation<#inner_type> },
-                            )
-                        }
-                    }))
+                    .chain(
+                        self.fields
+                            .iter()
+                            .map(|field| field.to_record_struct_field(&table_path, node_path)),
+                    )
                     .collect(),
             )
         };

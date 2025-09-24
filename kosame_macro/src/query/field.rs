@@ -1,10 +1,11 @@
+use super::QueryNode;
+use crate::{query::node_path::QueryNodePath, record_struct::RecordStructField};
 use proc_macro2::Span;
+use quote::quote;
 use syn::{
-    Attribute, Ident,
+    Attribute, Ident, Path,
     parse::{Parse, ParseStream},
 };
-
-use super::QueryNode;
 
 pub enum QueryField {
     Column {
@@ -39,6 +40,30 @@ impl QueryField {
     #[must_use]
     pub fn is_column(&self) -> bool {
         matches!(self, Self::Column { .. })
+    }
+
+    pub fn to_record_struct_field(
+        &self,
+        table_path: &Path,
+        node_path: &QueryNodePath,
+    ) -> RecordStructField {
+        match self {
+            QueryField::Column { attrs, name, .. } => RecordStructField::new(
+                attrs.clone(),
+                name.clone(),
+                quote! { #table_path::columns::#name::Type },
+            ),
+            QueryField::Relation { attrs, name, .. } => {
+                let mut node_path = node_path.clone();
+                node_path.append(name.clone());
+                let inner_type = node_path.to_struct_name("Row");
+                RecordStructField::new(
+                    attrs.clone(),
+                    name.clone(),
+                    quote! { #table_path::relations::#name::Relation<#inner_type> },
+                )
+            }
+        }
     }
 }
 
