@@ -12,10 +12,10 @@ pub enum QueryField {
 }
 
 impl QueryField {
-    pub fn name(&self) -> Option<&Ident> {
+    pub fn name(&self) -> &Ident {
         match self {
-            Self::Column { name } => Some(name),
-            Self::Relation { name, .. } => Some(name),
+            Self::Column { name } => name,
+            Self::Relation { name, .. } => name,
         }
     }
 
@@ -24,6 +24,14 @@ impl QueryField {
             Self::Column { name } => name.span(),
             Self::Relation { name, .. } => name.span(),
         }
+    }
+
+    /// Returns `true` if the query field is [`Column`].
+    ///
+    /// [`Column`]: QueryField::Column
+    #[must_use]
+    pub fn is_column(&self) -> bool {
+        matches!(self, Self::Column { .. })
     }
 }
 

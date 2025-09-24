@@ -41,15 +41,10 @@ fn main() {
     kosame::query! {
         schema::posts {
             *,
-            id,
-            content,
             comments {
-                *,
-                id,
                 content,
                 post {
-                    id,
-                    title,
+                    *,
                 },
             }
             // where id = 5

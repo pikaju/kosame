@@ -212,21 +212,21 @@ impl Parse for QueryNode {
 
         let fields = content.parse_terminated(QueryField::parse, Token![,])?;
 
-        let mut star_used = false;
         let mut existing = vec![];
         for field in &fields {
-            let Some(name) = field.name() else {
-                if star_used {
-                    return Err(syn::Error::new(field.span(), "duplicate use of `*`"));
-                }
-                star_used = true;
-                continue;
-            };
+            let name = field.name();
+
+            if field.is_column() && star.is_some() {
+                return Err(syn::Error::new(
+                    field.span(),
+                    "only relation fields are allowed after `*`",
+                ));
+            }
 
             let name_string = name.to_string();
             if existing.contains(&name_string) {
                 return Err(syn::Error::new(
-                    name.span(),
+                    field.span(),
                     format!("duplicate field `{}`", name),
                 ));
             }
