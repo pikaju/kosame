@@ -1,18 +1,18 @@
 use crate::record_struct::{RecordStruct, RecordStructField};
 
+use super::star::Star;
 use super::*;
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
 use syn::{
     Path, PathSegment, Token, braced,
     parse::{Parse, ParseStream},
-    parse_quote,
     punctuated::Punctuated,
 };
 
 pub struct QueryNode {
     _brace: syn::token::Brace,
-    star: Option<Token![*]>,
+    star: Option<Star>,
     fields: Punctuated<QueryField, Token![,]>,
 }
 
@@ -31,16 +31,10 @@ impl QueryNode {
         let record_struct = {
             let table_path = table_path.to_call_site(1);
 
-            let star_field = self.star.iter().map(|_| {
-                RecordStructField::new(
-                    vec![
-                        #[cfg(any(feature = "serde-serialize", feature = "serde-deserialize"))]
-                        parse_quote! { #[serde(flatten)] },
-                    ],
-                    Ident::new("_star", Span::call_site()),
-                    quote! { #table_path::Select },
-                )
-            });
+            let star_field = self
+                .star
+                .iter()
+                .map(|star| star.to_record_struct_field(&table_path));
 
             RecordStruct::new(
                 query.attrs.clone(),
@@ -206,13 +200,15 @@ impl Parse for QueryNode {
         let content;
         let _brace = braced!(content in input);
 
-        let mut star = None;
-        if content.peek(Token![*]) {
-            star = Some(content.parse()?);
+        let star = if content.fork().parse::<Star>().is_ok() {
+            let star = Some(content.parse()?);
             if !content.is_empty() {
                 let _: Token![,] = content.parse()?;
             }
-        }
+            star
+        } else {
+            None
+        };
 
         let fields = content.parse_terminated(QueryField::parse, Token![,])?;
 

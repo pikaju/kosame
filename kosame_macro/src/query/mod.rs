@@ -1,6 +1,7 @@
 mod field;
 mod node;
 mod node_path;
+mod star;
 
 use field::QueryField;
 use node::QueryNode;

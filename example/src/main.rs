@@ -42,6 +42,7 @@ fn main() {
 
     kosame::query! {
         schema::posts {
+            /// all the post fields
             *,
             comments {
                 #[serde(rename = "postId")]
