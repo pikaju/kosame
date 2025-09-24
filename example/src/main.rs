@@ -45,11 +45,10 @@ fn main() {
             /// all the post fields
             * as all_of_them,
             comments {
-                #[serde(rename = "postId")]
-                post_id,
+                post_id as postid,
                 post {
                     *,
-                },
+                } as cool_post,
             }
             // where id = 5
             // order by name

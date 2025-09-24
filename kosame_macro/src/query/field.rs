@@ -1,5 +1,5 @@
 use super::QueryNode;
-use crate::{query::node_path::QueryNodePath, row_struct::RowStructField};
+use crate::{as_ident::AsIdent, query::node_path::QueryNodePath, row_struct::RowStructField};
 use proc_macro2::Span;
 use quote::quote;
 use syn::{
@@ -11,11 +11,13 @@ pub enum QueryField {
     Column {
         attrs: Vec<Attribute>,
         name: Ident,
+        alias: Option<AsIdent>,
     },
     Relation {
         attrs: Vec<Attribute>,
         name: Ident,
         node: QueryNode,
+        alias: Option<AsIdent>,
     },
 }
 
@@ -48,18 +50,30 @@ impl QueryField {
         node_path: &QueryNodePath,
     ) -> RowStructField {
         match self {
-            QueryField::Column { attrs, name, .. } => RowStructField::new(
+            QueryField::Column {
+                attrs, name, alias, ..
+            } => RowStructField::new(
                 attrs.clone(),
-                name.clone(),
+                alias
+                    .as_ref()
+                    .map(|alias| alias.ident())
+                    .unwrap_or(name)
+                    .clone(),
                 quote! { #table_path::columns::#name::Type },
             ),
-            QueryField::Relation { attrs, name, .. } => {
+            QueryField::Relation {
+                attrs, name, alias, ..
+            } => {
                 let mut node_path = node_path.clone();
                 node_path.append(name.clone());
                 let inner_type = node_path.to_struct_name("Row");
                 RowStructField::new(
                     attrs.clone(),
-                    name.clone(),
+                    alias
+                        .as_ref()
+                        .map(|alias| alias.ident())
+                        .unwrap_or(name)
+                        .clone(),
                     quote! { #table_path::relations::#name::Relation<#inner_type> },
                 )
             }
@@ -76,9 +90,14 @@ impl Parse for QueryField {
                 attrs,
                 name,
                 node: input.parse()?,
+                alias: input.call(AsIdent::parse_optional)?,
             })
         } else {
-            Ok(Self::Column { attrs, name })
+            Ok(Self::Column {
+                attrs,
+                name,
+                alias: input.call(AsIdent::parse_optional)?,
+            })
         }
     }
 }
