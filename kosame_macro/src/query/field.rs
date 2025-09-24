@@ -29,6 +29,13 @@ impl QueryField {
         }
     }
 
+    pub fn alias(&self) -> Option<&AsIdent> {
+        match self {
+            Self::Column { alias, .. } => alias.as_ref(),
+            Self::Relation { alias, .. } => alias.as_ref(),
+        }
+    }
+
     pub fn span(&self) -> Span {
         match self {
             Self::Column { name, .. } => name.span(),

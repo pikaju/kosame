@@ -205,11 +205,15 @@ impl Parse for QueryNode {
                 ));
             }
 
-            let name_string = name.to_string();
+            let name_string = field
+                .alias()
+                .map(|alias| alias.ident())
+                .unwrap_or(name)
+                .to_string();
             if existing.contains(&name_string) {
                 return Err(syn::Error::new(
                     field.span(),
-                    format!("duplicate field `{}`", name),
+                    format!("duplicate field `{}`", name_string),
                 ));
             }
             existing.push(name_string);
