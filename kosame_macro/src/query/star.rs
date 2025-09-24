@@ -6,7 +6,7 @@ use syn::{
     parse_quote,
 };
 
-use crate::{as_ident::AsIdent, record_struct::RecordStructField};
+use crate::{as_ident::AsIdent, row_struct::RowStructField};
 
 pub struct Star {
     attrs: Vec<Attribute>,
@@ -15,13 +15,13 @@ pub struct Star {
 }
 
 impl Star {
-    pub fn to_record_struct_field(&self, table_path: impl ToTokens) -> RecordStructField {
+    pub fn to_row_struct_field(&self, table_path: impl ToTokens) -> RowStructField {
         let additional_attrs = [
             #[cfg(any(feature = "serde-serialize", feature = "serde-deserialize"))]
             parse_quote! { #[serde(flatten)] },
         ];
 
-        RecordStructField::new(
+        RowStructField::new(
             self.attrs
                 .iter()
                 .chain(additional_attrs.iter())

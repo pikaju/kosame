@@ -1,5 +1,5 @@
 use super::QueryNode;
-use crate::{query::node_path::QueryNodePath, record_struct::RecordStructField};
+use crate::{query::node_path::QueryNodePath, row_struct::RowStructField};
 use proc_macro2::Span;
 use quote::quote;
 use syn::{
@@ -42,13 +42,13 @@ impl QueryField {
         matches!(self, Self::Column { .. })
     }
 
-    pub fn to_record_struct_field(
+    pub fn to_row_struct_field(
         &self,
         table_path: &Path,
         node_path: &QueryNodePath,
-    ) -> RecordStructField {
+    ) -> RowStructField {
         match self {
-            QueryField::Column { attrs, name, .. } => RecordStructField::new(
+            QueryField::Column { attrs, name, .. } => RowStructField::new(
                 attrs.clone(),
                 name.clone(),
                 quote! { #table_path::columns::#name::Type },
@@ -57,7 +57,7 @@ impl QueryField {
                 let mut node_path = node_path.clone();
                 node_path.append(name.clone());
                 let inner_type = node_path.to_struct_name("Row");
-                RecordStructField::new(
+                RowStructField::new(
                     attrs.clone(),
                     name.clone(),
                     quote! { #table_path::relations::#name::Relation<#inner_type> },

@@ -3,7 +3,7 @@ use std::fmt::Display;
 use super::{column::Column, relation::Relation};
 use crate::{
     docs::{Docs, ToDocsTokens},
-    record_struct::{RecordStruct, RecordStructField},
+    row_struct::{RowStruct, RowStructField},
 };
 use proc_macro2::Span;
 use quote::{ToTokens, quote};
@@ -53,23 +53,23 @@ impl ToTokens for Table {
         let column_names = self.columns.iter().map(Column::name);
         let relation_names = self.relations.iter().map(Relation::name);
 
-        let select_struct = RecordStruct::new(
+        let select_struct = RowStruct::new(
             vec![],
             Ident::new("Select", Span::call_site()),
             self.columns
                 .iter()
                 .map(|column| {
-                    RecordStructField::new(vec![], column.name().clone(), column.data_type_auto())
+                    RowStructField::new(vec![], column.name().clone(), column.data_type_auto())
                 })
                 .collect(),
         );
-        let insert_struct = RecordStruct::new(
+        let insert_struct = RowStruct::new(
             vec![],
             Ident::new("Insert", Span::call_site()),
             self.columns
                 .iter()
                 .map(|column| {
-                    RecordStructField::new(
+                    RowStructField::new(
                         vec![],
                         column.name().clone(),
                         column.data_type_not_null().to_token_stream(),
@@ -77,17 +77,13 @@ impl ToTokens for Table {
                 })
                 .collect(),
         );
-        let update_struct = RecordStruct::new(
+        let update_struct = RowStruct::new(
             vec![],
             Ident::new("Update", Span::call_site()),
             self.columns
                 .iter()
                 .map(|column| {
-                    RecordStructField::new(
-                        vec![],
-                        column.name().clone(),
-                        column.data_type_nullable(),
-                    )
+                    RowStructField::new(vec![], column.name().clone(), column.data_type_nullable())
                 })
                 .collect(),
         );

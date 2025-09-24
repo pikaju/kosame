@@ -1,4 +1,4 @@
-use crate::record_struct::{RecordStruct, RecordStructField};
+use crate::row_struct::{RowStruct, RowStructField};
 
 use super::star::Star;
 use super::*;
@@ -28,34 +28,28 @@ impl QueryNode {
             self.to_autocomplete_module(node_path.to_module_name("autocomplete_row"), table_path),
         );
 
-        let record_struct = {
+        let row_struct = {
             let table_path = table_path.to_call_site(1);
 
             let star_field = self
                 .star
                 .iter()
-                .map(|star| star.to_record_struct_field(&table_path));
+                .map(|star| star.to_row_struct_field(&table_path));
 
-            RecordStruct::new(
+            RowStruct::new(
                 query.attrs.clone(),
                 node_path.to_struct_name("Row"),
                 star_field
                     .chain(
                         self.fields
                             .iter()
-                            .map(|field| field.to_record_struct_field(&table_path, node_path)),
+                            .map(|field| field.to_row_struct_field(&table_path, node_path)),
                     )
                     .collect(),
             )
         };
 
-        record_struct.to_tokens(tokens);
-
-        // if node_path.is_empty() {
-        //     record_struct.to_from_row_impl(tokens);
-        // } else {
-        //     record_struct.to_from_sql_impl(tokens);
-        // }
+        row_struct.to_tokens(tokens);
 
         // Recursively call to_tokens on child nodes.
         for field in &self.fields {

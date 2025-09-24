@@ -2,14 +2,14 @@ use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::{Attribute, Ident};
 
-pub struct RecordStruct {
+pub struct RowStruct {
     attrs: Vec<Attribute>,
     name: Ident,
-    fields: Vec<RecordStructField>,
+    fields: Vec<RowStructField>,
 }
 
-impl RecordStruct {
-    pub fn new(attrs: Vec<Attribute>, name: Ident, fields: Vec<RecordStructField>) -> Self {
+impl RowStruct {
+    pub fn new(attrs: Vec<Attribute>, name: Ident, fields: Vec<RowStructField>) -> Self {
         Self {
             attrs,
             name,
@@ -77,7 +77,7 @@ impl RecordStruct {
     }
 }
 
-impl ToTokens for RecordStruct {
+impl ToTokens for RowStruct {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let name = &self.name;
         let fields = &self.fields;
@@ -106,13 +106,13 @@ impl ToTokens for RecordStruct {
     }
 }
 
-pub struct RecordStructField {
+pub struct RowStructField {
     attrs: Vec<Attribute>,
     name: Ident,
     r#type: TokenStream,
 }
 
-impl RecordStructField {
+impl RowStructField {
     pub fn new(attrs: Vec<Attribute>, name: Ident, r#type: TokenStream) -> Self {
         Self {
             attrs,
@@ -122,7 +122,7 @@ impl RecordStructField {
     }
 }
 
-impl ToTokens for RecordStructField {
+impl ToTokens for RowStructField {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         for attribute in &self.attrs {
             attribute.to_tokens(tokens);
