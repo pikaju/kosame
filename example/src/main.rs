@@ -44,6 +44,7 @@ fn main() {
             id,
             content,
             comments {
+                *,
                 id,
                 content,
                 post {

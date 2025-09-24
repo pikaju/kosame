@@ -28,11 +28,18 @@ impl QueryNode {
 
         let record_struct = {
             let table_path = table_path.to_call_site(1);
+
+            let star_field = self.star.iter().map(|_| {
+                RecordStructField::new(
+                    Ident::new("_star", Span::call_site()),
+                    quote! { #table_path::Select },
+                )
+            });
+
             RecordStruct::new(
                 node_path.to_struct_name("Row"),
-                self.fields
-                    .iter()
-                    .map(|field| match field {
+                star_field
+                    .chain(self.fields.iter().map(|field| match field {
                         QueryField::Column { name } => RecordStructField::new(
                             name.clone(),
                             quote! { #table_path::columns::#name::Type },
@@ -46,7 +53,7 @@ impl QueryNode {
                                 quote! { #table_path::relations::#name::Relation<#inner_type> },
                             )
                         }
-                    })
+                    }))
                     .collect(),
             )
         };
@@ -113,6 +120,15 @@ impl QueryNode {
 
         if !node_path.is_empty() {
             builder.append_str("array_agg(row(");
+        }
+
+        if self.star.is_some() {
+            builder.append_str("row(");
+            builder.append_slot(quote! { #table_path_call_site::ALL_FIELDS });
+            builder.append_str(")");
+            if !self.fields.is_empty() {
+                builder.append_str(", ");
+            }
         }
 
         for (index, field) in self.fields.iter().enumerate() {

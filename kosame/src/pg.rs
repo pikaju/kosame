@@ -26,7 +26,7 @@ pub mod internal {
 
             let inner = array
                 .values()
-                .map(|v| T::from_sql_nullable(ty, v))
+                .map(|v| T::from_sql_nullable(&postgres_types::Type::RECORD, v))
                 .collect()?;
 
             Ok(Self::new(inner))
@@ -68,7 +68,10 @@ pub mod internal {
                 return Err("many to one relationship must have at most one element".into());
             }
 
-            let inner = array.values().map(|v| T::from_sql_nullable(ty, v)).next()?;
+            let inner = array
+                .values()
+                .map(|v| T::from_sql_nullable(&postgres_types::Type::RECORD, v))
+                .next()?;
 
             Ok(Self::new(inner))
         }

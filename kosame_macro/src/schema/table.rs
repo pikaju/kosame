@@ -84,6 +84,13 @@ impl ToTokens for Table {
                 .collect(),
         );
 
+        let all_fields_string = self
+            .columns
+            .iter()
+            .map(|column| column.name().to_string())
+            .collect::<Vec<_>>()
+            .join(", ");
+
         let docs = self.to_docs_token_stream();
 
         quote! {
@@ -103,6 +110,7 @@ impl ToTokens for Table {
                 }
 
                 pub const NAME: &str = #name_string;
+                pub const ALL_FIELDS: &str = #all_fields_string;
 
                 #select_struct
                 #insert_struct

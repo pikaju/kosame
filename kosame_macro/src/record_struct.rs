@@ -50,7 +50,7 @@ impl RecordStruct {
         quote! {
             impl<'a> ::kosame::pg::internal::FromSql<'a> for #name {
                 fn accepts(ty: &::kosame::pg::internal::Type) -> bool {
-                    ty.name() == "_record"
+                    ty.name() == "record"
                 }
 
                 fn from_sql(
