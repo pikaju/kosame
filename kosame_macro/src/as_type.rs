@@ -1,16 +1,14 @@
-use proc_macro2::TokenStream;
-use quote::ToTokens;
 use syn::{
     Path, Token,
     parse::{Parse, ParseStream},
 };
 
-pub struct ColonType {
-    colon: Token![:],
+pub struct AsType {
+    r#type: Token![type],
     type_path: Path,
 }
 
-impl ColonType {
+impl AsType {
     pub fn type_path(&self) -> &Path {
         &self.type_path
     }
@@ -24,18 +22,11 @@ impl ColonType {
     }
 }
 
-impl Parse for ColonType {
+impl Parse for AsType {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            colon: input.parse()?,
+            r#type: input.parse()?,
             type_path: input.parse()?,
         })
-    }
-}
-
-impl ToTokens for ColonType {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
-        self.colon.to_tokens(tokens);
-        self.type_path.to_tokens(tokens);
     }
 }

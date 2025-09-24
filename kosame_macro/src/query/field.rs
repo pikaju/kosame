@@ -1,5 +1,7 @@
 use super::QueryNode;
-use crate::{as_ident::AsIdent, query::node_path::QueryNodePath, row_struct::RowStructField};
+use crate::{
+    as_ident::AsIdent, as_type::AsType, query::node_path::QueryNodePath, row_struct::RowStructField,
+};
 use proc_macro2::Span;
 use quote::quote;
 use syn::{
@@ -12,12 +14,14 @@ pub enum QueryField {
         attrs: Vec<Attribute>,
         name: Ident,
         alias: Option<AsIdent>,
+        type_override: Option<AsType>,
     },
     Relation {
         attrs: Vec<Attribute>,
         name: Ident,
         node: QueryNode,
         alias: Option<AsIdent>,
+        type_override: Option<AsType>,
     },
 }
 
@@ -59,28 +63,35 @@ impl QueryField {
         match self {
             QueryField::Column {
                 attrs, name, alias, ..
-            } => RowStructField::new(
-                attrs.clone(),
-                alias
+            } => {
+                let alias_or_name = alias
                     .as_ref()
                     .map(|alias| alias.ident())
                     .unwrap_or(name)
-                    .clone(),
-                quote! { #table_path::columns::#name::Type },
-            ),
+                    .clone();
+
+                RowStructField::new(
+                    attrs.clone(),
+                    alias_or_name,
+                    quote! { #table_path::columns::#name::Type },
+                )
+            }
             QueryField::Relation {
                 attrs, name, alias, ..
             } => {
+                let alias_or_name = alias
+                    .as_ref()
+                    .map(|alias| alias.ident())
+                    .unwrap_or(name)
+                    .clone();
+
                 let mut node_path = node_path.clone();
                 node_path.append(name.clone());
                 let inner_type = node_path.to_struct_name("Row");
+
                 RowStructField::new(
                     attrs.clone(),
-                    alias
-                        .as_ref()
-                        .map(|alias| alias.ident())
-                        .unwrap_or(name)
-                        .clone(),
+                    alias_or_name,
                     quote! { #table_path::relations::#name::Relation<#inner_type> },
                 )
             }
@@ -98,12 +109,14 @@ impl Parse for QueryField {
                 name,
                 node: input.parse()?,
                 alias: input.call(AsIdent::parse_optional)?,
+                type_override: input.call(AsType::parse_optional)?,
             })
         } else {
             Ok(Self::Column {
                 attrs,
                 name,
                 alias: input.call(AsIdent::parse_optional)?,
+                type_override: input.call(AsType::parse_optional)?,
             })
         }
     }

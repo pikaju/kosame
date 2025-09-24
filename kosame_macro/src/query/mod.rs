@@ -18,7 +18,7 @@ pub struct Query {
     attrs: Vec<Attribute>,
     table: syn::Path,
     body: QueryNode,
-    as_name: Option<AsIdent>,
+    alias: Option<AsIdent>,
 }
 
 impl Parse for Query {
@@ -27,7 +27,7 @@ impl Parse for Query {
             attrs: input.call(Attribute::parse_outer)?,
             table: input.parse()?,
             body: input.parse()?,
-            as_name: input.call(AsIdent::parse_optional)?,
+            alias: input.call(AsIdent::parse_optional)?,
         })
     }
 }
@@ -35,11 +35,9 @@ impl Parse for Query {
 impl ToTokens for Query {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let module_name = self
-            .as_name
+            .alias
             .as_ref()
-            .map_or(quote! { internal }, |as_name| {
-                as_name.ident().to_token_stream()
-            });
+            .map_or(quote! { internal }, |alias| alias.ident().to_token_stream());
 
         let node_tokens = {
             let mut tokens = proc_macro2::TokenStream::new();

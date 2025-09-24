@@ -11,7 +11,7 @@ use crate::{as_ident::AsIdent, row_struct::RowStructField};
 pub struct Star {
     attrs: Vec<Attribute>,
     _star: syn::token::Star,
-    as_name: Option<AsIdent>,
+    alias: Option<AsIdent>,
 }
 
 impl Star {
@@ -27,7 +27,7 @@ impl Star {
                 .chain(additional_attrs.iter())
                 .cloned()
                 .collect(),
-            match &self.as_name {
+            match &self.alias {
                 Some(as_name) => as_name.ident().clone(),
                 None => Ident::new("_star", Span::call_site()),
             },
@@ -41,7 +41,7 @@ impl Parse for Star {
         Ok(Self {
             attrs: input.call(Attribute::parse_outer)?,
             _star: input.parse()?,
-            as_name: input.call(AsIdent::parse_optional)?,
+            alias: input.call(AsIdent::parse_optional)?,
         })
     }
 }
