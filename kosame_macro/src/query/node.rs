@@ -6,6 +6,7 @@ use quote::{ToTokens, quote};
 use syn::{
     Path, PathSegment, Token, braced,
     parse::{Parse, ParseStream},
+    parse_quote,
     punctuated::Punctuated,
 };
 
@@ -30,8 +31,12 @@ impl QueryNode {
             let table_path = table_path.to_call_site(1);
 
             let star_field = self.star.iter().map(|_| {
-                RecordStructField::new(
-                    Ident::new("_star", Span::call_site()),
+                RecordStructField::new_with_attributes(
+                    vec![
+                        #[cfg(any(feature = "serde-serialize", feature = "serde-deserialize"))]
+                        parse_quote! { #[serde(flatten)] },
+                    ],
+                    Ident::new("_all", Span::call_site()),
                     quote! { #table_path::Select },
                 )
             });

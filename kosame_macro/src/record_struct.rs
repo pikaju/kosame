@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
-use syn::Ident;
+use syn::{Attribute, Ident};
 
 pub struct RecordStruct {
     name: Ident,
@@ -88,7 +88,7 @@ impl ToTokens for RecordStruct {
         quote! {
             #[derive(#(#derives),*)]
             pub struct #name {
-                #(pub #fields,)*
+                #(#fields,)*
             }
         }
         .to_tokens(tokens);
@@ -99,18 +99,39 @@ impl ToTokens for RecordStruct {
 }
 
 pub struct RecordStructField {
+    attributes: Vec<Attribute>,
     name: Ident,
     r#type: TokenStream,
 }
 
 impl RecordStructField {
     pub fn new(name: Ident, r#type: TokenStream) -> Self {
-        Self { name, r#type }
+        Self {
+            attributes: vec![],
+            name,
+            r#type,
+        }
+    }
+
+    pub fn new_with_attributes(
+        attributes: Vec<Attribute>,
+        name: Ident,
+        r#type: TokenStream,
+    ) -> Self {
+        Self {
+            attributes,
+            name,
+            r#type,
+        }
     }
 }
 
 impl ToTokens for RecordStructField {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        for attribute in &self.attributes {
+            attribute.to_tokens(tokens);
+        }
+        syn::token::Pub::default().to_tokens(tokens);
         self.name.to_tokens(tokens);
         syn::token::Colon::default().to_tokens(tokens);
         self.r#type.to_tokens(tokens);
