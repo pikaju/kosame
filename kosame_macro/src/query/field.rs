@@ -1,6 +1,7 @@
 use super::QueryNode;
 use crate::{
-    as_ident::AsIdent, as_type::AsType, query::node_path::QueryNodePath, row_struct::RowStructField,
+    as_ident::AsIdent, as_type::AsType, path_ext::PathExt, query::node_path::QueryNodePath,
+    row_struct::RowStructField,
 };
 use proc_macro2::Span;
 use quote::{ToTokens, quote};
@@ -76,7 +77,7 @@ impl QueryField {
 
                 let type_override_or_default = type_override
                     .as_ref()
-                    .map(|type_override| type_override.type_path().clone())
+                    .map(|type_override| type_override.type_path().to_call_site(1))
                     .unwrap_or_else(|| parse_quote! { #table_path::columns::#name::Type });
 
                 RowStructField::new(

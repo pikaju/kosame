@@ -46,7 +46,7 @@ fn main() {
             * as all_of_them,
             comments {
                 post_id as postid,
-                content as posti type String,
+                content as posti type ::std::string::String,
                 post {
                     *,
                 } as cool_post,
