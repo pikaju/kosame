@@ -1,27 +1,34 @@
 use proc_macro2::Span;
 use syn::{
-    Ident,
+    Attribute, Ident,
     parse::{Parse, ParseStream},
 };
 
 use super::QueryNode;
 
 pub enum QueryField {
-    Column { name: Ident },
-    Relation { name: Ident, node: QueryNode },
+    Column {
+        attrs: Vec<Attribute>,
+        name: Ident,
+    },
+    Relation {
+        attrs: Vec<Attribute>,
+        name: Ident,
+        node: QueryNode,
+    },
 }
 
 impl QueryField {
     pub fn name(&self) -> &Ident {
         match self {
-            Self::Column { name } => name,
+            Self::Column { name, .. } => name,
             Self::Relation { name, .. } => name,
         }
     }
 
     pub fn span(&self) -> Span {
         match self {
-            Self::Column { name } => name.span(),
+            Self::Column { name, .. } => name.span(),
             Self::Relation { name, .. } => name.span(),
         }
     }
@@ -37,14 +44,16 @@ impl QueryField {
 
 impl Parse for QueryField {
     fn parse(input: ParseStream) -> syn::Result<Self> {
+        let attrs = input.call(Attribute::parse_outer)?;
         let name = input.parse()?;
         if input.peek(syn::token::Brace) {
             Ok(Self::Relation {
+                attrs,
                 name,
                 node: input.parse()?,
             })
         } else {
-            Ok(Self::Column { name })
+            Ok(Self::Column { attrs, name })
         }
     }
 }

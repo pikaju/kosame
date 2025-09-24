@@ -47,17 +47,17 @@ impl QueryNode {
                 node_path.to_struct_name("Row"),
                 star_field
                     .chain(self.fields.iter().map(|field| match field {
-                        QueryField::Column { name } => RecordStructField::new(
-                            vec![],
+                        QueryField::Column { attrs, name, .. } => RecordStructField::new(
+                            attrs.clone(),
                             name.clone(),
                             quote! { #table_path::columns::#name::Type },
                         ),
-                        QueryField::Relation { name, .. } => {
+                        QueryField::Relation { attrs, name, .. } => {
                             let mut node_path = node_path.clone();
                             node_path.append(name.clone());
                             let inner_type = node_path.to_struct_name("Row");
                             RecordStructField::new(
-                                vec![],
+                                attrs.clone(),
                                 name.clone(),
                                 quote! { #table_path::relations::#name::Relation<#inner_type> },
                             )
@@ -77,7 +77,7 @@ impl QueryNode {
 
         // Recursively call to_tokens on child nodes.
         for field in &self.fields {
-            if let QueryField::Relation { name, node } = field {
+            if let QueryField::Relation { name, node, .. } = field {
                 let mut node_path = node_path.clone();
                 node_path.append(name.clone());
 
@@ -101,7 +101,7 @@ impl QueryNode {
 
         for field in self.fields.iter() {
             let name = match field {
-                QueryField::Column { name } => name,
+                QueryField::Column { name, .. } => name,
                 QueryField::Relation { name, .. } => name,
             };
             module_rows.push(quote! {
@@ -142,14 +142,14 @@ impl QueryNode {
 
         for (index, field) in self.fields.iter().enumerate() {
             match field {
-                QueryField::Column { name } => {
+                QueryField::Column { name, .. } => {
                     builder.append_str(&name.to_string());
                     // For renamed columns:
                     // builder.append_slot(quote! {
                     //     #table_path_call_site::columns::#name::NAME
                     // });
                 }
-                QueryField::Relation { name, node } => {
+                QueryField::Relation { name, node, .. } => {
                     let mut node_path = node_path.clone();
                     node_path.append(name.clone());
 
