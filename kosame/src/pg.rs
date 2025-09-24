@@ -94,8 +94,15 @@ pub mod internal {
         let Some(ty) = ::postgres_types::Type::from_oid(oid) else {
             panic!("unknown oid {}", oid);
         };
-        let length = postgres_protocol::types::int4_from_sql(&buf[4..8])? as usize;
+        let length = postgres_protocol::types::int4_from_sql(&buf[4..8])?;
 
-        Ok((T::from_sql(&ty, &buf[8..(8 + length)])?, 8 + length))
+        if length < 0 {
+            Ok((T::from_sql_null(&ty)?, 8))
+        } else {
+            Ok((
+                T::from_sql(&ty, &buf[8..(8 + length as usize)])?,
+                8 + length as usize,
+            ))
+        }
     }
 }

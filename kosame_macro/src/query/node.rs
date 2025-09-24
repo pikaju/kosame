@@ -36,7 +36,7 @@ impl QueryNode {
                         #[cfg(any(feature = "serde-serialize", feature = "serde-deserialize"))]
                         parse_quote! { #[serde(flatten)] },
                     ],
-                    Ident::new("_all", Span::call_site()),
+                    Ident::new("_star", Span::call_site()),
                     quote! { #table_path::Select },
                 )
             });

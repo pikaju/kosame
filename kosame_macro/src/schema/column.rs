@@ -31,9 +31,9 @@ impl Column {
 
     pub fn data_type_auto(&self) -> TokenStream {
         if !self.constraints.has_not_null() && !self.constraints.has_primary_key() {
-            self.data_type_not_null().to_token_stream()
-        } else {
             self.data_type_nullable()
+        } else {
+            self.data_type_not_null().to_token_stream()
         }
     }
 }
