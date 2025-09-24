@@ -11,6 +11,7 @@ use syn::{
 
 pub struct QueryNode {
     _brace: syn::token::Brace,
+    star: Option<Token![*]>,
     fields: Punctuated<QueryField, Token![,]>,
 }
 
@@ -45,11 +46,6 @@ impl QueryNode {
                                 quote! { #table_path::relations::#name::Relation<#inner_type> },
                             )
                         }
-
-                        QueryField::Star(_) => RecordStructField::new(
-                            Ident::new("_star", Span::call_site()),
-                            quote! { i32 },
-                        ),
                     })
                     .collect(),
             )
@@ -91,7 +87,6 @@ impl QueryNode {
             let name = match field {
                 QueryField::Column { name } => name,
                 QueryField::Relation { name, .. } => name,
-                QueryField::Star(_) => continue,
             };
             module_rows.push(quote! {
                 use #table_path::columns_and_relations::#name;
@@ -148,9 +143,6 @@ impl QueryNode {
                     node.to_sql_select(builder, &table_path, node_path, Some(&relation_path));
                     builder.append_str(")");
                 }
-                QueryField::Star(_) => {
-                    builder.append_str("*");
-                }
             }
 
             if index != self.fields.len() - 1 {
@@ -188,6 +180,15 @@ impl Parse for QueryNode {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let content;
         let _brace = braced!(content in input);
+
+        let mut star = None;
+        if content.peek(Token![*]) {
+            star = Some(content.parse()?);
+            if !content.is_empty() {
+                let _: Token![,] = content.parse()?;
+            }
+        }
+
         let fields = content.parse_terminated(QueryField::parse, Token![,])?;
 
         let mut star_used = false;
@@ -211,6 +212,10 @@ impl Parse for QueryNode {
             existing.push(name_string);
         }
 
-        Ok(Self { _brace, fields })
+        Ok(Self {
+            _brace,
+            star,
+            fields,
+        })
     }
 }

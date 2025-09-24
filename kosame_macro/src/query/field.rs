@@ -1,6 +1,6 @@
 use proc_macro2::Span;
 use syn::{
-    Ident, Token,
+    Ident,
     parse::{Parse, ParseStream},
 };
 
@@ -9,7 +9,6 @@ use super::QueryNode;
 pub enum QueryField {
     Column { name: Ident },
     Relation { name: Ident, node: QueryNode },
-    Star(Token![*]),
 }
 
 impl QueryField {
@@ -17,7 +16,6 @@ impl QueryField {
         match self {
             Self::Column { name } => Some(name),
             Self::Relation { name, .. } => Some(name),
-            Self::Star(_) => None,
         }
     }
 
@@ -25,17 +23,12 @@ impl QueryField {
         match self {
             Self::Column { name } => name.span(),
             Self::Relation { name, .. } => name.span(),
-            Self::Star(token) => token.span,
         }
     }
 }
 
 impl Parse for QueryField {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        if input.peek(Token![*]) {
-            return Ok(Self::Star(input.parse()?));
-        }
-
         let name = input.parse()?;
         if input.peek(syn::token::Brace) {
             Ok(Self::Relation {
