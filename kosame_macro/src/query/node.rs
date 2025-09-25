@@ -19,16 +19,17 @@ pub struct QueryNode {
 }
 
 impl QueryNode {
-    pub fn to_tokens(
+    pub fn to_row_struct_tokens(
         &self,
         tokens: &mut TokenStream,
         query: &Query,
         table_path: &Path,
         node_path: &QueryNodePath,
     ) {
-        tokens.extend(
-            self.to_autocomplete_module(node_path.to_module_name("autocomplete_row"), table_path),
-        );
+        tokens.extend(self.to_autocomplete_module_tokens(
+            node_path.to_module_name("autocomplete_row"),
+            table_path,
+        ));
 
         let row_struct = {
             let table_path = table_path.to_call_site(1);
@@ -68,12 +69,16 @@ impl QueryNode {
                     .segments
                     .push(Ident::new("target_table", Span::call_site()).into());
 
-                node.to_tokens(tokens, query, &table_path, &node_path);
+                node.to_row_struct_tokens(tokens, query, &table_path, &node_path);
             }
         }
     }
 
-    fn to_autocomplete_module(&self, module_name: impl ToTokens, table_path: &Path) -> TokenStream {
+    fn to_autocomplete_module_tokens(
+        &self,
+        module_name: impl ToTokens,
+        table_path: &Path,
+    ) -> TokenStream {
         let table_path = table_path.to_call_site(2);
         let mut module_rows = vec![];
 
@@ -94,7 +99,7 @@ impl QueryNode {
         }
     }
 
-    pub fn to_query_node(
+    pub fn to_query_node_tokens(
         &self,
         tokens: &mut TokenStream,
         table_path: &Path,
@@ -147,7 +152,12 @@ impl QueryNode {
                         .push(Ident::new("target_table", Span::call_site()).into());
 
                     let mut tokens = TokenStream::new();
-                    node.to_query_node(&mut tokens, &table_path, node_path, Some(&relation_path));
+                    node.to_query_node_tokens(
+                        &mut tokens,
+                        &table_path,
+                        node_path,
+                        Some(&relation_path),
+                    );
 
                     let relation_path = relation_path.to_call_site(1);
 
