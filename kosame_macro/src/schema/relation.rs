@@ -21,9 +21,9 @@ pub struct Relation {
     _source_paren: syn::token::Paren,
     source_columns: Punctuated<Ident, Token![,]>,
     arrow: Arrow,
-    dest_table: syn::Path,
-    _dest_paren: syn::token::Paren,
-    dest_columns: Punctuated<Ident, Token![,]>,
+    target_table: syn::Path,
+    _target_paren: syn::token::Paren,
+    target_columns: Punctuated<Ident, Token![,]>,
 }
 
 impl Relation {
@@ -35,31 +35,13 @@ impl Relation {
         let name = &self.name;
         let name_string = name.to_string();
 
-        let source_table_string = source_table.to_string();
-        let dest_table_string = self.dest_table.segments.last().unwrap().ident.to_string();
-
-        let join_string = self
-            .source_columns
-            .iter()
-            .zip(self.dest_columns.iter())
-            .map(|(source_column, dest_column)| {
-                String::new()
-                    + &source_table_string
-                    + "."
-                    + &source_column.to_string()
-                    + " = "
-                    + &dest_table_string
-                    + "."
-                    + &dest_column.to_string()
-            })
-            .collect::<Vec<_>>()
-            .join(" and ");
-
-        let target = &self.dest_table;
+        let target = &self.target_table;
         let target_path = target.to_call_site(4);
 
         let source_columns = self.source_columns.iter();
-        let dest_columns = self.dest_columns.iter();
+        let source_columns2 = source_columns.clone();
+        let target_columns = self.target_columns.iter();
+        let target_columns2 = target_columns.clone();
 
         let relation_type = match self.arrow {
             Arrow::ManyToOne(_) => quote! { ::kosame::relation::ManyToOne<T> },
@@ -80,12 +62,15 @@ impl Relation {
                 }
 
                 pub mod target_columns {
-                    #(pub use super::target_table::columns::#dest_columns;)*
+                    #(pub use super::target_table::columns::#target_columns;)*
                 }
 
                 pub const RELATION: ::kosame::schema::Relation = ::kosame::schema::Relation::new(
                     #name_string,
-                    #join_string,
+                    super::super::NAME,
+                    &[#(&source_columns::#source_columns2::COLUMN),*],
+                    target_table::NAME,
+                    &[#(&target_columns::#target_columns2::COLUMN),*],
                 );
 
                 pub type Type<T> = #relation_type;
@@ -104,9 +89,9 @@ impl Parse for Relation {
             _source_paren: parenthesized!(source_content in input),
             source_columns: source_content.parse_terminated(Ident::parse, Token![,])?,
             arrow: input.parse()?,
-            dest_table: input.parse()?,
-            _dest_paren: parenthesized!(dest_content in input),
-            dest_columns: dest_content.parse_terminated(Ident::parse, Token![,])?,
+            target_table: input.parse()?,
+            _target_paren: parenthesized!(dest_content in input),
+            target_columns: dest_content.parse_terminated(Ident::parse, Token![,])?,
         };
 
         if result.source_columns.is_empty() {
@@ -116,9 +101,9 @@ impl Parse for Relation {
                 result.name
             );
         }
-        if result.source_columns.len() != result.dest_columns.len() {
+        if result.source_columns.len() != result.target_columns.len() {
             emit_error!(
-                result._dest_paren.span.span(),
+                result._target_paren.span.span(),
                 "number of columns must match on both side of the relation `{}`",
                 result.name
             );
@@ -178,11 +163,11 @@ impl Display for Relation {
             Arrow::OneToMany(_) => f.write_str("<=")?,
         };
         f.write_str(" ")?;
-        f.write_str(&self.dest_table.to_token_stream().to_string())?;
+        f.write_str(&self.target_table.to_token_stream().to_string())?;
         f.write_str(" (")?;
         f.write_str(
             &self
-                .dest_columns
+                .target_columns
                 .iter()
                 .map(|column| column.to_string())
                 .collect::<Vec<_>>()

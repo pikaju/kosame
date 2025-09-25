@@ -68,7 +68,18 @@ impl QueryNode {
 
         if let Some(relation) = relation {
             result += " where ";
-            result += relation.join_condition();
+            for (index, (source_column, target_column)) in relation.column_pairs().enumerate() {
+                result += relation.source_table();
+                result += ".";
+                result += source_column.name();
+                result += " = ";
+                result += relation.target_table();
+                result += ".";
+                result += target_column.name();
+                if index != relation.source_columns().len() - 1 {
+                    result += " and ";
+                }
+            }
         }
 
         result

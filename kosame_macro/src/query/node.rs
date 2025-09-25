@@ -104,7 +104,6 @@ impl QueryNode {
         tokens: &mut TokenStream,
         table_path: &Path,
         node_path: QueryNodePath,
-        join_condition: Option<&Path>,
     ) {
         let table_path_call_site = table_path.to_call_site(1);
 
@@ -152,12 +151,7 @@ impl QueryNode {
                         .push(Ident::new("target_table", Span::call_site()).into());
 
                     let mut tokens = TokenStream::new();
-                    node.to_query_node_tokens(
-                        &mut tokens,
-                        &table_path,
-                        node_path,
-                        Some(&relation_path),
-                    );
+                    node.to_query_node_tokens(&mut tokens, &table_path, node_path);
 
                     let relation_path = relation_path.to_call_site(1);
 
@@ -183,50 +177,6 @@ impl QueryNode {
             )
         }
         .to_tokens(tokens);
-
-        // builder.append_str("select ");
-        //
-        // if !node_path.is_empty() {
-        //     builder.append_str("array_agg(row(");
-        // }
-        //
-        // if self.star.is_some() {
-        //     builder.append_str("row(");
-        //     builder.append_slot(quote! { #table_path_call_site::ALL_FIELDS });
-        //     builder.append_str(")");
-        //     if !self.fields.is_empty() {
-        //         builder.append_str(", ");
-        //     }
-        // }
-        //
-        // if !node_path.is_empty() {
-        //     builder.append_str("))");
-        // }
-        //
-        // builder.append_str(" from ");
-        //
-        // // builder.append_str(
-        // //     &table_path_call_site
-        // //         .segments
-        // //         .last()
-        // //         .unwrap()
-        // //         .ident
-        // //         .to_string(),
-        // // );
-        // //
-        // // For renamed tables:
-        // builder.append_slot(quote! {});
-        //
-        // if let Some(join_condition) = join_condition {
-        //     let path = join_condition.to_call_site(1);
-        //     builder.append_str(" where ");
-        //     builder.append_slot(quote! { #path::JOIN_CONDITION });
-        // }
-        //
-        // if let Some(limit) = &self.limit {
-        //     builder.append_str(" limit ");
-        //     builder.append_str(limit.by().to_sql_string());
-        // }
     }
 }
 

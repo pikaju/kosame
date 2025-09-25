@@ -51,7 +51,7 @@ impl ToTokens for Query {
         let sql_tokens = {
             let mut tokens = TokenStream::new();
             self.body
-                .to_query_node_tokens(&mut tokens, &self.table, QueryNodePath::new(), None);
+                .to_query_node_tokens(&mut tokens, &self.table, QueryNodePath::new());
             quote! {
                 #tokens.to_sql_string(None)
             }

@@ -18,17 +18,17 @@ impl Table {
     }
 
     #[inline]
-    pub fn name(&self) -> &'static str {
+    pub const fn name(&self) -> &'static str {
         self.name
     }
 
     #[inline]
-    pub fn columns(&self) -> &'static [&'static Column] {
+    pub const fn columns(&self) -> &'static [&'static Column] {
         self.columns
     }
 
     #[inline]
-    pub fn relations(&self) -> &'static [&'static Relation] {
+    pub const fn relations(&self) -> &'static [&'static Relation] {
         self.relations
     }
 }
@@ -43,31 +43,61 @@ impl Column {
     }
 
     #[inline]
-    pub fn name(&self) -> &'static str {
+    pub const fn name(&self) -> &'static str {
         self.name
     }
 }
 
 pub struct Relation {
     name: &'static str,
-    join_condition: &'static str,
+    source_table: &'static str,
+    source_columns: &'static [&'static Column],
+    target_table: &'static str,
+    target_columns: &'static [&'static Column],
 }
 
 impl Relation {
-    pub const fn new(name: &'static str, join_condition: &'static str) -> Self {
+    pub const fn new(
+        name: &'static str,
+        source_table: &'static str,
+        source_columns: &'static [&'static Column],
+        target_table: &'static str,
+        target_columns: &'static [&'static Column],
+    ) -> Self {
         Self {
             name,
-            join_condition,
+            source_table,
+            source_columns,
+            target_table,
+            target_columns,
         }
     }
 
     #[inline]
-    pub fn name(&self) -> &'static str {
+    pub const fn name(&self) -> &'static str {
         self.name
     }
 
-    #[inline]
-    pub fn join_condition(&self) -> &'static str {
-        self.join_condition
+    pub const fn source_table(&self) -> &'static str {
+        self.source_table
+    }
+
+    pub const fn source_columns(&self) -> &'static [&'static Column] {
+        self.source_columns
+    }
+
+    pub const fn target_table(&self) -> &'static str {
+        self.target_table
+    }
+
+    pub const fn target_columns(&self) -> &'static [&'static Column] {
+        self.target_columns
+    }
+
+    pub fn column_pairs(&self) -> impl Iterator<Item = (&Column, &Column)> {
+        self.source_columns
+            .iter()
+            .zip(self.target_columns)
+            .map(|(a, b)| (*a, *b))
     }
 }
