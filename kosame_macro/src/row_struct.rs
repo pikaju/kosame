@@ -44,11 +44,7 @@ impl RowStruct {
         let fields = self.fields.iter().map(|field| {
             let name = &field.name;
             quote! {
-                #name: {
-                    let (field, length) = ::kosame::pg::internal::record_field_from_sql(&reader)?;
-                    reader = &reader[length..];
-                    field
-                }
+                #name: ::kosame::pg::internal::record_field_from_sql(&raw, &mut offset)?
             }
         });
 
@@ -62,10 +58,10 @@ impl RowStruct {
                     ty: &::kosame::pg::internal::Type,
                     raw: &[u8],
                 ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
-                    let mut reader = raw;
-                    let column_count = ::kosame::pg::internal::int4_from_sql(&reader[..4])?;
-                    reader = &reader[4..];
+                    let column_count = ::kosame::pg::internal::int4_from_sql(&raw[..4])?;
                     assert_eq!(column_count, #field_count);
+
+                    let mut offset = 4;
 
                     Ok(Self {
                         #(#fields),*

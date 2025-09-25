@@ -1,5 +1,6 @@
-use crate::row_struct::{RowStruct, RowStructField};
+use crate::row_struct::RowStruct;
 
+use super::limit::LimitClause;
 use super::star::Star;
 use super::*;
 use proc_macro2::{Span, TokenStream};
@@ -14,6 +15,7 @@ pub struct QueryNode {
     _brace: syn::token::Brace,
     star: Option<Star>,
     fields: Punctuated<QueryField, Token![,]>,
+    limit: Option<LimitClause>,
 }
 
 impl QueryNode {
@@ -174,6 +176,11 @@ impl QueryNode {
             builder.append_str(" where ");
             builder.append_slot(quote! { #path::JOIN_CONDITION });
         }
+
+        if let Some(limit) = &self.limit {
+            builder.append_str(" limit ");
+            builder.append_str(limit.by().to_sql_string());
+        }
     }
 }
 
@@ -192,7 +199,19 @@ impl Parse for QueryNode {
             None
         };
 
-        let fields = content.parse_terminated(QueryField::parse, Token![,])?;
+        let mut fields = Punctuated::<QueryField, _>::new();
+        while !content.is_empty() {
+            if LimitClause::peek(&content) {
+                break;
+            }
+
+            fields.push(content.parse()?);
+
+            if !content.peek(Token![,]) {
+                break;
+            }
+            fields.push_punct(content.parse()?);
+        }
 
         let mut existing = vec![];
         for field in &fields {
@@ -223,6 +242,7 @@ impl Parse for QueryNode {
             _brace,
             star,
             fields,
+            limit: content.call(LimitClause::parse_optional)?,
         })
     }
 }

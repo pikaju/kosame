@@ -86,23 +86,26 @@ pub mod internal {
 
     pub fn record_field_from_sql<'a, T>(
         buf: &'a [u8],
-    ) -> Result<(T, usize), Box<dyn std::error::Error + Sync + Send>>
+        offset: &mut usize,
+    ) -> Result<T, Box<dyn std::error::Error + Sync + Send>>
     where
         T: FromSql<'a>,
     {
-        let oid = postgres_protocol::types::oid_from_sql(&buf[..4])? as u32;
+        let oid = postgres_protocol::types::oid_from_sql(&buf[*offset..(*offset + 4)])? as u32;
+        *offset += 4;
         let Some(ty) = ::postgres_types::Type::from_oid(oid) else {
             panic!("unknown oid {}", oid);
         };
-        let length = postgres_protocol::types::int4_from_sql(&buf[4..8])?;
+        let length = postgres_protocol::types::int4_from_sql(&buf[*offset..(*offset + 4)])?;
+        *offset += 4;
 
         if length < 0 {
-            Ok((T::from_sql_null(&ty)?, 8))
+            Ok(T::from_sql_null(&ty)?)
         } else {
-            Ok((
-                T::from_sql(&ty, &buf[8..(8 + length as usize)])?,
-                8 + length as usize,
-            ))
+            let length = length as usize;
+            let result = Ok(T::from_sql(&ty, &buf[(*offset)..(*offset + length)])?);
+            *offset += length;
+            result
         }
     }
 }
