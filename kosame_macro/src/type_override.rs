@@ -1,6 +1,6 @@
 use syn::{
     Path, Token,
-    parse::{Parse, ParseStream},
+    parse::{Parse, ParseBuffer, ParseStream},
 };
 
 pub struct TypeOverride {
@@ -19,6 +19,10 @@ impl TypeOverride {
         } else {
             None
         })
+    }
+
+    pub fn peek(input: &ParseBuffer<'_>) -> bool {
+        input.peek(Token![type])
     }
 }
 

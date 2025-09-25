@@ -1,6 +1,6 @@
 use syn::{
     LitInt,
-    parse::{Parse, ParseStream, Peek},
+    parse::{Parse, ParseStream},
 };
 
 mod kw {

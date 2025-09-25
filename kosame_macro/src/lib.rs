@@ -1,5 +1,6 @@
 pub(crate) mod alias;
 pub(crate) mod docs;
+pub(crate) mod expr;
 pub(crate) mod path_ext;
 pub(crate) mod query;
 pub(crate) mod row_struct;

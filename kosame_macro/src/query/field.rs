@@ -1,12 +1,12 @@
 use super::QueryNode;
 use crate::{
-    alias::Alias, path_ext::PathExt, query::node_path::QueryNodePath, row_struct::RowStructField,
-    type_override::TypeOverride,
+    alias::Alias, expr::Expr, path_ext::PathExt, query::node_path::QueryNodePath,
+    row_struct::RowStructField, type_override::TypeOverride,
 };
 use proc_macro2::Span;
 use quote::{ToTokens, quote};
 use syn::{
-    Attribute, Ident, Path,
+    Attribute, Ident, Path, Token,
     parse::{Parse, ParseStream},
     parse_quote,
 };
@@ -24,6 +24,12 @@ pub enum QueryField {
         node: QueryNode,
         alias: Option<Alias>,
     },
+    Expr {
+        attrs: Vec<Attribute>,
+        expr: Expr,
+        alias: Alias,
+        type_override: TypeOverride,
+    },
 }
 
 impl QueryField {
@@ -31,6 +37,7 @@ impl QueryField {
         match self {
             Self::Column { name, .. } => name,
             Self::Relation { name, .. } => name,
+            Self::Expr { alias, .. } => alias.ident(),
         }
     }
 
@@ -38,6 +45,7 @@ impl QueryField {
         match self {
             Self::Column { alias, .. } => alias.as_ref(),
             Self::Relation { alias, .. } => alias.as_ref(),
+            Self::Expr { alias, .. } => Some(alias),
         }
     }
 
@@ -45,6 +53,7 @@ impl QueryField {
         match self {
             Self::Column { name, .. } => name.span(),
             Self::Relation { name, .. } => name.span(),
+            Self::Expr { alias, .. } => alias.ident().span(),
         }
     }
 
@@ -105,6 +114,16 @@ impl QueryField {
                     quote! { #table_path::relations::#name::Type<#inner_type> },
                 )
             }
+            QueryField::Expr {
+                attrs,
+                alias,
+                type_override,
+                ..
+            } => RowStructField::new(
+                attrs.clone(),
+                alias.ident().clone(),
+                type_override.type_path().to_call_site(1).to_token_stream(),
+            ),
         }
     }
 }
@@ -112,20 +131,35 @@ impl QueryField {
 impl Parse for QueryField {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let attrs = input.call(Attribute::parse_outer)?;
-        let name = input.parse()?;
-        if input.peek(syn::token::Brace) {
+
+        let fork = input.fork();
+        let ident = fork.parse::<Ident>();
+
+        if input.peek2(syn::token::Brace) {
             Ok(Self::Relation {
                 attrs,
-                name,
+                name: input.parse()?,
                 node: input.parse()?,
                 alias: input.call(Alias::parse_optional)?,
             })
-        } else {
+        } else if ident.is_ok()
+            && (fork.peek(Token![,])
+                || Alias::peek(&fork)
+                || TypeOverride::peek(&fork)
+                || fork.is_empty())
+        {
             Ok(Self::Column {
                 attrs,
-                name,
+                name: input.parse()?,
                 alias: input.call(Alias::parse_optional)?,
                 type_override: input.call(TypeOverride::parse_optional)?,
+            })
+        } else {
+            Ok(Self::Expr {
+                attrs,
+                expr: input.parse()?,
+                alias: input.parse()?,
+                type_override: input.parse()?,
             })
         }
     }

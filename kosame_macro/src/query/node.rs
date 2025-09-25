@@ -76,6 +76,7 @@ impl QueryNode {
             let name = match field {
                 QueryField::Column { name, .. } => name,
                 QueryField::Relation { name, .. } => name,
+                QueryField::Expr { .. } => continue,
             };
             module_rows.push(quote! {
                 use #table_path::columns_and_relations::#name;
@@ -148,6 +149,12 @@ impl QueryNode {
                         )
                     });
                 }
+                QueryField::Expr {
+                    attrs,
+                    expr,
+                    alias,
+                    type_override,
+                } => continue,
             }
         }
 

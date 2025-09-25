@@ -20,6 +20,8 @@ pub mod schema {
     }
 }
 
+type I32 = i32;
+
 fn main() {
     let mut client = postgres::Client::connect(
         "postgres://postgres:postgres@localhost:5432/postgres",
@@ -44,6 +46,7 @@ fn main() {
         schema::posts {
             /// all the post fields
             * as all_of_them,
+            id + 5 as pip type I32,
             comments {
                 post_id as postid,
                 content as posti type ::std::string::String,

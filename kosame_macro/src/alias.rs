@@ -1,6 +1,6 @@
 use syn::{
     Ident, Token,
-    parse::{Parse, ParseStream},
+    parse::{Parse, ParseBuffer, ParseStream},
 };
 
 pub struct Alias {
@@ -19,6 +19,10 @@ impl Alias {
         } else {
             None
         })
+    }
+
+    pub fn peek(input: &ParseBuffer<'_>) -> bool {
+        input.peek(Token![as])
     }
 }
 
