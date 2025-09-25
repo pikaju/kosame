@@ -1,6 +1,6 @@
 use std::ops::{Deref, DerefMut};
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone, Copy)]
 #[cfg_attr(feature = "serde-serialize", derive(serde::Serialize))]
 #[cfg_attr(feature = "serde-deserialize", derive(serde::Deserialize))]
 pub struct ManyToOne<T>(Option<T>);
@@ -29,7 +29,7 @@ impl<T> DerefMut for ManyToOne<T> {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 #[cfg_attr(feature = "serde-serialize", derive(serde::Serialize))]
 #[cfg_attr(feature = "serde-deserialize", derive(serde::Deserialize))]
 pub struct OneToMany<T>(Vec<T>);

@@ -23,12 +23,12 @@ impl QueryNode {
         &self,
         tokens: &mut TokenStream,
         query: &Query,
-        table_path: &Path,
         node_path: &QueryNodePath,
     ) {
+        let table_path = node_path.resolve(&query.table);
         tokens.extend(self.to_autocomplete_module_tokens(
             node_path.to_module_name("autocomplete_row"),
-            table_path,
+            &table_path,
         ));
 
         let row_struct = {
@@ -59,17 +59,7 @@ impl QueryNode {
             if let QueryField::Relation { name, node, .. } = field {
                 let mut node_path = node_path.clone();
                 node_path.append(name.clone());
-
-                let mut table_path = table_path.clone();
-                table_path
-                    .segments
-                    .push(Ident::new("relations", Span::call_site()).into());
-                table_path.segments.push(PathSegment::from(name.clone()));
-                table_path
-                    .segments
-                    .push(Ident::new("target_table", Span::call_site()).into());
-
-                node.to_row_struct_tokens(tokens, query, &table_path, &node_path);
+                node.to_row_struct_tokens(tokens, query, &node_path);
             }
         }
     }
@@ -102,13 +92,14 @@ impl QueryNode {
     pub fn to_query_node_tokens(
         &self,
         tokens: &mut TokenStream,
-        table_path: &Path,
+        query: &Query,
         node_path: QueryNodePath,
     ) {
+        let table_path = node_path.resolve(&query.table);
         let table_path_call_site = table_path.to_call_site(1);
 
         let mut fields = vec![];
-        for (index, field) in self.fields.iter().enumerate() {
+        for field in &self.fields {
             match field {
                 QueryField::Column { name, alias, .. } => {
                     let alias = match alias {
@@ -136,8 +127,7 @@ impl QueryNode {
                         None => quote! { None },
                     };
 
-                    let mut node_path = node_path.clone();
-                    node_path.append(name.clone());
+                    let node_path = node_path.clone().appended(name.clone());
 
                     let mut relation_path = table_path.clone();
                     relation_path
@@ -145,13 +135,8 @@ impl QueryNode {
                         .push(Ident::new("relations", Span::call_site()).into());
                     relation_path.segments.push(PathSegment::from(name.clone()));
 
-                    let mut table_path = relation_path.clone();
-                    table_path
-                        .segments
-                        .push(Ident::new("target_table", Span::call_site()).into());
-
                     let mut tokens = TokenStream::new();
-                    node.to_query_node_tokens(&mut tokens, &table_path, node_path);
+                    node.to_query_node_tokens(&mut tokens, query, node_path);
 
                     let relation_path = relation_path.to_call_site(1);
 

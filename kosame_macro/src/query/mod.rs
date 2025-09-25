@@ -44,14 +44,14 @@ impl ToTokens for Query {
         let node_tokens = {
             let mut tokens = proc_macro2::TokenStream::new();
             self.body
-                .to_row_struct_tokens(&mut tokens, self, &self.table, &QueryNodePath::new());
+                .to_row_struct_tokens(&mut tokens, self, &QueryNodePath::new());
             tokens
         };
 
         let sql_tokens = {
             let mut tokens = TokenStream::new();
             self.body
-                .to_query_node_tokens(&mut tokens, &self.table, QueryNodePath::new());
+                .to_query_node_tokens(&mut tokens, self, QueryNodePath::new());
             quote! {
                 #tokens.to_sql_string(None)
             }

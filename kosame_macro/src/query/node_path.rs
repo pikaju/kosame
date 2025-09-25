@@ -1,6 +1,6 @@
 use convert_case::Casing;
 use proc_macro2::Span;
-use syn::Ident;
+use syn::{Ident, Path, PathSegment};
 
 #[derive(Clone)]
 pub struct QueryNodePath {
@@ -14,6 +14,11 @@ impl QueryNodePath {
 
     pub fn append(&mut self, segment: Ident) {
         self.segments.push(segment);
+    }
+
+    pub fn appended(mut self, segment: Ident) -> Self {
+        self.append(segment);
+        self
     }
 
     pub fn segments(&self) -> &[Ident] {
@@ -39,5 +44,17 @@ impl QueryNodePath {
             module_name += &segment.to_string();
         }
         Ident::new(&module_name, Span::call_site())
+    }
+
+    pub fn resolve(&self, root_table: &Path) -> Path {
+        let mut path = root_table.clone();
+        for segment in &self.segments {
+            path.segments
+                .push(Ident::new("relations", Span::call_site()).into());
+            path.segments.push(PathSegment::from(segment.clone()));
+            path.segments
+                .push(Ident::new("target_table", Span::call_site()).into());
+        }
+        path
     }
 }
