@@ -51,7 +51,9 @@ impl ToTokens for Table {
             .map(|relation| relation.to_token_stream(&self.name));
 
         let column_names = self.columns.iter().map(Column::name);
+        let column_names2 = column_names.clone();
         let relation_names = self.relations.iter().map(Relation::name);
+        let relation_names2 = relation_names.clone();
 
         let select_struct = RowStruct::new(
             vec![],
@@ -88,13 +90,6 @@ impl ToTokens for Table {
                 .collect(),
         );
 
-        let all_fields_string = self
-            .columns
-            .iter()
-            .map(|column| column.name().to_string())
-            .collect::<Vec<_>>()
-            .join(", ");
-
         let docs = self.to_docs_token_stream();
 
         quote! {
@@ -113,8 +108,11 @@ impl ToTokens for Table {
                     #(pub use super::relations::#relation_names;)*
                 }
 
-                pub const NAME: &str = #name_string;
-                pub const ALL_FIELDS: &str = #all_fields_string;
+                pub const TABLE: ::kosame::schema::Table = ::kosame::schema::Table::new(
+                    #name_string,
+                    &[#(&columns::#column_names2::COLUMN),*],
+                    &[#(&relations::#relation_names2::RELATION),*],
+                );
 
                 #select_struct
                 #insert_struct

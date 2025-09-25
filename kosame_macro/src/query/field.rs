@@ -102,7 +102,7 @@ impl QueryField {
                 RowStructField::new(
                     attrs.clone(),
                     alias_or_name,
-                    quote! { #table_path::relations::#name::Relation<#inner_type> },
+                    quote! { #table_path::relations::#name::Type<#inner_type> },
                 )
             }
         }

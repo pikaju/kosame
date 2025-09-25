@@ -43,16 +43,16 @@ fn main() {
     kosame::query! {
         schema::posts {
             /// all the post fields
-            // * as all_of_them,
+            * as all_of_them,
             comments {
                 post_id as postid,
-                // content as posti type ::std::string::String,
-                // post {
-                //     *,
-                // } as cool_post,
+                content as posti type ::std::string::String,
+                post {
+                    *,
+                } as cool_post,
                 limit 1
             },
-            limit 1
+            limit 3
             // where id = 5
             // order by name
         } as my_query

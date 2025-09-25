@@ -7,6 +7,7 @@ mod star;
 use field::QueryField;
 use node::QueryNode;
 use node_path::QueryNodePath;
+use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::{
     Attribute, Ident,
@@ -48,14 +49,12 @@ impl ToTokens for Query {
         };
 
         let sql_tokens = {
-            let mut slotted_sql_builder = SlottedSqlBuilder::new();
-            self.body.to_sql_select(
-                &mut slotted_sql_builder,
-                &self.table,
-                QueryNodePath::new(),
-                None,
-            );
-            slotted_sql_builder.build()
+            let mut tokens = TokenStream::new();
+            self.body
+                .to_query_node(&mut tokens, &self.table, QueryNodePath::new(), None);
+            quote! {
+                #tokens.to_sql_string(None)
+            }
         };
 
         quote! {

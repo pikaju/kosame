@@ -83,10 +83,12 @@ impl Relation {
                     #(pub use super::target_table::columns::#dest_columns;)*
                 }
 
-                pub const NAME: &str = #name_string;
-                pub const JOIN_CONDITION: &str = #join_string;
+                pub const RELATION: ::kosame::schema::Relation = ::kosame::schema::Relation::new(
+                    #name_string,
+                    #join_string,
+                );
 
-                pub type Relation<T> = #relation_type;
+                pub type Type<T> = #relation_type;
             }
         }
     }

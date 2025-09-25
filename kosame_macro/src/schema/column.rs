@@ -61,7 +61,7 @@ impl ToTokens for Column {
         quote! {
             #docs
             pub mod #name {
-                pub const NAME: &str = #name_string;
+                pub const COLUMN: ::kosame::schema::Column = ::kosame::schema::Column::new(#name_string);
                 pub type Type = #data_type;
             }
         }

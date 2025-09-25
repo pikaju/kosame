@@ -1,0 +1,106 @@
+use crate::schema::{Column, Relation, Table};
+
+pub trait Query {
+    type Params;
+    type Result;
+
+    fn into_node() -> QueryNode;
+}
+
+pub struct QueryNode {
+    table: &'static Table,
+    star: bool,
+    fields: Vec<QueryField>,
+}
+
+impl QueryNode {
+    pub fn new(table: &'static Table, star: bool, fields: Vec<QueryField>) -> Self {
+        Self {
+            table,
+            star,
+            fields,
+        }
+    }
+
+    pub fn to_sql_string(&self, relation: Option<&Relation>) -> String {
+        let mut result = "select ".to_string();
+
+        if relation.is_some() {
+            result += "row(";
+        }
+
+        if self.star {
+            result += "row(";
+            for (index, column) in self.table.columns().iter().enumerate() {
+                result += column.name();
+                if index != self.table.columns().len() - 1 {
+                    result += ", ";
+                }
+            }
+            result += ")";
+            if !self.fields.is_empty() {
+                result += ", ";
+            }
+        }
+
+        for (index, field) in self.fields.iter().enumerate() {
+            match field {
+                QueryField::Column { column, .. } => {
+                    result += column.name();
+                }
+                QueryField::Relation { node, relation, .. } => {
+                    result += "array(";
+                    result += &node.to_sql_string(Some(relation));
+                    result += ")";
+                }
+            }
+            if index != self.fields.len() - 1 {
+                result += ", ";
+            }
+        }
+
+        if relation.is_some() {
+            result += ")";
+        }
+
+        result += " from ";
+        result += self.table.name();
+
+        if let Some(relation) = relation {
+            result += " where ";
+            result += relation.join_condition();
+        }
+
+        result
+    }
+}
+
+pub enum QueryField {
+    Column {
+        column: &'static Column,
+        alias: Option<&'static str>,
+    },
+    Relation {
+        relation: &'static Relation,
+        node: QueryNode,
+        alias: Option<&'static str>,
+    },
+}
+
+impl QueryField {
+    pub fn column(column: &'static Column, alias: Option<&'static str>) -> Self {
+        Self::Column { column, alias }
+    }
+
+    pub fn relation(
+        relation: &'static Relation,
+        node: QueryNode,
+        alias: Option<&'static str>,
+    ) -> Self {
+        Self::Relation {
+            relation,
+            node,
+            alias,
+        }
+    }
+}

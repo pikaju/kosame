@@ -94,40 +94,44 @@ impl QueryNode {
         }
     }
 
-    pub fn to_sql_select(
+    pub fn to_query_node(
         &self,
-        builder: &mut SlottedSqlBuilder,
+        tokens: &mut TokenStream,
         table_path: &Path,
         node_path: QueryNodePath,
         join_condition: Option<&Path>,
     ) {
         let table_path_call_site = table_path.to_call_site(1);
 
-        builder.append_str("select ");
-
-        if !node_path.is_empty() {
-            builder.append_str("array_agg(row(");
-        }
-
-        if self.star.is_some() {
-            builder.append_str("row(");
-            builder.append_slot(quote! { #table_path_call_site::ALL_FIELDS });
-            builder.append_str(")");
-            if !self.fields.is_empty() {
-                builder.append_str(", ");
-            }
-        }
-
+        let mut fields = vec![];
         for (index, field) in self.fields.iter().enumerate() {
             match field {
-                QueryField::Column { name, .. } => {
-                    builder.append_str(&name.to_string());
-                    // For renamed columns:
-                    // builder.append_slot(quote! {
-                    //     #table_path_call_site::columns::#name::NAME
-                    // });
+                QueryField::Column { name, alias, .. } => {
+                    let alias = match alias {
+                        Some(alias) => {
+                            let alias = alias.ident().to_string();
+                            quote! { Some(#alias) }
+                        }
+                        None => quote! { None },
+                    };
+                    fields.push(quote! {
+                        ::kosame::query::QueryField::column(
+                            &#table_path_call_site::columns::#name::COLUMN,
+                            #alias
+                        )
+                    });
                 }
-                QueryField::Relation { name, node, .. } => {
+                QueryField::Relation {
+                    name, node, alias, ..
+                } => {
+                    let alias = match alias {
+                        Some(alias) => {
+                            let alias = alias.ident().to_string();
+                            quote! { Some(#alias) }
+                        }
+                        None => quote! { None },
+                    };
+
                     let mut node_path = node_path.clone();
                     node_path.append(name.clone());
 
@@ -142,45 +146,77 @@ impl QueryNode {
                         .segments
                         .push(Ident::new("target_table", Span::call_site()).into());
 
-                    builder.append_str("(");
-                    node.to_sql_select(builder, &table_path, node_path, Some(&relation_path));
-                    builder.append_str(")");
+                    let mut tokens = TokenStream::new();
+                    node.to_query_node(&mut tokens, &table_path, node_path, Some(&relation_path));
+
+                    let relation_path = relation_path.to_call_site(1);
+
+                    fields.push(quote! {
+                        ::kosame::query::QueryField::relation(
+                            &#relation_path::RELATION,
+                            #tokens,
+                            #alias
+                        )
+                    });
                 }
             }
-
-            if index != self.fields.len() - 1 {
-                builder.append_str(", ");
-            }
         }
 
-        if !node_path.is_empty() {
-            builder.append_str("))");
+        let star = self.star.is_some();
+        quote! {
+            ::kosame::query::QueryNode::new(
+                &#table_path_call_site::TABLE,
+                #star,
+                vec![
+                    #(#fields),*
+                ],
+            )
         }
+        .to_tokens(tokens);
 
-        builder.append_str(" from ");
-
-        // builder.append_str(
-        //     &table_path_call_site
-        //         .segments
-        //         .last()
-        //         .unwrap()
-        //         .ident
-        //         .to_string(),
-        // );
+        // builder.append_str("select ");
         //
-        // For renamed tables:
-        builder.append_slot(quote! { #table_path_call_site::NAME });
-
-        if let Some(join_condition) = join_condition {
-            let path = join_condition.to_call_site(1);
-            builder.append_str(" where ");
-            builder.append_slot(quote! { #path::JOIN_CONDITION });
-        }
-
-        if let Some(limit) = &self.limit {
-            builder.append_str(" limit ");
-            builder.append_str(limit.by().to_sql_string());
-        }
+        // if !node_path.is_empty() {
+        //     builder.append_str("array_agg(row(");
+        // }
+        //
+        // if self.star.is_some() {
+        //     builder.append_str("row(");
+        //     builder.append_slot(quote! { #table_path_call_site::ALL_FIELDS });
+        //     builder.append_str(")");
+        //     if !self.fields.is_empty() {
+        //         builder.append_str(", ");
+        //     }
+        // }
+        //
+        // if !node_path.is_empty() {
+        //     builder.append_str("))");
+        // }
+        //
+        // builder.append_str(" from ");
+        //
+        // // builder.append_str(
+        // //     &table_path_call_site
+        // //         .segments
+        // //         .last()
+        // //         .unwrap()
+        // //         .ident
+        // //         .to_string(),
+        // // );
+        // //
+        // // For renamed tables:
+        // builder.append_slot(quote! {});
+        //
+        // if let Some(join_condition) = join_condition {
+        //     let path = join_condition.to_call_site(1);
+        //     builder.append_str(" where ");
+        //     builder.append_slot(quote! { #path::JOIN_CONDITION });
+        // }
+        //
+        // if let Some(limit) = &self.limit {
+        //     builder.append_str(" limit ");
+        //     builder.append_str(limit.by().to_sql_string());
+        // }
     }
 }
 
