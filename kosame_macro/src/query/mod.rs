@@ -3,6 +3,7 @@ mod filter;
 mod limit;
 mod node;
 mod node_path;
+mod order_by;
 mod star;
 
 use field::QueryField;

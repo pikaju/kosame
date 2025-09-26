@@ -1,6 +1,6 @@
 use syn::{
     Ident, Token,
-    parse::{Parse, ParseBuffer, ParseStream},
+    parse::{Parse, ParseStream},
 };
 
 pub struct Alias {
@@ -14,14 +14,10 @@ impl Alias {
     }
 
     pub fn parse_optional(input: ParseStream) -> syn::Result<Option<Self>> {
-        Ok(if input.peek(Token![as]) {
-            Some(input.parse()?)
-        } else {
-            None
-        })
+        Self::peek(input).then(|| input.parse()).transpose()
     }
 
-    pub fn peek(input: &ParseBuffer<'_>) -> bool {
+    pub fn peek(input: ParseStream) -> bool {
         input.peek(Token![as])
     }
 }

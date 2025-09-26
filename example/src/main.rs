@@ -33,7 +33,6 @@ fn main() {
     use kosame::query::Query;
 
     println!("==== Query ====");
-    let query = my_query::Query {};
     println!("{:?}", my_query::Query::ROOT.to_sql_string(None));
     println!("========");
     let result = client
@@ -63,9 +62,8 @@ fn main() {
                 limit 3 - 1
             },
             where id < 7
+            order by id + 5 desc nulls last, id + 6
             limit 3
-            // where id = 5
-            // order by name
         } as my_query
     };
 }

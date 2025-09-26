@@ -1,3 +1,7 @@
+mod order_by;
+
+pub use order_by::*;
+
 use crate::{
     expr::Expr,
     schema::{Column, Relation, Table},
@@ -12,6 +16,7 @@ pub struct QueryNode {
     star: bool,
     fields: &'static [QueryField],
     filter: Option<Expr>,
+    order_by: Option<OrderBy>,
     limit: Option<Expr>,
 }
 
@@ -21,6 +26,7 @@ impl QueryNode {
         star: bool,
         fields: &'static [QueryField],
         filter: Option<Expr>,
+        order_by: Option<OrderBy>,
         limit: Option<Expr>,
     ) -> Self {
         Self {
@@ -28,6 +34,7 @@ impl QueryNode {
             star,
             fields,
             filter,
+            order_by,
             limit,
         }
     }
@@ -112,6 +119,10 @@ impl QueryNode {
 
         if relation.is_some() && self.filter.is_some() {
             result += ")";
+        }
+
+        if let Some(order_by) = &self.order_by {
+            order_by.to_sql_string(&mut result);
         }
 
         if let Some(limit) = &self.limit {

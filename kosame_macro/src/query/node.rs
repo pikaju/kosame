@@ -1,3 +1,4 @@
+use crate::query::order_by::OrderByClause;
 use crate::row_struct::RowStruct;
 
 use super::star::Star;
@@ -16,6 +17,7 @@ pub struct QueryNode {
     star: Option<Star>,
     fields: Punctuated<QueryField, Token![,]>,
     filter: Option<FilterClause>,
+    order_by: Option<OrderByClause>,
     limit: Option<LimitClause>,
 }
 
@@ -191,6 +193,19 @@ impl QueryNode {
             None => quote! { None },
         };
 
+        let order_by = match &self.order_by {
+            Some(order_by) => {
+                let expr = order_by.to_token_stream();
+                quote! {
+                    {
+                        #scope_module
+                        Some(#expr)
+                    }
+                }
+            }
+            None => quote! { None },
+        };
+
         let limit = match &self.limit {
             Some(limit) => {
                 let expr = limit.expr();
@@ -207,6 +222,7 @@ impl QueryNode {
                     #(#fields),*
                 ],
                 #filter,
+                #order_by,
                 #limit,
             )
         }
@@ -231,7 +247,10 @@ impl Parse for QueryNode {
 
         let mut fields = Punctuated::<QueryField, _>::new();
         while !content.is_empty() {
-            if FilterClause::peek(&content) || LimitClause::peek(&content) {
+            if FilterClause::peek(&content)
+                || OrderByClause::peek(&content)
+                || LimitClause::peek(&content)
+            {
                 break;
             }
 
@@ -273,6 +292,7 @@ impl Parse for QueryNode {
             star,
             fields,
             filter: content.call(FilterClause::parse_optional)?,
+            order_by: content.call(OrderByClause::parse_optional)?,
             limit: content.call(LimitClause::parse_optional)?,
         })
     }

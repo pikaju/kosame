@@ -14,11 +14,7 @@ impl TypeOverride {
     }
 
     pub fn parse_optional(input: ParseStream) -> syn::Result<Option<Self>> {
-        Ok(if input.peek(Token![:]) {
-            Some(input.parse()?)
-        } else {
-            None
-        })
+        Self::peek(input).then(|| input.parse()).transpose()
     }
 
     pub fn peek(input: &ParseBuffer<'_>) -> bool {
