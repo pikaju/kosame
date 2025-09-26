@@ -6,7 +6,7 @@ use syn::{
 use crate::expr::Expr;
 
 pub struct FilterClause {
-    _filter: Token![where],
+    _where: Token![where],
     expr: Expr,
 }
 
@@ -31,7 +31,7 @@ impl FilterClause {
 impl Parse for FilterClause {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            _filter: input.parse()?,
+            _where: input.parse()?,
             expr: input.parse()?,
         })
     }
