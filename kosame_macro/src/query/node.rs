@@ -3,7 +3,7 @@ use crate::row_struct::RowStruct;
 
 use super::star::Star;
 use super::*;
-use super::{filter::FilterClause, limit::LimitClause};
+use super::{filter::FilterClause, limit::LimitClause, offset::Offset};
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
 use syn::{
@@ -19,6 +19,7 @@ pub struct QueryNode {
     filter: Option<FilterClause>,
     order_by: Option<OrderByClause>,
     limit: Option<LimitClause>,
+    offset: Option<Offset>,
 }
 
 impl QueryNode {
@@ -214,6 +215,14 @@ impl QueryNode {
             None => quote! { None },
         };
 
+        let offset = match &self.offset {
+            Some(offset) => {
+                let expr = offset.expr();
+                quote! { Some(#expr) }
+            }
+            None => quote! { None },
+        };
+
         quote! {
             ::kosame::query::QueryNode::new(
                 &#table_path_call_site::TABLE,
@@ -224,6 +233,7 @@ impl QueryNode {
                 #filter,
                 #order_by,
                 #limit,
+                #offset,
             )
         }
         .to_tokens(tokens);
@@ -250,6 +260,7 @@ impl Parse for QueryNode {
             if FilterClause::peek(&content)
                 || OrderByClause::peek(&content)
                 || LimitClause::peek(&content)
+                || Offset::peek(&content)
             {
                 break;
             }
@@ -294,6 +305,7 @@ impl Parse for QueryNode {
             filter: content.call(FilterClause::parse_optional)?,
             order_by: content.call(OrderByClause::parse_optional)?,
             limit: content.call(LimitClause::parse_optional)?,
+            offset: content.call(Offset::parse_optional)?,
         })
     }
 }

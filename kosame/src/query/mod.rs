@@ -18,6 +18,7 @@ pub struct QueryNode {
     filter: Option<Expr>,
     order_by: Option<OrderBy>,
     limit: Option<Expr>,
+    offset: Option<Expr>,
 }
 
 impl QueryNode {
@@ -28,6 +29,7 @@ impl QueryNode {
         filter: Option<Expr>,
         order_by: Option<OrderBy>,
         limit: Option<Expr>,
+        offset: Option<Expr>,
     ) -> Self {
         Self {
             table,
@@ -36,6 +38,7 @@ impl QueryNode {
             filter,
             order_by,
             limit,
+            offset,
         }
     }
 
@@ -128,6 +131,11 @@ impl QueryNode {
         if let Some(limit) = &self.limit {
             result += " limit ";
             limit.to_sql_string(&mut result);
+        }
+
+        if let Some(offset) = &self.offset {
+            result += " offset ";
+            offset.to_sql_string(&mut result);
         }
 
         result

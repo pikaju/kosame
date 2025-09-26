@@ -3,6 +3,7 @@ mod filter;
 mod limit;
 mod node;
 mod node_path;
+mod offset;
 mod order_by;
 mod star;
 

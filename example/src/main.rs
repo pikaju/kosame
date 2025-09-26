@@ -58,12 +58,12 @@ fn main() {
                 post {
                     *,
                 } as cool_post,
-                where id = 19
-                limit 3 - 1
+                offset 1
             },
             where id < 7
             order by id + 5 desc nulls last, id + 6
             limit 3
+            offset 1
         } as my_query
     };
 }
