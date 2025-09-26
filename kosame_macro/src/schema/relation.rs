@@ -31,7 +31,7 @@ impl Relation {
         &self.name
     }
 
-    pub fn to_token_stream(&self, source_table: &Ident) -> TokenStream {
+    pub fn to_token_stream(&self) -> TokenStream {
         let name = &self.name;
         let name_string = name.to_string();
 

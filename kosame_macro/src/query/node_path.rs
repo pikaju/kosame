@@ -21,14 +21,6 @@ impl QueryNodePath {
         self
     }
 
-    pub fn segments(&self) -> &[Ident] {
-        &self.segments
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.segments.is_empty()
-    }
-
     pub fn to_struct_name(&self, prefix: &str) -> Ident {
         let mut struct_name = prefix.to_string();
         for segment in &self.segments {

@@ -48,7 +48,7 @@ impl ToTokens for Table {
         let relations = self
             .relations
             .iter()
-            .map(|relation| relation.to_token_stream(&self.name));
+            .map(|relation| relation.to_token_stream());
 
         let column_names = self.columns.iter().map(Column::name);
         let column_names2 = column_names.clone();
