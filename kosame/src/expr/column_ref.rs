@@ -5,7 +5,7 @@ pub struct ColumnRef {
 }
 
 impl ColumnRef {
-    pub fn new(column: &'static Column) -> Self {
+    pub const fn new(column: &'static Column) -> Self {
         Self { column }
     }
 

@@ -70,15 +70,20 @@ fn parse_expr(input: ParseStream, min_precedence: u32) -> syn::Result<Expr> {
 
 impl ToTokens for Expr {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let inner = match self {
-            Self::Binary(inner) => inner.to_token_stream(),
-            Self::ColumnRef(inner) => inner.to_token_stream(),
-            Self::Lit(inner) => inner.to_token_stream(),
-            Self::Paren(inner) => inner.to_token_stream(),
-        };
-        quote! {
-            ::kosame::expr::Expr::from(#inner)
+        macro_rules! branches {
+            ($($variant:ident),*) => {
+                match self {
+                    $(
+                        Self::$variant(inner) => {
+                            quote! {
+                                ::kosame::expr::Expr::$variant(#inner)
+                            }.to_tokens(tokens);
+                        }
+                    ),*
+                }
+            };
         }
-        .to_tokens(tokens)
+
+        branches!(Binary, ColumnRef, Lit, Paren);
     }
 }

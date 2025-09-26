@@ -25,18 +25,3 @@ impl Expr {
         }
     }
 }
-
-macro_rules! impl_from {
-    ($type:ident) => {
-        impl From<$type> for Expr {
-            fn from(v: $type) -> Self {
-                Self::$type(v)
-            }
-        }
-    };
-}
-
-impl_from!(Binary);
-impl_from!(ColumnRef);
-impl_from!(Lit);
-impl_from!(Paren);

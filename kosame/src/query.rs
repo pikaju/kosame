@@ -13,11 +13,11 @@ pub trait Query {
 pub struct QueryNode {
     table: &'static Table,
     star: bool,
-    fields: Vec<QueryField>,
+    fields: &'static [QueryField],
 }
 
 impl QueryNode {
-    pub fn new(table: &'static Table, star: bool, fields: Vec<QueryField>) -> Self {
+    pub const fn new(table: &'static Table, star: bool, fields: &'static [QueryField]) -> Self {
         Self {
             table,
             star,
@@ -103,7 +103,7 @@ pub enum QueryField {
         alias: Option<&'static str>,
     },
     Expr {
-        expr: &'static Expr,
+        expr: Expr,
         alias: &'static str,
     },
 }

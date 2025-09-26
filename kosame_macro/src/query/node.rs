@@ -161,7 +161,7 @@ impl QueryNode {
                             }
 
                             ::kosame::query::QueryField::Expr {
-                                expr: &#expr,
+                                expr: #expr,
                                 alias: #alias
                             }
                         }
@@ -175,7 +175,7 @@ impl QueryNode {
             ::kosame::query::QueryNode::new(
                 &#table_path_call_site::TABLE,
                 #star,
-                vec![
+                &[
                     #(#fields),*
                 ],
             )

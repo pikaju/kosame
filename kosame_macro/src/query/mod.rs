@@ -48,13 +48,11 @@ impl ToTokens for Query {
             tokens
         };
 
-        let sql_tokens = {
+        let query_node = {
             let mut tokens = TokenStream::new();
             self.body
                 .to_query_node_tokens(&mut tokens, self, QueryNodePath::new());
-            quote! {
-                #tokens.to_sql_string(None)
-            }
+            tokens
         };
 
         quote! {
@@ -65,8 +63,10 @@ impl ToTokens for Query {
                     }
 
                     impl Query {
+                        const NODE: ::kosame::query::QueryNode = #query_node;
+
                         pub fn to_sql_string(&self) -> String {
-                            #sql_tokens
+                            Self::NODE.to_sql_string(None)
                         }
                     }
                 }
