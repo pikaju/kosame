@@ -1,9 +1,9 @@
-use crate::query::order_by::OrderByClause;
+use crate::query::order_by::OrderBy;
 use crate::row_struct::RowStruct;
 
 use super::star::Star;
 use super::*;
-use super::{filter::FilterClause, limit::LimitClause, offset::Offset};
+use super::{filter::Filter, limit::Limit, offset::Offset};
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
 use syn::{
@@ -16,9 +16,9 @@ pub struct QueryNode {
     _brace: syn::token::Brace,
     star: Option<Star>,
     fields: Punctuated<QueryField, Token![,]>,
-    filter: Option<FilterClause>,
-    order_by: Option<OrderByClause>,
-    limit: Option<LimitClause>,
+    filter: Option<Filter>,
+    order_by: Option<OrderBy>,
+    limit: Option<Limit>,
     offset: Option<Offset>,
 }
 
@@ -257,9 +257,9 @@ impl Parse for QueryNode {
 
         let mut fields = Punctuated::<QueryField, _>::new();
         while !content.is_empty() {
-            if FilterClause::peek(&content)
-                || OrderByClause::peek(&content)
-                || LimitClause::peek(&content)
+            if Filter::peek(&content)
+                || OrderBy::peek(&content)
+                || Limit::peek(&content)
                 || Offset::peek(&content)
             {
                 break;
@@ -302,9 +302,9 @@ impl Parse for QueryNode {
             _brace,
             star,
             fields,
-            filter: content.call(FilterClause::parse_optional)?,
-            order_by: content.call(OrderByClause::parse_optional)?,
-            limit: content.call(LimitClause::parse_optional)?,
+            filter: content.call(Filter::parse_optional)?,
+            order_by: content.call(OrderBy::parse_optional)?,
+            limit: content.call(Limit::parse_optional)?,
             offset: content.call(Offset::parse_optional)?,
         })
     }

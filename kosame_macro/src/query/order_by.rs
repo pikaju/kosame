@@ -6,7 +6,7 @@ use syn::{
     punctuated::Punctuated,
 };
 
-use crate::{expr::Expr, query::limit::LimitClause};
+use crate::{expr::Expr, query::limit::Limit};
 
 mod kw {
     use syn::custom_keyword;
@@ -22,13 +22,13 @@ mod kw {
     custom_keyword!(last);
 }
 
-pub struct OrderByClause {
+pub struct OrderBy {
     _order: kw::order,
     _by: kw::by,
     entries: Punctuated<OrderByEntry, Token![,]>,
 }
 
-impl OrderByClause {
+impl OrderBy {
     pub fn parse_optional(input: ParseStream) -> syn::Result<Option<Self>> {
         Self::peek(input).then(|| input.parse()).transpose()
     }
@@ -38,16 +38,16 @@ impl OrderByClause {
     }
 }
 
-impl Parse for OrderByClause {
+impl Parse for OrderBy {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             _order: input.parse()?,
             _by: input.parse()?,
             entries: {
                 let mut punctuated = Punctuated::new();
-                while !input.is_empty() && !LimitClause::peek(input) {
+                while !input.is_empty() && !Limit::peek(input) {
                     punctuated.push(input.parse()?);
-                    if input.is_empty() || LimitClause::peek(input) {
+                    if input.is_empty() || Limit::peek(input) {
                         break;
                     }
                     punctuated.push_punct(input.parse()?);
@@ -64,7 +64,7 @@ impl Parse for OrderByClause {
     }
 }
 
-impl ToTokens for OrderByClause {
+impl ToTokens for OrderBy {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let entries = self.entries.iter().map(OrderByEntry::to_token_stream);
         quote! { ::kosame::query::OrderBy::new(&[#(#entries),*]) }.to_tokens(tokens)

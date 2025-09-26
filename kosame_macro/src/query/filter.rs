@@ -5,12 +5,12 @@ use syn::{
 
 use crate::expr::Expr;
 
-pub struct FilterClause {
+pub struct Filter {
     _where: Token![where],
     expr: Expr,
 }
 
-impl FilterClause {
+impl Filter {
     pub fn expr(&self) -> &Expr {
         &self.expr
     }
@@ -24,7 +24,7 @@ impl FilterClause {
     }
 }
 
-impl Parse for FilterClause {
+impl Parse for Filter {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             _where: input.parse()?,

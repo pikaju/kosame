@@ -8,12 +8,12 @@ mod kw {
     custom_keyword!(limit);
 }
 
-pub struct LimitClause {
+pub struct Limit {
     _limit: kw::limit,
     expr: Expr,
 }
 
-impl LimitClause {
+impl Limit {
     pub fn expr(&self) -> &Expr {
         &self.expr
     }
@@ -27,7 +27,7 @@ impl LimitClause {
     }
 }
 
-impl Parse for LimitClause {
+impl Parse for Limit {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             _limit: input.parse()?,
