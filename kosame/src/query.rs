@@ -11,14 +11,21 @@ pub struct QueryNode {
     table: &'static Table,
     star: bool,
     fields: &'static [QueryField],
+    limit: Option<Expr>,
 }
 
 impl QueryNode {
-    pub const fn new(table: &'static Table, star: bool, fields: &'static [QueryField]) -> Self {
+    pub const fn new(
+        table: &'static Table,
+        star: bool,
+        fields: &'static [QueryField],
+        limit: Option<Expr>,
+    ) -> Self {
         Self {
             table,
             star,
             fields,
+            limit,
         }
     }
 
@@ -53,7 +60,7 @@ impl QueryNode {
                     result += &node.to_sql_string(Some(relation));
                     result += ")";
                 }
-                QueryField::Expr { expr, alias } => {
+                QueryField::Expr { expr, .. } => {
                     expr.to_sql_string(&mut result);
                 }
             }
@@ -83,6 +90,11 @@ impl QueryNode {
                     result += " and ";
                 }
             }
+        }
+
+        if let Some(limit) = &self.limit {
+            result += " limit ";
+            limit.to_sql_string(&mut result);
         }
 
         result

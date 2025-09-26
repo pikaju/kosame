@@ -1,7 +1,6 @@
-use syn::{
-    LitInt,
-    parse::{Parse, ParseStream},
-};
+use syn::parse::{Parse, ParseStream};
+
+use crate::expr::Expr;
 
 mod kw {
     use syn::custom_keyword;
@@ -11,12 +10,12 @@ mod kw {
 
 pub struct LimitClause {
     _limit: kw::limit,
-    by: LimitBy,
+    expr: Expr,
 }
 
 impl LimitClause {
-    pub fn by(&self) -> &LimitBy {
-        &self.by
+    pub fn expr(&self) -> &Expr {
+        &self.expr
     }
 
     pub fn parse_optional(input: ParseStream) -> syn::Result<Option<Self>> {
@@ -36,25 +35,7 @@ impl Parse for LimitClause {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             _limit: input.parse()?,
-            by: input.parse()?,
+            expr: input.parse()?,
         })
-    }
-}
-
-pub enum LimitBy {
-    Literal(LitInt),
-}
-
-impl LimitBy {
-    pub fn to_sql_string(&self) -> &str {
-        match self {
-            Self::Literal(lit) => lit.base10_digits(),
-        }
-    }
-}
-
-impl Parse for LimitBy {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        Ok(Self::Literal(input.parse()?))
     }
 }

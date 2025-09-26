@@ -57,7 +57,7 @@ fn main() {
                 post {
                     *,
                 } as cool_post,
-                limit 1
+                limit 3 - 2
             },
             limit 3
             // where id = 5

@@ -15,7 +15,7 @@ pub struct QueryNode {
     _brace: syn::token::Brace,
     star: Option<Star>,
     fields: Punctuated<QueryField, Token![,]>,
-    _limit: Option<LimitClause>,
+    limit: Option<LimitClause>,
 }
 
 impl QueryNode {
@@ -171,6 +171,14 @@ impl QueryNode {
         }
 
         let star = self.star.is_some();
+        let limit = match &self.limit {
+            Some(limit) => {
+                let expr = limit.expr();
+                quote! { Some(#expr) }
+            }
+            None => quote! { None },
+        };
+
         quote! {
             ::kosame::query::QueryNode::new(
                 &#table_path_call_site::TABLE,
@@ -178,6 +186,7 @@ impl QueryNode {
                 &[
                     #(#fields),*
                 ],
+                #limit,
             )
         }
         .to_tokens(tokens);
@@ -242,7 +251,7 @@ impl Parse for QueryNode {
             _brace,
             star,
             fields,
-            _limit: content.call(LimitClause::parse_optional)?,
+            limit: content.call(LimitClause::parse_optional)?,
         })
     }
 }
