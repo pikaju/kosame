@@ -7,7 +7,7 @@ pub struct Binary {
 }
 
 impl Binary {
-    pub fn new(left: &'static Expr, op: BinOp, right: &'static Expr) -> Self {
+    pub const fn new(left: &'static Expr, op: BinOp, right: &'static Expr) -> Self {
         Self { left, op, right }
     }
 

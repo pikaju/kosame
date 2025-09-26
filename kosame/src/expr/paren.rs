@@ -5,7 +5,7 @@ pub struct Paren {
 }
 
 impl Paren {
-    pub fn new(expr: &'static Expr) -> Self {
+    pub const fn new(expr: &'static Expr) -> Self {
         Self { expr }
     }
 

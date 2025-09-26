@@ -151,10 +151,19 @@ impl QueryNode {
                 }
                 QueryField::Expr { expr, alias, .. } => {
                     let alias = alias.ident().to_string();
+                    let table_path = node_path.resolve(&query.table);
+                    let table_path_call_site = table_path.to_call_site(2);
+
                     fields.push(quote! {
-                        ::kosame::query::QueryField::Expr {
-                            expr: &#expr,
-                            alias: #alias
+                        {
+                            mod scope {
+                                pub use #table_path_call_site::*;
+                            }
+
+                            ::kosame::query::QueryField::Expr {
+                                expr: &#expr,
+                                alias: #alias
+                            }
                         }
                     });
                 }
