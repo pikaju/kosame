@@ -1,3 +1,5 @@
+use proc_macro2::TokenStream;
+use quote::ToTokens;
 use syn::{
     Ident,
     parse::{Parse, ParseStream},
@@ -5,6 +7,10 @@ use syn::{
 
 pub struct ColumnRef {
     name: Ident,
+}
+
+impl ToTokens for ColumnRef {
+    fn to_tokens(&self, tokens: &mut TokenStream) {}
 }
 
 impl Parse for ColumnRef {

@@ -46,7 +46,7 @@ fn main() {
         schema::posts {
             /// all the post fields
             * as all_of_them,
-            id + 5 as pip type I32,
+            (((id + 5))) as pip type I32,
             comments {
                 post_id as postid,
                 content as posti type ::std::string::String,

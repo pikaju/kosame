@@ -1,4 +1,5 @@
-use quote::ToTokens;
+use proc_macro2::TokenStream;
+use quote::{ToTokens, quote};
 use syn::parse::{Parse, ParseStream};
 
 pub enum Lit {
@@ -19,12 +20,21 @@ impl Parse for Lit {
             _ => {
                 return Err(syn::Error::new(
                     lit.span(),
-                    format!(
-                        "unsupported literal type `{}`",
-                        lit.to_token_stream().to_string()
-                    ),
+                    format!("unsupported literal type `{}`", lit.to_token_stream()),
                 ));
             }
         })
+    }
+}
+
+impl ToTokens for Lit {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let token_stream = match self {
+            Self::Int(inner) => quote! { kosame::expr::Lit::Int(#inner as i64) },
+            Self::Float(inner) => quote! { kosame::expr::Lit::Float(#inner as f64) },
+            Self::Str(inner) => quote! { kosame::expr::Lit::Str(#inner) },
+            Self::Bool(inner) => quote! { kosame::expr::Lit::Bool(#inner) },
+        };
+        token_stream.to_tokens(tokens);
     }
 }

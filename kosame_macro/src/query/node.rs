@@ -15,7 +15,7 @@ pub struct QueryNode {
     _brace: syn::token::Brace,
     star: Option<Star>,
     fields: Punctuated<QueryField, Token![,]>,
-    limit: Option<LimitClause>,
+    _limit: Option<LimitClause>,
 }
 
 impl QueryNode {
@@ -111,10 +111,10 @@ impl QueryNode {
                         None => quote! { None },
                     };
                     fields.push(quote! {
-                        ::kosame::query::QueryField::column(
-                            &#table_path_call_site::columns::#name::COLUMN,
-                            #alias
-                        )
+                        ::kosame::query::QueryField::Column {
+                            column: &#table_path_call_site::columns::#name::COLUMN,
+                            alias: #alias
+                        }
                     });
                 }
                 QueryField::Relation {
@@ -142,19 +142,22 @@ impl QueryNode {
                     let relation_path = relation_path.to_call_site(1);
 
                     fields.push(quote! {
-                        ::kosame::query::QueryField::relation(
-                            &#relation_path::RELATION,
-                            #tokens,
-                            #alias
-                        )
+                        ::kosame::query::QueryField::Relation {
+                            relation: &#relation_path::RELATION,
+                            node: #tokens,
+                            alias: #alias
+                        }
                     });
                 }
-                QueryField::Expr {
-                    attrs,
-                    expr,
-                    alias,
-                    type_override,
-                } => continue,
+                QueryField::Expr { expr, alias, .. } => {
+                    let alias = alias.ident().to_string();
+                    fields.push(quote! {
+                        ::kosame::query::QueryField::Expr {
+                            expr: &#expr,
+                            alias: #alias
+                        }
+                    });
+                }
             }
         }
 
@@ -230,7 +233,7 @@ impl Parse for QueryNode {
             _brace,
             star,
             fields,
-            limit: content.call(LimitClause::parse_optional)?,
+            _limit: content.call(LimitClause::parse_optional)?,
         })
     }
 }

@@ -1,4 +1,7 @@
-use crate::schema::{Column, Relation, Table};
+use crate::{
+    expr::Expr,
+    schema::{Column, Relation, Table},
+};
 
 pub trait Query {
     type Params;
@@ -53,6 +56,9 @@ impl QueryNode {
                     result += &node.to_sql_string(Some(relation));
                     result += ")";
                 }
+                QueryField::Expr { expr, alias } => {
+                    expr.to_sql_string(&mut result);
+                }
             }
             if index != self.fields.len() - 1 {
                 result += ", ";
@@ -96,22 +102,8 @@ pub enum QueryField {
         node: QueryNode,
         alias: Option<&'static str>,
     },
-}
-
-impl QueryField {
-    pub fn column(column: &'static Column, alias: Option<&'static str>) -> Self {
-        Self::Column { column, alias }
-    }
-
-    pub fn relation(
-        relation: &'static Relation,
-        node: QueryNode,
-        alias: Option<&'static str>,
-    ) -> Self {
-        Self::Relation {
-            relation,
-            node,
-            alias,
-        }
-    }
+    Expr {
+        expr: &'static Expr,
+        alias: &'static str,
+    },
 }

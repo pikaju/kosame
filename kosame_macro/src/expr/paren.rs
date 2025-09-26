@@ -1,3 +1,4 @@
+use quote::{ToTokens, quote};
 use syn::{
     parenthesized,
     parse::{Parse, ParseStream},
@@ -17,5 +18,15 @@ impl Parse for Paren {
             _paren: parenthesized!(content in input),
             expr: content.parse()?,
         })
+    }
+}
+
+impl ToTokens for Paren {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        let expr = &self.expr;
+        quote! {
+            ::kosame::expr::Paren::new(&#expr)
+        }
+        .to_tokens(tokens);
     }
 }

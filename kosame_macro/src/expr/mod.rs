@@ -7,6 +7,8 @@ use binary::{Associativity, BinOp, Binary};
 use column_ref::ColumnRef;
 use lit::Lit;
 use paren::Paren;
+use proc_macro2::TokenStream;
+use quote::{ToTokens, quote};
 use syn::parse::{Parse, ParseStream};
 
 pub enum Expr {
@@ -64,4 +66,19 @@ fn parse_expr(input: ParseStream, min_precedence: u32) -> syn::Result<Expr> {
     }
 
     Ok(lhs)
+}
+
+impl ToTokens for Expr {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let inner = match self {
+            Self::Binary(inner) => inner.to_token_stream(),
+            Self::ColumnRef(inner) => inner.to_token_stream(),
+            Self::Lit(inner) => inner.to_token_stream(),
+            Self::Paren(inner) => inner.to_token_stream(),
+        };
+        quote! {
+            ::kosame::expr::Expr::from(#inner)
+        }
+        .to_tokens(tokens)
+    }
 }
