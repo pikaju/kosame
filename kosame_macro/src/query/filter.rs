@@ -1,15 +1,12 @@
-use syn::parse::{Parse, ParseStream};
+use syn::{
+    Token,
+    parse::{Parse, ParseStream},
+};
 
 use crate::expr::Expr;
 
-mod kw {
-    use syn::custom_keyword;
-
-    custom_keyword!(filter);
-}
-
 pub struct FilterClause {
-    _filter: kw::filter,
+    _filter: Token![where],
     expr: Expr,
 }
 
@@ -19,7 +16,7 @@ impl FilterClause {
     }
 
     pub fn parse_optional(input: ParseStream) -> syn::Result<Option<Self>> {
-        Ok(if input.peek(kw::filter) {
+        Ok(if input.peek(Token![where]) {
             Some(input.parse()?)
         } else {
             None
@@ -27,7 +24,7 @@ impl FilterClause {
     }
 
     pub fn peek(input: ParseStream) -> bool {
-        input.peek(kw::filter)
+        input.peek(Token![where])
     }
 }
 

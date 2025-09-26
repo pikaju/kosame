@@ -59,10 +59,10 @@ fn main() {
                 post {
                     *,
                 } as cool_post,
-                filter id = 19
+                where id = 19
                 limit 3 - 1
             },
-            filter id < 7
+            where id < 7
             limit 3
             // where id = 5
             // order by name
