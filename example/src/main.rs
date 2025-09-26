@@ -21,6 +21,7 @@ pub mod schema {
 }
 
 type I32 = i32;
+type Bool = bool;
 
 fn main() {
     let mut client = postgres::Client::connect(
@@ -50,7 +51,7 @@ fn main() {
         schema::posts {
             /// all the post fields
             * as all_of_them,
-            id + 5 as pip type I32,
+            id = 5 as pip type Bool,
             comments {
                 post_id as postid,
                 content type ::std::string::String,

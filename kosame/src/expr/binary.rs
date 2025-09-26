@@ -19,19 +19,36 @@ impl Binary {
 }
 
 pub enum BinOp {
-    Add,
-    Subtract,
+    // multiplication, division, modulo
     Multiply,
     Divide,
+    Modulo,
+    // addition, subtraction
+    Add,
+    Subtract,
+    // comparison operators
+    Eq,
+    Uneq,
+    LessThan,
+    GreaterThan,
+    LessThanOrEq,
+    GreaterThanOrEq,
 }
 
 impl BinOp {
     pub fn to_sql_string(&self, buf: &mut String) {
         match self {
-            Self::Add => *buf += " + ",
-            Self::Subtract => *buf += " - ",
             Self::Multiply => *buf += " * ",
             Self::Divide => *buf += " / ",
+            Self::Modulo => *buf += " % ",
+            Self::Add => *buf += " + ",
+            Self::Subtract => *buf += " - ",
+            Self::Eq => *buf += " = ",
+            Self::Uneq => *buf += " <> ",
+            Self::LessThan => *buf += " < ",
+            Self::GreaterThan => *buf += " > ",
+            Self::LessThanOrEq => *buf += " <= ",
+            Self::GreaterThanOrEq => *buf += " >= ",
         }
     }
 }

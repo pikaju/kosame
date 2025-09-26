@@ -42,10 +42,20 @@ pub enum Associativity {
 
 #[allow(dead_code)]
 pub enum BinOp {
-    Add(Token![+]),
-    Subtract(Token![-]),
+    // multiplication, division, modulo
     Multiply(Token![*]),
     Divide(Token![/]),
+    Modulo(Token![%]),
+    // addition, subtraction
+    Add(Token![+]),
+    Subtract(Token![-]),
+    // comparison operators
+    Eq(Token![=]),
+    Uneq(Token![<], Token![>]),
+    LessThan(Token![<]),
+    GreaterThan(Token![>]),
+    LessThanOrEq(Token![<], Token![=]),
+    GreaterThanOrEq(Token![>], Token![=]),
 }
 
 impl BinOp {
@@ -58,11 +68,19 @@ impl BinOp {
     }
 
     pub fn precedence(&self) -> u32 {
+        // Taken from https://www.postgresql.org/docs/18/sql-syntax-lexical.html#SQL-PRECEDENCE
         match self {
-            Self::Add(_) => 1,
-            Self::Subtract(_) => 1,
-            Self::Multiply(_) => 2,
-            Self::Divide(_) => 2,
+            Self::Multiply(_) => 9,
+            Self::Divide(_) => 9,
+            Self::Modulo(_) => 9,
+            Self::Add(_) => 8,
+            Self::Subtract(_) => 8,
+            Self::Eq(_) => 5,
+            Self::Uneq(..) => 5,
+            Self::LessThan(_) => 5,
+            Self::GreaterThan(_) => 5,
+            Self::LessThanOrEq(..) => 5,
+            Self::GreaterThanOrEq(..) => 5,
         }
     }
 }
@@ -71,26 +89,61 @@ impl Parse for BinOp {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let lookahead = input.lookahead1();
         if lookahead.peek(Token![+]) {
-            Ok(Self::Add(input.parse()?))
+            return Ok(Self::Add(input.parse()?));
         } else if lookahead.peek(Token![-]) {
-            Ok(Self::Subtract(input.parse()?))
+            return Ok(Self::Subtract(input.parse()?));
         } else if lookahead.peek(Token![*]) {
-            Ok(Self::Multiply(input.parse()?))
+            return Ok(Self::Multiply(input.parse()?));
         } else if lookahead.peek(Token![/]) {
-            Ok(Self::Divide(input.parse()?))
-        } else {
-            Err(lookahead.error())
+            return Ok(Self::Divide(input.parse()?));
+        } else if lookahead.peek(Token![%]) {
+            return Ok(Self::Modulo(input.parse()?));
         }
+
+        if lookahead.peek(Token![=]) {
+            return Ok(Self::Eq(input.parse()?));
+        } else if lookahead.peek(Token![<]) {
+            if input.peek2(Token![>]) {
+                return Ok(Self::Uneq(input.parse()?, input.parse()?));
+            } else if input.peek2(Token![=]) {
+                return Ok(Self::LessThanOrEq(input.parse()?, input.parse()?));
+            } else {
+                return Ok(Self::LessThan(input.parse()?));
+            }
+        } else if lookahead.peek(Token![>]) {
+            if input.peek2(Token![=]) {
+                return Ok(Self::GreaterThanOrEq(input.parse()?, input.parse()?));
+            } else {
+                return Ok(Self::GreaterThan(input.parse()?));
+            }
+        }
+
+        Err(lookahead.error())
     }
 }
 
 impl ToTokens for BinOp {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        match self {
-            Self::Add(_) => quote! { ::kosame::expr::BinOp::Add }.to_tokens(tokens),
-            Self::Subtract(_) => quote! { ::kosame::expr::BinOp::Subtract }.to_tokens(tokens),
-            Self::Multiply(_) => quote! { ::kosame::expr::BinOp::Multiply }.to_tokens(tokens),
-            Self::Divide(_) => quote! { ::kosame::expr::BinOp::Divide }.to_tokens(tokens),
+        macro_rules! branches {
+            ($($variant:ident)*) => {
+                match self {
+                    $(Self::$variant(..) => quote! { ::kosame::expr::BinOp::$variant }.to_tokens(tokens)),*
+                }
+            };
         }
+
+        branches!(
+            Multiply
+            Divide
+            Modulo
+            Add
+            Subtract
+            Eq
+            Uneq
+            LessThan
+            GreaterThan
+            LessThanOrEq
+            GreaterThanOrEq
+        );
     }
 }
