@@ -10,7 +10,11 @@ impl Lit {
         match self {
             Self::Int(inner) => *buf += &inner.to_string(),
             Self::Float(inner) => *buf += &inner.to_string(),
-            Self::Str(inner) => *buf += inner,
+            Self::Str(inner) => {
+                *buf += "'";
+                *buf += inner;
+                *buf += "'";
+            }
             Self::Bool(inner) => *buf += &inner.to_string(),
         }
     }

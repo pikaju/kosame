@@ -50,7 +50,7 @@ fn main() {
         schema::posts {
             /// all the post fields
             * as all_of_them,
-            id = 5 as pip: Bool,
+            "kek" as pip: ::std::string::String,
             comments {
                 id,
                 post_id as postid: I32,
