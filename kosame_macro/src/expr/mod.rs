@@ -1,9 +1,11 @@
 mod binary;
+mod bind_param;
 mod column_ref;
 mod lit;
 mod paren;
 
 use binary::{Associativity, BinOp, Binary};
+use bind_param::BindParam;
 use column_ref::ColumnRef;
 use lit::Lit;
 use paren::Paren;
@@ -13,6 +15,7 @@ use syn::parse::{Parse, ParseStream};
 
 pub enum Expr {
     Binary(Binary),
+    BindParam(BindParam),
     ColumnRef(ColumnRef),
     Lit(Lit),
     Paren(Paren),
@@ -27,6 +30,8 @@ impl Parse for Expr {
 fn parse_prefix(input: ParseStream) -> syn::Result<Expr> {
     if input.peek(syn::token::Paren) {
         Ok(Expr::Paren(input.parse()?))
+    } else if BindParam::peek(input) {
+        Ok(Expr::BindParam(input.parse()?))
     } else if input.fork().parse::<Lit>().is_ok() {
         Ok(Expr::Lit(input.parse()?))
     } else if input.fork().parse::<ColumnRef>().is_ok() {
@@ -78,6 +83,6 @@ impl ToTokens for Expr {
             };
         }
 
-        branches!(Binary ColumnRef Lit Paren);
+        branches!(Binary BindParam ColumnRef Lit Paren);
     }
 }

@@ -47,6 +47,7 @@ fn main() {
     }
 
     kosame::query! {
+        #[serde(rename_all = "camelCase")]
         schema::posts {
             /// all the post fields
             * as all_of_them,
@@ -55,12 +56,10 @@ fn main() {
                 id,
                 post_id as postid: I32,
                 content: ::std::string::String,
-                post {
-                    *,
-                } as cool_post,
+                post { * } as cool_post,
                 offset 1
             },
-            where id < 7
+            where id = :id
             order by id + 5 desc nulls last, id + 6
             limit 3
             offset 1
