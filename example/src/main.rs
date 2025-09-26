@@ -51,11 +51,11 @@ fn main() {
         schema::posts {
             /// all the post fields
             * as all_of_them,
-            id = 5 as pip type Bool,
+            id = 5 as pip: Bool,
             comments {
                 id,
-                post_id as postid,
-                content type ::std::string::String,
+                post_id as postid: I32,
+                content: ::std::string::String,
                 post {
                     *,
                 } as cool_post,
