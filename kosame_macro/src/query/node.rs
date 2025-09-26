@@ -1,8 +1,8 @@
 use crate::row_struct::RowStruct;
 
-use super::limit::LimitClause;
 use super::star::Star;
 use super::*;
+use super::{filter::FilterClause, limit::LimitClause};
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
 use syn::{
@@ -15,6 +15,7 @@ pub struct QueryNode {
     _brace: syn::token::Brace,
     star: Option<Star>,
     fields: Punctuated<QueryField, Token![,]>,
+    filter: Option<FilterClause>,
     limit: Option<LimitClause>,
 }
 
@@ -99,6 +100,16 @@ impl QueryNode {
         let table_path = node_path.resolve(&query.table);
         let table_path_call_site = table_path.to_call_site(1);
 
+        let scope_module = {
+            let table_path = node_path.resolve(&query.table);
+            let table_path_call_site = table_path.to_call_site(2);
+            quote! {
+                mod scope {
+                    pub use #table_path_call_site::*;
+                }
+            }
+        };
+
         let mut fields = vec![];
         for field in &self.fields {
             match field {
@@ -151,15 +162,10 @@ impl QueryNode {
                 }
                 QueryField::Expr { expr, alias, .. } => {
                     let alias = alias.ident().to_string();
-                    let table_path = node_path.resolve(&query.table);
-                    let table_path_call_site = table_path.to_call_site(2);
 
                     fields.push(quote! {
                         {
-                            mod scope {
-                                pub use #table_path_call_site::*;
-                            }
-
+                            #scope_module
                             ::kosame::query::QueryField::Expr {
                                 expr: #expr,
                                 alias: #alias
@@ -171,6 +177,20 @@ impl QueryNode {
         }
 
         let star = self.star.is_some();
+
+        let filter = match &self.filter {
+            Some(filter) => {
+                let expr = filter.expr();
+                quote! {
+                    {
+                        #scope_module
+                        Some(#expr)
+                    }
+                }
+            }
+            None => quote! { None },
+        };
+
         let limit = match &self.limit {
             Some(limit) => {
                 let expr = limit.expr();
@@ -186,6 +206,7 @@ impl QueryNode {
                 &[
                     #(#fields),*
                 ],
+                #filter,
                 #limit,
             )
         }
@@ -210,7 +231,7 @@ impl Parse for QueryNode {
 
         let mut fields = Punctuated::<QueryField, _>::new();
         while !content.is_empty() {
-            if LimitClause::peek(&content) {
+            if FilterClause::peek(&content) || LimitClause::peek(&content) {
                 break;
             }
 
@@ -251,6 +272,7 @@ impl Parse for QueryNode {
             _brace,
             star,
             fields,
+            filter: content.call(FilterClause::parse_optional)?,
             limit: content.call(LimitClause::parse_optional)?,
         })
     }

@@ -53,13 +53,16 @@ fn main() {
             * as all_of_them,
             id = 5 as pip type Bool,
             comments {
+                id,
                 post_id as postid,
                 content type ::std::string::String,
                 post {
                     *,
                 } as cool_post,
-                limit 3 - 2
+                filter id = 19
+                limit 3 - 1
             },
+            filter id < 7
             limit 3
             // where id = 5
             // order by name

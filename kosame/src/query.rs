@@ -11,6 +11,7 @@ pub struct QueryNode {
     table: &'static Table,
     star: bool,
     fields: &'static [QueryField],
+    filter: Option<Expr>,
     limit: Option<Expr>,
 }
 
@@ -19,12 +20,14 @@ impl QueryNode {
         table: &'static Table,
         star: bool,
         fields: &'static [QueryField],
+        filter: Option<Expr>,
         limit: Option<Expr>,
     ) -> Self {
         Self {
             table,
             star,
             fields,
+            filter,
             limit,
         }
     }
@@ -76,8 +79,15 @@ impl QueryNode {
         result += " from ";
         result += self.table.name();
 
-        if let Some(relation) = relation {
+        if relation.is_some() || self.filter.is_some() {
             result += " where ";
+        }
+
+        if relation.is_some() && self.filter.is_some() {
+            result += "(";
+        }
+
+        if let Some(relation) = relation {
             for (index, (source_column, target_column)) in relation.column_pairs().enumerate() {
                 result += relation.source_table();
                 result += ".";
@@ -90,6 +100,18 @@ impl QueryNode {
                     result += " and ";
                 }
             }
+        }
+
+        if relation.is_some() && self.filter.is_some() {
+            result += ") and (";
+        }
+
+        if let Some(filter) = &self.filter {
+            filter.to_sql_string(&mut result);
+        }
+
+        if relation.is_some() && self.filter.is_some() {
+            result += ")";
         }
 
         if let Some(limit) = &self.limit {
