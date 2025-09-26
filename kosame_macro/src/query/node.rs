@@ -220,7 +220,7 @@ impl Parse for QueryNode {
             if field.is_column() && star.is_some() {
                 return Err(syn::Error::new(
                     field.span(),
-                    "only relation fields are allowed after `*`",
+                    "column references are not allowed after `*`",
                 ));
             }
 

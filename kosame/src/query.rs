@@ -4,10 +4,7 @@ use crate::{
 };
 
 pub trait Query {
-    type Params;
-    type Result;
-
-    fn into_node() -> QueryNode;
+    const ROOT: QueryNode;
 }
 
 pub struct QueryNode {

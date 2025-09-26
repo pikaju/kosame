@@ -62,12 +62,8 @@ impl ToTokens for Query {
                     pub struct Query {
                     }
 
-                    impl Query {
-                        const NODE: ::kosame::query::QueryNode = #query_node;
-
-                        pub fn to_sql_string(&self) -> String {
-                            Self::NODE.to_sql_string(None)
-                        }
+                    impl ::kosame::query::Query for Query {
+                        const ROOT: ::kosame::query::QueryNode = #query_node;
                     }
                 }
         }

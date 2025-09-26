@@ -29,11 +29,15 @@ fn main() {
     )
     .unwrap();
 
+    use kosame::query::Query;
+
     println!("==== Query ====");
     let query = my_query::Query {};
-    println!("{:?}", query.to_sql_string());
+    println!("{:?}", my_query::Query::ROOT.to_sql_string(None));
     println!("========");
-    let result = client.query(&query.to_sql_string(), &[]).unwrap();
+    let result = client
+        .query(&my_query::Query::ROOT.to_sql_string(None), &[])
+        .unwrap();
     for row in result {
         let row = my_query::Row::from(row);
         println!("{:?}", &row);
@@ -46,10 +50,10 @@ fn main() {
         schema::posts {
             /// all the post fields
             * as all_of_them,
-            (((id * 100 + 5))) as pip type I32,
+            id + 5 as pip type I32,
             comments {
                 post_id as postid,
-                content as posti type ::std::string::String,
+                content type ::std::string::String,
                 post {
                     *,
                 } as cool_post,
