@@ -88,9 +88,9 @@ impl ToTokens for BinOp {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match self {
             Self::Add(_) => quote! { ::kosame::expr::BinOp::Add }.to_tokens(tokens),
-            Self::Subtract(_) => quote! { ::kosame::expr::BinOp::Add }.to_tokens(tokens),
-            Self::Multiply(_) => quote! { ::kosame::expr::BinOp::Add }.to_tokens(tokens),
-            Self::Divide(_) => quote! { ::kosame::expr::BinOp::Add }.to_tokens(tokens),
+            Self::Subtract(_) => quote! { ::kosame::expr::BinOp::Subtract }.to_tokens(tokens),
+            Self::Multiply(_) => quote! { ::kosame::expr::BinOp::Multiply }.to_tokens(tokens),
+            Self::Divide(_) => quote! { ::kosame::expr::BinOp::Divide }.to_tokens(tokens),
         }
     }
 }
