@@ -1,14 +1,18 @@
+use super::Expr;
+use super::Visitor;
 use quote::{ToTokens, quote};
 use syn::{
     parenthesized,
     parse::{Parse, ParseStream},
 };
 
-use super::Expr;
-
 pub struct Paren {
     _paren: syn::token::Paren,
     expr: Box<Expr>,
+}
+
+impl Paren {
+    pub fn accept(&self, _visitor: &mut impl Visitor) {}
 }
 
 impl Parse for Paren {

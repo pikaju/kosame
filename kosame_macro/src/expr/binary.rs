@@ -1,11 +1,11 @@
+use super::Expr;
+use super::Visitor;
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::{
     Token,
     parse::{Parse, ParseStream},
 };
-
-use super::Expr;
 
 pub struct Binary {
     lhs: Box<Expr>,
@@ -20,6 +20,11 @@ impl Binary {
             op,
             rhs: Box::new(right),
         }
+    }
+
+    pub fn accept(&self, visitor: &mut impl Visitor) {
+        self.lhs.accept(visitor);
+        self.rhs.accept(visitor);
     }
 }
 

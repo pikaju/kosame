@@ -1,3 +1,4 @@
+mod bind_params;
 mod field;
 mod filter;
 mod limit;

@@ -227,9 +227,7 @@ impl QueryNode {
             ::kosame::query::QueryNode::new(
                 &#table_path_call_site::TABLE,
                 #star,
-                &[
-                    #(#fields),*
-                ],
+                &[#(#fields),*],
                 #filter,
                 #order_by,
                 #limit,

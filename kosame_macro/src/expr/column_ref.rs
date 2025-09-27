@@ -1,3 +1,4 @@
+use super::Visitor;
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::{
@@ -7,6 +8,10 @@ use syn::{
 
 pub struct ColumnRef {
     name: Ident,
+}
+
+impl ColumnRef {
+    pub fn accept(&self, _visitor: &mut impl Visitor) {}
 }
 
 impl Parse for ColumnRef {

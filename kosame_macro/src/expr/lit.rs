@@ -1,3 +1,4 @@
+use super::Visitor;
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::parse::{Parse, ParseStream};
@@ -7,6 +8,10 @@ pub enum Lit {
     Float(syn::LitFloat),
     Str(syn::LitStr),
     Bool(syn::LitBool),
+}
+
+impl Lit {
+    pub fn accept(&self, _visitor: &mut impl Visitor) {}
 }
 
 impl Parse for Lit {

@@ -1,3 +1,4 @@
+use super::Visitor;
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::{
@@ -11,6 +12,14 @@ pub struct BindParam {
 }
 
 impl BindParam {
+    pub fn name(&self) -> &Ident {
+        &self.name
+    }
+
+    pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
+        visitor.visit_bind_param(self);
+    }
+
     pub fn peek(input: ParseStream) -> bool {
         input.peek(Token![:])
     }
@@ -30,7 +39,8 @@ impl ToTokens for BindParam {
         let name = self.name.to_string();
         quote! {
             ::kosame::expr::BindParam::new(
-                #name
+                #name,
+                1
             )
         }
         .to_tokens(tokens)
