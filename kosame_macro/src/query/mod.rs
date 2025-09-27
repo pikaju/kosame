@@ -22,7 +22,7 @@ use syn::{
     parse::{Parse, ParseStream},
 };
 
-use crate::{alias::Alias, path_ext::PathExt};
+use crate::{alias::Alias, path_ext::PathExt, query::bind_params::BindParamsBuilder};
 
 pub struct Query {
     attrs: Vec<Attribute>,
@@ -47,6 +47,12 @@ impl ToTokens for Query {
         let module_name = match &self.alias {
             Some(alias) => alias.ident(),
             None => &Ident::new("internal", Span::call_site()),
+        };
+
+        let bind_params = {
+            let mut builder = BindParamsBuilder::new();
+            self.body.accept_expr(&mut builder);
+            builder.build()
         };
 
         let node_tokens = {

@@ -1,9 +1,8 @@
-use crate::query::order_by::OrderBy;
+use crate::expr::Visitor;
 use crate::row_struct::RowStruct;
 
 use super::star::Star;
 use super::*;
-use super::{filter::Filter, limit::Limit, offset::Offset};
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
 use syn::{
@@ -22,23 +21,30 @@ pub struct QueryNode {
     offset: Option<Offset>,
 }
 
-pub trait Visitor<'a> {
-    fn visit_node(&mut self, _node: &'a QueryNode) {}
-    fn visit_field(&mut self, _field: &'a QueryField) {}
-    fn visit_filter(&mut self, _filter: &'a Option<Filter>) {}
-    fn visit_order_by(&mut self, _order_by: &'a Option<OrderBy>) {}
-    fn visit_limit(&mut self, _limit: &'a Option<Limit>) {}
-    fn visit_offset(&mut self, _offset: &'a Option<Offset>) {}
-}
-
 impl QueryNode {
-    pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
-        visitor.visit_node(self);
+    pub fn accept_expr<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
         for field in &self.fields {
             match field {
-                QueryField::Relation { node, .. } => node.accept(visitor),
+                QueryField::Relation { node, .. } => node.accept_expr(visitor),
+                QueryField::Expr { expr, .. } => expr.accept(visitor),
                 _ => {}
             }
+        }
+
+        if let Some(filter) = &self.filter {
+            filter.expr().accept(visitor);
+        }
+
+        if let Some(order_by) = &self.order_by {
+            order_by.accept_expr(visitor);
+        }
+
+        if let Some(limit) = &self.limit {
+            limit.expr().accept(visitor);
+        }
+
+        if let Some(offset) = &self.offset {
+            offset.expr().accept(visitor);
         }
     }
 

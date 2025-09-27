@@ -6,7 +6,10 @@ use syn::{
     punctuated::Punctuated,
 };
 
-use crate::{expr::Expr, query::limit::Limit};
+use crate::{
+    expr::{Expr, Visitor},
+    query::limit::Limit,
+};
 
 mod kw {
     use syn::custom_keyword;
@@ -35,6 +38,12 @@ impl OrderBy {
 
     pub fn peek(input: ParseStream) -> bool {
         input.peek(kw::order)
+    }
+
+    pub fn accept_expr<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
+        for entry in &self.entries {
+            entry.expr.accept(visitor);
+        }
     }
 }
 
