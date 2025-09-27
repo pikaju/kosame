@@ -56,7 +56,7 @@ impl ToTokens for BindParams<'_> {
         for (name, ordinal) in &self.params {
             let name_string = name.to_string();
             quote! {
-                pub mod #name {
+                pub(super) mod #name {
                     pub const BIND_PARAM: ::kosame::query::BindParam = ::kosame::query::BindParam::new(#name_string, #ordinal);
                 }
             }.to_tokens(tokens);

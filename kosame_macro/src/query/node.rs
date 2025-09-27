@@ -133,8 +133,8 @@ impl QueryNode {
             let table_path_call_site = table_path.to_call_site(2);
             quote! {
                 mod scope {
-                    pub use super::params;
-                    pub use #table_path_call_site::*;
+                    pub(super) use super::params;
+                    pub(super) use #table_path_call_site::*;
                 }
             }
         };
