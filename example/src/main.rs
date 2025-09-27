@@ -20,6 +20,24 @@ pub mod schema {
     }
 }
 
+mod lelelel {
+    macro_rules! kek {
+        (struct $name:ident { $($content:tt)* }) => {
+            struct $name {
+                $($content)*
+                pip: i32
+            }
+        };
+    }
+    pub(crate) use kek;
+}
+
+lelelel::kek!(
+    struct Kek {
+        smep: bool,
+    }
+);
+
 type I32 = i32;
 type Bool = bool;
 
