@@ -70,7 +70,7 @@ impl QueryNode {
                     formatter.write_str(")")?;
                 }
                 QueryField::Expr { expr, .. } => {
-                    expr.fmt_sql(formatter);
+                    expr.fmt_sql(formatter)?;
                 }
             }
             if index != self.fields.len() - 1 {
@@ -96,14 +96,14 @@ impl QueryNode {
         if let Some(relation) = relation {
             for (index, (source_column, target_column)) in relation.column_pairs().enumerate() {
                 formatter.write_ident(relation.source_table())?;
-                formatter.write_str(".");
+                formatter.write_str(".")?;
                 formatter.write_ident(source_column.name())?;
-                formatter.write_str(" = ");
+                formatter.write_str(" = ")?;
                 formatter.write_ident(relation.target_table())?;
-                formatter.write_str(".");
+                formatter.write_str(".")?;
                 formatter.write_ident(target_column.name())?;
                 if index != relation.source_columns().len() - 1 {
-                    formatter.write_str(" and ");
+                    formatter.write_str(" and ")?;
                 }
             }
         }
@@ -113,7 +113,7 @@ impl QueryNode {
         }
 
         if let Some(filter) = &self.filter {
-            filter.fmt_sql(formatter);
+            filter.fmt_sql(formatter)?;
         }
 
         if relation.is_some() && self.filter.is_some() {
@@ -121,17 +121,17 @@ impl QueryNode {
         }
 
         if let Some(order_by) = &self.order_by {
-            order_by.fmt_sql(formatter);
+            order_by.fmt_sql(formatter)?;
         }
 
         if let Some(limit) = &self.limit {
             formatter.write_str(" limit ")?;
-            limit.fmt_sql(formatter);
+            limit.fmt_sql(formatter)?;
         }
 
         if let Some(offset) = &self.offset {
             formatter.write_str(" offset ")?;
-            offset.fmt_sql(formatter);
+            offset.fmt_sql(formatter)?;
         }
 
         Ok(())

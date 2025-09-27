@@ -21,7 +21,7 @@ pub enum QueryField {
     Relation {
         attrs: Vec<Attribute>,
         name: Ident,
-        node: QueryNode,
+        node: Box<QueryNode>,
         alias: Option<Alias>,
     },
     Expr {

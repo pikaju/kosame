@@ -35,7 +35,7 @@ impl OrderByEntry {
     }
 
     pub fn fmt_sql<D: Dialect>(&self, formatter: &mut SqlFormatter<D>) -> std::fmt::Result {
-        self.expr.fmt_sql(formatter);
+        self.expr.fmt_sql(formatter)?;
         match self.dir {
             Some(OrderByDir::Asc) => formatter.write_str(" asc")?,
             Some(OrderByDir::Desc) => formatter.write_str(" desc")?,

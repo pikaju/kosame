@@ -51,7 +51,7 @@ fn main() {
             },
             where id = :id
             order by id + :kek desc nulls last, id + 6
-            limit 5
+            limit :limit
         }
     };
 

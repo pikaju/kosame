@@ -5,7 +5,6 @@ pub(crate) mod path_ext;
 pub(crate) mod query;
 pub(crate) mod row_struct;
 pub(crate) mod schema;
-pub(crate) mod slotted_sql;
 pub(crate) mod type_override;
 
 use proc_macro_error::proc_macro_error;
