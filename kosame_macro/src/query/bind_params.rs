@@ -82,11 +82,9 @@ impl ToTokens for BindParams<'_> {
                 #(pub #fields),*
             }
 
-            impl<'a> IntoIterator for Params<'a> {
-                type Item = &'a (dyn ::kosame::pg::internal::ToSql + ::std::marker::Sync);
-                type IntoIter = ::core::array::IntoIter<Self::Item, #fields_len>;
-                fn into_iter(self) -> Self::IntoIter {
-                    [#(self.#field_names),*].into_iter()
+            impl<'a> Params<'a> {
+                pub fn array(&self) -> [&(dyn ::kosame::pg::internal::ToSql + ::std::marker::Sync); #fields_len] {
+                    [#(self.#field_names),*]
                 }
             }
         }

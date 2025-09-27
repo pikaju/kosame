@@ -15,4 +15,8 @@ use crate::{
 
 pub trait Query {
     const ROOT: QueryNode;
+
+    fn root(&self) -> &'static QueryNode {
+        &Self::ROOT
+    }
 }

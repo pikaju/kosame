@@ -69,20 +69,44 @@ impl ToTokens for Query {
             tokens
         };
 
-        quote! {
-                mod #module_name {
-                    #node_tokens
+        let module_tokens = quote! {
+            mod #module_name {
+                #node_tokens
 
-                    #bind_params
+                #bind_params
 
-                    pub struct Query {
-                    }
+                pub struct Query<'a> {
+                    params: Params<'a>,
+                }
 
-                    impl ::kosame::query::Query for Query {
-                        const ROOT: ::kosame::query::QueryNode = #query_node;
+                impl<'a> Query<'a> {
+                    pub fn new(params: Params<'a>) -> Self { Self { params } }
+                    pub fn params(&self) -> &Params<'_> { &self.params }
+                    pub fn from_row(&self, row: &::kosame::pg::internal::Row) -> Row {
+                        row.into()
                     }
                 }
+
+                impl ::kosame::query::Query for Query<'_> {
+                    const ROOT: ::kosame::query::QueryNode = #query_node;
+                }
+            }
+        };
+
+        if self.alias.is_some() {
+            module_tokens.to_tokens(tokens);
+        } else {
+            quote! {
+                {
+                    #module_tokens
+
+                    let query = #module_name::Query::new(#module_name::Params {
+                        id: &5i32,
+                    });
+                    query
+                }
+            }
+            .to_tokens(tokens);
         }
-        .to_tokens(tokens);
     }
 }

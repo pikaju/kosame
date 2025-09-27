@@ -30,32 +30,9 @@ fn main() {
     )
     .unwrap();
 
-    use kosame::query::Query;
-
-    println!("==== Query ====");
-    println!("{:?}", my_query::Query::ROOT.to_sql_string(None));
-    println!("========");
-
     let id: i32 = 5;
-    let params = my_query::Params {
-        id: &id,
-        pip: &0i64,
-    };
 
-    let params = params.into_iter().collect::<Vec<_>>();
-
-    let result = client
-        .query(&my_query::Query::ROOT.to_sql_string(None), &params)
-        .unwrap();
-    for row in result {
-        let row = my_query::Row::from(row);
-        println!("{:?}", &row);
-        println!("---");
-        println!("{}", serde_json::to_string_pretty(&row).unwrap());
-        println!("========");
-    }
-
-    kosame::query! {
+    let query = kosame::query! {
         #[serde(rename_all = "camelCase")]
         schema::posts {
             /// all the post fields
@@ -71,7 +48,30 @@ fn main() {
             where id = :id
             order by id + 5 desc nulls last, id + 6
             limit 3
-            offset :pip
-        } as my_query
+        }
     };
+
+    use kosame::query::Query;
+
+    println!("==== Query ====");
+    println!("{:?}", query.root().to_sql_string(None));
+    println!("========");
+
+    // let params = my_query::Params {
+    //     id: &id,
+    //     pip: &0i32,
+    // };
+
+    let params = query.params().array();
+
+    let result = client
+        .query(&query.root().to_sql_string(None), &params)
+        .unwrap();
+    for row in result {
+        let row = query.from_row(&row);
+        println!("{:?}", &row);
+        println!("---");
+        println!("{}", serde_json::to_string_pretty(&row).unwrap());
+        println!("========");
+    }
 }

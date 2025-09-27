@@ -27,8 +27,8 @@ impl RowStruct {
         });
 
         quote! {
-            impl From<::postgres::Row> for #name {
-                fn from(row: ::postgres::Row) -> Self {
+            impl From<&::kosame::pg::internal::Row> for #name {
+                fn from(row: &::kosame::pg::internal::Row) -> Self {
                     Self {
                         #(#fields),*
                     }
