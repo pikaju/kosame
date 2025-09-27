@@ -11,7 +11,7 @@ pub struct ColumnRef {
 }
 
 impl ColumnRef {
-    pub fn accept(&self, _visitor: &mut impl Visitor) {}
+    pub fn accept<'a>(&'a self, _visitor: &mut impl Visitor<'a>) {}
 }
 
 impl Parse for ColumnRef {

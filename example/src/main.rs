@@ -62,7 +62,7 @@ fn main() {
             where id = :id
             order by id + 5 desc nulls last, id + 6
             limit 3
-            offset 1
+            offset :pip
         } as my_query
     };
 }

@@ -1,15 +1,14 @@
 pub struct BindParam {
-    name: &'static str,
-    ordinal: u32,
+    param: &'static crate::query::BindParam,
 }
 
 impl BindParam {
-    pub const fn new(name: &'static str, ordinal: u32) -> Self {
-        Self { name, ordinal }
+    pub const fn new(param: &'static crate::query::BindParam) -> Self {
+        Self { param }
     }
 
     pub fn to_sql_string(&self, buf: &mut String) {
         *buf += "$";
-        *buf += &self.ordinal.to_string();
+        *buf += &self.param.ordinal().to_string();
     }
 }

@@ -22,7 +22,7 @@ impl Binary {
         }
     }
 
-    pub fn accept(&self, visitor: &mut impl Visitor) {
+    pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
         self.lhs.accept(visitor);
         self.rhs.accept(visitor);
     }

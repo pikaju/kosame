@@ -73,6 +73,10 @@ impl ToTokens for Query {
                 mod #module_name {
                     #node_tokens
 
+                    pub mod params {
+                        #bind_params
+                    }
+
                     pub struct Query {
                     }
 

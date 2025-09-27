@@ -133,6 +133,7 @@ impl QueryNode {
             let table_path_call_site = table_path.to_call_site(2);
             quote! {
                 mod scope {
+                    pub use super::params;
                     pub use #table_path_call_site::*;
                 }
             }
@@ -209,12 +210,7 @@ impl QueryNode {
         let filter = match &self.filter {
             Some(filter) => {
                 let expr = filter.expr();
-                quote! {
-                    {
-                        #scope_module
-                        Some(#expr)
-                    }
-                }
+                quote! { Some(#expr) }
             }
             None => quote! { None },
         };
@@ -222,12 +218,7 @@ impl QueryNode {
         let order_by = match &self.order_by {
             Some(order_by) => {
                 let expr = order_by.to_token_stream();
-                quote! {
-                    {
-                        #scope_module
-                        Some(#expr)
-                    }
-                }
+                quote! { Some(#expr) }
             }
             None => quote! { None },
         };
@@ -249,15 +240,18 @@ impl QueryNode {
         };
 
         quote! {
-            ::kosame::query::QueryNode::new(
-                &#table_path_call_site::TABLE,
-                #star,
-                &[#(#fields),*],
-                #filter,
-                #order_by,
-                #limit,
-                #offset,
-            )
+            {
+                #scope_module
+                ::kosame::query::QueryNode::new(
+                    &#table_path_call_site::TABLE,
+                    #star,
+                    &[#(#fields),*],
+                    #filter,
+                    #order_by,
+                    #limit,
+                    #offset,
+                )
+            }
         }
         .to_tokens(tokens);
     }
