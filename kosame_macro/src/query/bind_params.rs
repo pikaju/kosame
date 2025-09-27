@@ -2,7 +2,7 @@ use std::{cell::RefCell, collections::HashMap};
 
 use crate::expr;
 use proc_macro2::TokenStream;
-use quote::{ToTokens, quote};
+use quote::{ToTokens, format_ident, quote};
 use syn::Ident;
 
 pub type BindParamOrdinal = u32;
@@ -46,8 +46,22 @@ impl<'a> BindParams<'a> {
         Self { params }
     }
 
-    pub fn ordinal_of(&self, name: &Ident) -> Option<BindParamOrdinal> {
-        self.params.get(name).copied()
+    pub fn to_closure_token_stream(&self, module_name: &Ident) -> TokenStream {
+        let mut rename_vars = vec![];
+        let mut struct_fields = vec![];
+        for (ident, ordinal) in &self.params {
+            let renamed = format_ident!("bind_param_{}", ordinal);
+            rename_vars.push(quote! { let #renamed = &#ident; });
+            struct_fields.push(quote! { #ident: #renamed });
+        }
+
+        quote! {
+            #(#rename_vars)*
+
+            let closure = #module_name::Params {
+                #(#struct_fields,)*
+            };
+        }
     }
 }
 

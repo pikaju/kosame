@@ -54,6 +54,10 @@ impl ToTokens for Query {
             self.body.accept_expr(&mut builder);
             builder.build()
         };
+        let closure_tokens = self
+            .alias
+            .is_none()
+            .then(|| bind_params.to_closure_token_stream(module_name));
 
         let node_tokens = {
             let mut tokens = proc_macro2::TokenStream::new();
@@ -98,11 +102,11 @@ impl ToTokens for Query {
         } else {
             quote! {
                 {
+                    #closure_tokens
+
                     #module_tokens
 
-                    let query = #module_name::Query::new(#module_name::Params {
-                        id: &5i32,
-                    });
+                    let query = #module_name::Query::new(closure);
                     query
                 }
             }

@@ -30,7 +30,9 @@ fn main() {
     )
     .unwrap();
 
-    let id: i32 = 5;
+    let kek = 5i32;
+    let id: i32 = 6;
+    let limit = 3i64;
 
     let query = kosame::query! {
         #[serde(rename_all = "camelCase")]
@@ -46,8 +48,8 @@ fn main() {
                 offset 1
             },
             where id = :id
-            order by id + 5 desc nulls last, id + 6
-            limit 3
+            order by id + :kek desc nulls last, id + 6
+            limit :limit
         }
     };
 
@@ -62,10 +64,8 @@ fn main() {
     //     pip: &0i32,
     // };
 
-    let params = query.params().array();
-
     let result = client
-        .query(&query.root().to_sql_string(None), &params)
+        .query(&query.root().to_sql_string(None), &query.params().array())
         .unwrap();
     for row in result {
         let row = query.from_row(&row);
