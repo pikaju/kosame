@@ -1,6 +1,6 @@
 pub mod dialect;
 pub mod expr;
-pub mod pg;
+pub mod postgres;
 pub mod query;
 pub mod relation;
 pub mod schema;

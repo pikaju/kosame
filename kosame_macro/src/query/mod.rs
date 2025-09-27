@@ -86,7 +86,7 @@ impl ToTokens for Query {
                 impl<'a> Query<'a> {
                     pub fn new(params: Params<'a>) -> Self { Self { params } }
                     pub fn params(&self) -> &Params<'_> { &self.params }
-                    pub fn from_row(&self, row: &::kosame::pg::internal::Row) -> Row {
+                    pub fn from_row(&self, row: &::kosame::postgres::internal::Row) -> Row {
                         row.into()
                     }
                 }

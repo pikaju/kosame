@@ -27,8 +27,8 @@ impl RowStruct {
         });
 
         quote! {
-            impl From<&::kosame::pg::internal::Row> for #name {
-                fn from(row: &::kosame::pg::internal::Row) -> Self {
+            impl From<&::kosame::postgres::internal::Row> for #name {
+                fn from(row: &::kosame::postgres::internal::Row) -> Self {
                     Self {
                         #(#fields),*
                     }
@@ -44,21 +44,21 @@ impl RowStruct {
         let fields = self.fields.iter().map(|field| {
             let name = &field.name;
             quote! {
-                #name: ::kosame::pg::internal::record_field_from_sql(&raw, &mut offset)?
+                #name: ::kosame::postgres::internal::record_field_from_sql(&raw, &mut offset)?
             }
         });
 
         quote! {
-            impl<'a> ::kosame::pg::internal::FromSql<'a> for #name {
-                fn accepts(ty: &::kosame::pg::internal::Type) -> bool {
+            impl<'a> ::kosame::postgres::internal::FromSql<'a> for #name {
+                fn accepts(ty: &::kosame::postgres::internal::Type) -> bool {
                     ty.name() == "record"
                 }
 
                 fn from_sql(
-                    ty: &::kosame::pg::internal::Type,
+                    ty: &::kosame::postgres::internal::Type,
                     raw: &[u8],
                 ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
-                    let column_count = ::kosame::pg::internal::int4_from_sql(&raw[..4])?;
+                    let column_count = ::kosame::postgres::internal::int4_from_sql(&raw[..4])?;
                     assert_eq!(column_count, #field_count);
 
                     let mut offset = 4;

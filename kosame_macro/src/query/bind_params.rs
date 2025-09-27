@@ -80,7 +80,7 @@ impl ToTokens for BindParams<'_> {
         let mut fields = vec![];
         for name in self.params.keys() {
             fields.push(quote! {
-                #name: &'a (dyn ::kosame::pg::internal::ToSql + ::std::marker::Sync)
+                #name: &'a (dyn ::kosame::postgres::internal::ToSql + ::std::marker::Sync)
             });
         }
         let fields_len = fields.len();
@@ -97,7 +97,7 @@ impl ToTokens for BindParams<'_> {
             }
 
             impl<'a> Params<'a> {
-                pub fn array(&self) -> [&(dyn ::kosame::pg::internal::ToSql + ::std::marker::Sync); #fields_len] {
+                pub fn array(&self) -> [&(dyn ::kosame::postgres::internal::ToSql + ::std::marker::Sync); #fields_len] {
                     [#(self.#field_names),*]
                 }
             }
