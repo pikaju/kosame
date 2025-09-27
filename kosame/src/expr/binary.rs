@@ -1,3 +1,7 @@
+use std::fmt::Write;
+
+use crate::{dialect::Dialect, sql_writer::SqlFormatter};
+
 use super::Expr;
 
 pub struct Binary {
@@ -11,10 +15,11 @@ impl Binary {
         Self { left, op, right }
     }
 
-    pub fn to_sql_string(&self, buf: &mut String) {
-        self.left.to_sql_string(buf);
-        self.op.to_sql_string(buf);
-        self.right.to_sql_string(buf);
+    pub fn fmt_sql<D: Dialect>(&self, formatter: &mut SqlFormatter<D>) -> std::fmt::Result {
+        self.left.fmt_sql(formatter)?;
+        self.op.fmt_sql(formatter)?;
+        self.right.fmt_sql(formatter)?;
+        Ok(())
     }
 }
 
@@ -36,19 +41,19 @@ pub enum BinOp {
 }
 
 impl BinOp {
-    pub fn to_sql_string(&self, buf: &mut String) {
+    pub fn fmt_sql<D: Dialect>(&self, formatter: &mut SqlFormatter<D>) -> std::fmt::Result {
         match self {
-            Self::Multiply => *buf += " * ",
-            Self::Divide => *buf += " / ",
-            Self::Modulo => *buf += " % ",
-            Self::Add => *buf += " + ",
-            Self::Subtract => *buf += " - ",
-            Self::Eq => *buf += " = ",
-            Self::Uneq => *buf += " <> ",
-            Self::LessThan => *buf += " < ",
-            Self::GreaterThan => *buf += " > ",
-            Self::LessThanOrEq => *buf += " <= ",
-            Self::GreaterThanOrEq => *buf += " >= ",
+            Self::Multiply => formatter.write_str(" * "),
+            Self::Divide => formatter.write_str(" / "),
+            Self::Modulo => formatter.write_str(" % "),
+            Self::Add => formatter.write_str(" + "),
+            Self::Subtract => formatter.write_str(" - "),
+            Self::Eq => formatter.write_str(" = "),
+            Self::Uneq => formatter.write_str(" <> "),
+            Self::LessThan => formatter.write_str(" < "),
+            Self::GreaterThan => formatter.write_str(" > "),
+            Self::LessThanOrEq => formatter.write_str(" <= "),
+            Self::GreaterThanOrEq => formatter.write_str(" >= "),
         }
     }
 }

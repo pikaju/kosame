@@ -10,6 +10,8 @@ pub use column_ref::ColumnRef;
 pub use lit::Lit;
 pub use paren::Paren;
 
+use crate::{dialect::Dialect, sql_writer::SqlFormatter};
+
 pub enum Expr {
     Binary(Binary),
     BindParam(BindParam),
@@ -19,13 +21,13 @@ pub enum Expr {
 }
 
 impl Expr {
-    pub fn to_sql_string(&self, buf: &mut String) {
+    pub fn fmt_sql<D: Dialect>(&self, formatter: &mut SqlFormatter<D>) -> std::fmt::Result {
         match self {
-            Self::Binary(inner) => inner.to_sql_string(buf),
-            Self::BindParam(inner) => inner.to_sql_string(buf),
-            Self::ColumnRef(inner) => inner.to_sql_string(buf),
-            Self::Lit(inner) => inner.to_sql_string(buf),
-            Self::Paren(inner) => inner.to_sql_string(buf),
+            Self::Binary(inner) => inner.fmt_sql(formatter),
+            Self::BindParam(inner) => inner.fmt_sql(formatter),
+            Self::ColumnRef(inner) => inner.fmt_sql(formatter),
+            Self::Lit(inner) => inner.fmt_sql(formatter),
+            Self::Paren(inner) => inner.fmt_sql(formatter),
         }
     }
 }

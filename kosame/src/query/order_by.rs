@@ -1,4 +1,6 @@
-use crate::expr::Expr;
+use std::fmt::Write;
+
+use crate::{dialect::Dialect, expr::Expr, sql_writer::SqlFormatter};
 
 pub struct OrderBy {
     entries: &'static [OrderByEntry],
@@ -9,14 +11,15 @@ impl OrderBy {
         Self { entries }
     }
 
-    pub(crate) fn to_sql_string(&self, buf: &mut String) {
-        *buf += " order by ";
+    pub fn fmt_sql<D: Dialect>(&self, formatter: &mut SqlFormatter<D>) -> std::fmt::Result {
+        formatter.write_str(" order by ")?;
         for (index, entry) in self.entries.iter().enumerate() {
-            entry.to_sql_string(buf);
+            entry.fmt_sql(formatter)?;
             if index != self.entries.len() - 1 {
-                *buf += ", ";
+                formatter.write_str(", ")?;
             }
         }
+        Ok(())
     }
 }
 
@@ -31,18 +34,19 @@ impl OrderByEntry {
         Self { expr, dir, nulls }
     }
 
-    pub(crate) fn to_sql_string(&self, buf: &mut String) {
-        self.expr.to_sql_string(buf);
+    pub fn fmt_sql<D: Dialect>(&self, formatter: &mut SqlFormatter<D>) -> std::fmt::Result {
+        self.expr.fmt_sql(formatter);
         match self.dir {
-            Some(OrderByDir::Asc) => *buf += " asc",
-            Some(OrderByDir::Desc) => *buf += " desc",
+            Some(OrderByDir::Asc) => formatter.write_str(" asc")?,
+            Some(OrderByDir::Desc) => formatter.write_str(" desc")?,
             None => {}
         }
         match self.nulls {
-            Some(OrderByNulls::First) => *buf += " nulls first",
-            Some(OrderByNulls::Last) => *buf += " nulls last",
+            Some(OrderByNulls::First) => formatter.write_str(" nulls first")?,
+            Some(OrderByNulls::Last) => formatter.write_str(" nulls last")?,
             None => {}
         }
+        Ok(())
     }
 }
 

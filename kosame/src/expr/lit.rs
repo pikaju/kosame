@@ -1,3 +1,7 @@
+use std::fmt::Write;
+
+use crate::{dialect::Dialect, sql_writer::SqlFormatter};
+
 pub enum Lit {
     Int(i64),
     Float(f64),
@@ -6,16 +10,12 @@ pub enum Lit {
 }
 
 impl Lit {
-    pub fn to_sql_string(&self, buf: &mut String) {
+    pub fn fmt_sql<D: Dialect>(&self, formatter: &mut SqlFormatter<D>) -> std::fmt::Result {
         match self {
-            Self::Int(inner) => *buf += &inner.to_string(),
-            Self::Float(inner) => *buf += &inner.to_string(),
-            Self::Str(inner) => {
-                *buf += "'";
-                *buf += inner;
-                *buf += "'";
-            }
-            Self::Bool(inner) => *buf += &inner.to_string(),
+            Self::Int(inner) => write!(formatter, "{}", inner),
+            Self::Float(inner) => write!(formatter, "{}", inner),
+            Self::Str(inner) => write!(formatter, "'{}'", inner.replace("'", "''")),
+            Self::Bool(inner) => write!(formatter, "{}", inner),
         }
     }
 }

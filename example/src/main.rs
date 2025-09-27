@@ -1,3 +1,5 @@
+use kosame::{dialect::Postgres, sql_writer::SqlFormatter};
+
 pub mod schema {
     kosame::table! {
         create table posts (
@@ -19,24 +21,6 @@ pub mod schema {
         post: (post_id) => crate::schema::posts (id),
     }
 }
-
-mod lelelel {
-    macro_rules! kek {
-        (struct $name:ident { $($content:tt)* }) => {
-            struct $name {
-                $($content)*
-                pip: i32
-            }
-        };
-    }
-    pub(crate) use kek;
-}
-
-lelelel::kek!(
-    struct Kek {
-        smep: bool,
-    }
-);
 
 type I32 = i32;
 type Bool = bool;
@@ -67,14 +51,20 @@ fn main() {
             },
             where id = :id
             order by id + :kek desc nulls last, id + 6
-            limit :limit
+            limit 5
         }
     };
 
     use kosame::query::Query;
 
     println!("==== Query ====");
-    println!("{:?}", query.root().to_sql_string(None));
+    let mut sql = String::new();
+    let mut formatter = SqlFormatter::new(&mut sql);
+    query
+        .root()
+        .fmt_sql::<Postgres>(&mut formatter, None)
+        .unwrap();
+    println!("{:?}", sql);
     println!("========");
 
     // let params = my_query::Params {
@@ -82,9 +72,7 @@ fn main() {
     //     pip: &0i32,
     // };
 
-    let result = client
-        .query(&query.root().to_sql_string(None), &query.params().array())
-        .unwrap();
+    let result = client.query(&sql, &query.params().array()).unwrap();
     for row in result {
         let row = query.from_row(&row);
         println!("{:?}", &row);

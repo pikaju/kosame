@@ -1,3 +1,6 @@
+use crate::{dialect::Dialect, sql_writer::SqlFormatter};
+use std::fmt::Write;
+
 use super::*;
 
 pub struct QueryNode {
@@ -31,102 +34,106 @@ impl QueryNode {
         }
     }
 
-    pub fn to_sql_string(&self, relation: Option<&Relation>) -> String {
-        let mut result = "select ".to_string();
+    pub fn fmt_sql<D: Dialect>(
+        &self,
+        formatter: &mut SqlFormatter<D>,
+        relation: Option<&Relation>,
+    ) -> std::fmt::Result {
+        formatter.write_str("select ")?;
 
         if relation.is_some() {
-            result += "row(";
+            formatter.write_str("row(")?;
         }
 
         if self.star {
-            result += "row(";
+            formatter.write_str("row(")?;
             for (index, column) in self.table.columns().iter().enumerate() {
-                result += column.name();
+                formatter.write_ident(column.name())?;
                 if index != self.table.columns().len() - 1 {
-                    result += ", ";
+                    formatter.write_str(", ")?;
                 }
             }
-            result += ")";
+            formatter.write_str(")")?;
             if !self.fields.is_empty() {
-                result += ", ";
+                formatter.write_str(", ")?;
             }
         }
 
         for (index, field) in self.fields.iter().enumerate() {
             match field {
                 QueryField::Column { column, .. } => {
-                    result += column.name();
+                    formatter.write_ident(column.name())?;
                 }
                 QueryField::Relation { node, relation, .. } => {
-                    result += "array(";
-                    result += &node.to_sql_string(Some(relation));
-                    result += ")";
+                    formatter.write_str("array(")?;
+                    node.fmt_sql::<D>(formatter, Some(relation))?;
+                    formatter.write_str(")")?;
                 }
                 QueryField::Expr { expr, .. } => {
-                    expr.to_sql_string(&mut result);
+                    expr.fmt_sql(formatter);
                 }
             }
             if index != self.fields.len() - 1 {
-                result += ", ";
+                formatter.write_str(", ")?;
             }
         }
 
         if relation.is_some() {
-            result += ")";
+            formatter.write_str(")")?;
         }
 
-        result += " from ";
-        result += self.table.name();
+        formatter.write_str(" from ")?;
+        formatter.write_ident(self.table.name())?;
 
         if relation.is_some() || self.filter.is_some() {
-            result += " where ";
+            formatter.write_str(" where ")?;
         }
 
         if relation.is_some() && self.filter.is_some() {
-            result += "(";
+            formatter.write_str("(")?;
         }
 
         if let Some(relation) = relation {
             for (index, (source_column, target_column)) in relation.column_pairs().enumerate() {
-                result += relation.source_table();
-                result += ".";
-                result += source_column.name();
-                result += " = ";
-                result += relation.target_table();
-                result += ".";
-                result += target_column.name();
+                formatter.write_ident(relation.source_table())?;
+                formatter.write_str(".");
+                formatter.write_ident(source_column.name())?;
+                formatter.write_str(" = ");
+                formatter.write_ident(relation.target_table())?;
+                formatter.write_str(".");
+                formatter.write_ident(target_column.name())?;
                 if index != relation.source_columns().len() - 1 {
-                    result += " and ";
+                    formatter.write_str(" and ");
                 }
             }
         }
 
         if relation.is_some() && self.filter.is_some() {
-            result += ") and (";
+            formatter.write_str(") and (")?;
         }
 
         if let Some(filter) = &self.filter {
-            filter.to_sql_string(&mut result);
+            filter.fmt_sql(formatter);
         }
 
         if relation.is_some() && self.filter.is_some() {
-            result += ")";
+            formatter.write_str(")")?;
         }
 
         if let Some(order_by) = &self.order_by {
-            order_by.to_sql_string(&mut result);
+            order_by.fmt_sql(formatter);
         }
 
         if let Some(limit) = &self.limit {
-            result += " limit ";
-            limit.to_sql_string(&mut result);
+            formatter.write_str(" limit ")?;
+            limit.fmt_sql(formatter);
         }
 
         if let Some(offset) = &self.offset {
-            result += " offset ";
-            offset.to_sql_string(&mut result);
+            formatter.write_str(" offset ")?;
+            offset.fmt_sql(formatter);
         }
 
-        result
+        Ok(())
     }
 }

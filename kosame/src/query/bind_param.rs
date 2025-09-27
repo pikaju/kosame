@@ -10,6 +10,10 @@ impl BindParam {
         Self { name, ordinal }
     }
 
+    pub const fn name(&self) -> &'static str {
+        self.name
+    }
+
     pub const fn ordinal(&self) -> BindParamOrdinal {
         self.ordinal
     }

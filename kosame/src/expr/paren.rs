@@ -1,3 +1,7 @@
+use std::fmt::Write;
+
+use crate::{dialect::Dialect, sql_writer::SqlFormatter};
+
 use super::Expr;
 
 pub struct Paren {
@@ -9,9 +13,10 @@ impl Paren {
         Self { expr }
     }
 
-    pub fn to_sql_string(&self, buf: &mut String) {
-        *buf += "(";
-        self.expr.to_sql_string(buf);
-        *buf += ")";
+    pub fn fmt_sql<D: Dialect>(&self, formatter: &mut SqlFormatter<D>) -> std::fmt::Result {
+        formatter.write_str("(")?;
+        self.expr.fmt_sql(formatter)?;
+        formatter.write_str(")")?;
+        Ok(())
     }
 }
