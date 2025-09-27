@@ -22,7 +22,26 @@ pub struct QueryNode {
     offset: Option<Offset>,
 }
 
+pub trait Visitor<'a> {
+    fn visit_node(&mut self, _node: &'a QueryNode) {}
+    fn visit_field(&mut self, _field: &'a QueryField) {}
+    fn visit_filter(&mut self, _filter: &'a Option<Filter>) {}
+    fn visit_order_by(&mut self, _order_by: &'a Option<OrderBy>) {}
+    fn visit_limit(&mut self, _limit: &'a Option<Limit>) {}
+    fn visit_offset(&mut self, _offset: &'a Option<Offset>) {}
+}
+
 impl QueryNode {
+    pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
+        visitor.visit_node(self);
+        for field in &self.fields {
+            match field {
+                QueryField::Relation { node, .. } => node.accept(visitor),
+                _ => {}
+            }
+        }
+    }
+
     pub fn to_row_struct_tokens(
         &self,
         tokens: &mut TokenStream,

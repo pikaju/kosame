@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use super::node;
 use crate::expr;
 use syn::Ident;
 
@@ -24,6 +25,29 @@ impl<'a> BindParamsBuilder<'a> {
     pub fn build(self) -> BindParams<'a> {
         self.params.into_iter().map(|(k, _)| k).collect()
     }
+}
+
+impl<'a> node::Visitor<'a> for BindParamsBuilder<'a> {
+    fn visit_field(&mut self, field: &'a super::QueryField) {
+        if let super::QueryField::Expr { expr, .. } = field {
+            expr.accept(self);
+        }
+    }
+
+    fn visit_filter(&mut self, filter: &'a Option<super::Filter>) {
+        if let Some(filter) = filter {
+            filter.expr().accept(self);
+        }
+    }
+
+    fn visit_order_by(&mut self, order_by: &'a Option<super::OrderBy>) {
+        if let Some(order_by) = order_by {
+            filter.expr().accept(self);
+        }
+    }
+
+    fn visit_limit(&mut self, _limit: &'a Option<super::Limit>) {}
+    fn visit_offset(&mut self, _offset: &'a Option<super::Offset>) {}
 }
 
 impl<'a> expr::Visitor<'a> for BindParamsBuilder<'a> {

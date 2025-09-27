@@ -26,7 +26,7 @@ pub enum Expr {
 }
 
 impl Expr {
-    fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
+    pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
         macro_rules! branches {
             ($($variant:ident)*) => {
                 match self {

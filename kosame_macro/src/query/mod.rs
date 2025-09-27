@@ -9,8 +9,12 @@ mod order_by;
 mod star;
 
 use field::QueryField;
+use filter::Filter;
+use limit::Limit;
 use node::QueryNode;
 use node_path::QueryNodePath;
+use offset::Offset;
+use order_by::OrderBy;
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
 use syn::{
