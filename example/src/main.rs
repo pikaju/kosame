@@ -35,8 +35,17 @@ fn main() {
     println!("==== Query ====");
     println!("{:?}", my_query::Query::ROOT.to_sql_string(None));
     println!("========");
+
+    let id: i32 = 5;
+    let params = my_query::Params {
+        id: &id,
+        pip: &0i64,
+    };
+
+    let params = params.into_iter().collect::<Vec<_>>();
+
     let result = client
-        .query(&my_query::Query::ROOT.to_sql_string(None), &[])
+        .query(&my_query::Query::ROOT.to_sql_string(None), &params)
         .unwrap();
     for row in result {
         let row = my_query::Row::from(row);

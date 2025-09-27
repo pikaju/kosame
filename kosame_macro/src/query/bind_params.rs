@@ -53,13 +53,43 @@ impl<'a> BindParams<'a> {
 
 impl ToTokens for BindParams<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
+        let mut modules = vec![];
         for (name, ordinal) in &self.params {
             let name_string = name.to_string();
-            quote! {
+            modules.push(quote! {
                 pub(super) mod #name {
                     pub const BIND_PARAM: ::kosame::query::BindParam = ::kosame::query::BindParam::new(#name_string, #ordinal);
                 }
-            }.to_tokens(tokens);
+            });
         }
+
+        let mut fields = vec![];
+        for name in self.params.keys() {
+            fields.push(quote! {
+                #name: &'a (dyn ::kosame::pg::internal::ToSql + ::std::marker::Sync)
+            });
+        }
+        let fields_len = fields.len();
+
+        let field_names = self.params.keys();
+
+        quote! {
+            mod params {
+                #(#modules)*
+            }
+
+            pub struct Params<'a> {
+                #(pub #fields),*
+            }
+
+            impl<'a> IntoIterator for Params<'a> {
+                type Item = &'a (dyn ::kosame::pg::internal::ToSql + ::std::marker::Sync);
+                type IntoIter = ::core::array::IntoIter<Self::Item, #fields_len>;
+                fn into_iter(self) -> Self::IntoIter {
+                    [#(self.#field_names),*].into_iter()
+                }
+            }
+        }
+        .to_tokens(tokens);
     }
 }

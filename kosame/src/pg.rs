@@ -1,7 +1,7 @@
 pub mod internal {
     use fallible_iterator::FallibleIterator;
     pub use postgres_protocol::types::int4_from_sql;
-    pub use postgres_types::{FromSql, Type};
+    pub use postgres_types::{FromSql, ToSql, Type};
 
     impl<'a, T> FromSql<'a> for crate::relation::OneToMany<T>
     where
