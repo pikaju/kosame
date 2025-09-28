@@ -32,9 +32,9 @@ fn main() {
     )
     .unwrap();
 
-    let kek: i32 = 5;
-    let id: i32 = 6;
-    let limit: i64 = 3i64;
+    let kek: i32 = 7;
+    let id: i32 = 7;
+    let limit: i64 = 3;
 
     let query = kosame::query! {
         #[serde(rename_all = "camelCase")]
@@ -65,6 +65,7 @@ fn main() {
         .fmt_sql::<Postgres>(&mut formatter, None)
         .unwrap();
     println!("{}", sql);
+    println!("{:?}", query.params());
     println!("========");
 
     // let params = my_query::Params {

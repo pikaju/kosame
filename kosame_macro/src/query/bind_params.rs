@@ -1,23 +1,15 @@
-use std::collections::HashMap;
-
 use crate::expr;
 use proc_macro2::TokenStream;
 use quote::{ToTokens, format_ident, quote};
 use syn::Ident;
 
-pub type BindParamOrdinal = u32;
-
 pub struct BindParamsBuilder<'a> {
-    next_ordinal: BindParamOrdinal,
-    params: HashMap<&'a Ident, BindParamOrdinal>,
+    params: Vec<&'a Ident>,
 }
 
 impl BindParamsBuilder<'_> {
     pub fn new() -> Self {
-        Self {
-            next_ordinal: 1,
-            params: HashMap::new(),
-        }
+        Self { params: Vec::new() }
     }
 }
 
@@ -29,30 +21,28 @@ impl<'a> BindParamsBuilder<'a> {
 
 impl<'a> expr::Visitor<'a> for BindParamsBuilder<'a> {
     fn visit_bind_param(&mut self, bind_param: &'a expr::BindParam) {
-        self.params.entry(bind_param.name()).or_insert_with(|| {
-            let ordinal = self.next_ordinal;
-            self.next_ordinal += 1;
-            ordinal
-        });
+        if !self.params.contains(&bind_param.name()) {
+            self.params.push(bind_param.name());
+        }
     }
 }
 
 pub struct BindParams<'a> {
-    params: HashMap<&'a Ident, BindParamOrdinal>,
+    params: Vec<&'a Ident>,
 }
 
 impl<'a> BindParams<'a> {
-    fn new(params: HashMap<&'a Ident, BindParamOrdinal>) -> Self {
+    fn new(params: Vec<&'a Ident>) -> Self {
         Self { params }
     }
 
     pub fn to_closure_token_stream(&self, module_name: &Ident) -> TokenStream {
         let mut rename_vars = vec![];
         let mut struct_fields = vec![];
-        for (ident, ordinal) in &self.params {
+        for (ordinal, name) in self.params.iter().enumerate() {
             let renamed = format_ident!("bind_param_{}", ordinal);
-            rename_vars.push(quote! { let #renamed = &#ident; });
-            struct_fields.push(quote! { #ident: #renamed });
+            rename_vars.push(quote! { let #renamed = &#name; });
+            struct_fields.push(quote! { #name: #renamed });
         }
 
         quote! {
@@ -68,7 +58,8 @@ impl<'a> BindParams<'a> {
 impl ToTokens for BindParams<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let mut modules = vec![];
-        for (name, ordinal) in &self.params {
+        for (ordinal, name) in self.params.iter().enumerate() {
+            let ordinal = ordinal as u32;
             let name_string = name.to_string();
             modules.push(quote! {
                 pub(super) mod #name {
@@ -78,20 +69,21 @@ impl ToTokens for BindParams<'_> {
         }
 
         let mut fields = vec![];
-        for name in self.params.keys() {
+        for name in &self.params {
             fields.push(quote! {
                 #name: &'a (dyn ::kosame::postgres::internal::ToSql + ::std::marker::Sync)
             });
         }
         let fields_len = fields.len();
 
-        let field_names = self.params.keys();
+        let field_names = &self.params;
 
         quote! {
             mod params {
                 #(#modules)*
             }
 
+            #[derive(Debug, Clone)]
             pub struct Params<'a> {
                 #(pub #fields),*
             }

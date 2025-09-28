@@ -23,7 +23,7 @@ impl Dialect for Postgres {
         _name: &str,
         ordinal: BindParamOrdinal,
     ) -> std::fmt::Result {
-        write!(formatter, "${ordinal}")
+        write!(formatter, "${}", ordinal + 1)
     }
 }
 
