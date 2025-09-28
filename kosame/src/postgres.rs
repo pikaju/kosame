@@ -1,3 +1,4 @@
+#[doc(hidden)]
 pub mod internal {
     use fallible_iterator::FallibleIterator;
     pub use postgres_protocol::types::int4_from_sql;

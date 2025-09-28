@@ -11,7 +11,7 @@ pub trait Dialect {
     ) -> std::fmt::Result;
 }
 
-pub struct Postgres;
+pub enum Postgres {}
 
 impl Dialect for Postgres {
     fn ident_esc() -> (&'static str, &'static str) {
@@ -27,7 +27,7 @@ impl Dialect for Postgres {
     }
 }
 
-pub struct MySql;
+pub enum MySql {}
 
 impl Dialect for MySql {
     fn ident_esc() -> (&'static str, &'static str) {
@@ -43,7 +43,7 @@ impl Dialect for MySql {
     }
 }
 
-pub struct Sqlite;
+pub enum Sqlite {}
 
 impl Dialect for Sqlite {
     fn ident_esc() -> (&'static str, &'static str) {
@@ -59,9 +59,9 @@ impl Dialect for Sqlite {
     }
 }
 
-pub struct Mssql;
+pub struct MsSql;
 
-impl Dialect for Mssql {
+impl Dialect for MsSql {
     fn ident_esc() -> (&'static str, &'static str) {
         ("[", "]")
     }

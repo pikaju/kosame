@@ -32,16 +32,16 @@ fn main() {
     )
     .unwrap();
 
-    let kek = 5i32;
+    let kek: i32 = 5;
     let id: i32 = 6;
-    let limit = 3i64;
+    let limit: i64 = 3i64;
 
     let query = kosame::query! {
         #[serde(rename_all = "camelCase")]
         schema::posts {
             /// all the post fields
             * as all_of_them,
-            "kek" as pip: ::std::string::String,
+            "k'ek'" as pip: ::std::string::String,
             comments {
                 id,
                 post_id as postid: I32,
@@ -64,7 +64,7 @@ fn main() {
         .root()
         .fmt_sql::<Postgres>(&mut formatter, None)
         .unwrap();
-    println!("{:?}", sql);
+    println!("{}", sql);
     println!("========");
 
     // let params = my_query::Params {
