@@ -36,6 +36,10 @@ impl<'a> BindParams<'a> {
         Self { params }
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.params.is_empty()
+    }
+
     pub fn to_closure_token_stream(&self, module_name: &Ident) -> TokenStream {
         let mut rename_vars = vec![];
         let mut struct_fields = vec![];
@@ -75,8 +79,9 @@ impl ToTokens for BindParams<'_> {
             });
         }
         let fields_len = fields.len();
-
         let field_names = &self.params;
+
+        let lifetime = fields_len.gt(&0).then_some(quote! { <'a> });
 
         quote! {
             mod params {
@@ -84,11 +89,11 @@ impl ToTokens for BindParams<'_> {
             }
 
             #[derive(Debug, Clone)]
-            pub struct Params<'a> {
+            pub struct Params #lifetime {
                 #(pub #fields),*
             }
 
-            impl<'a> Params<'a> {
+            impl #lifetime Params #lifetime {
                 pub fn array(&self) -> [&(dyn ::kosame::postgres::internal::ToSql + ::std::marker::Sync); #fields_len] {
                     [#(self.#field_names),*]
                 }

@@ -1,10 +1,12 @@
+pub mod connection;
 pub mod dialect;
 pub mod expr;
-pub mod postgres;
 pub mod query;
 pub mod relation;
 pub mod schema;
 pub mod sql_writer;
 
-pub use const_format::concatcp;
+#[cfg(feature = "postgres")]
+pub mod postgres;
+
 pub use kosame_macro::*;

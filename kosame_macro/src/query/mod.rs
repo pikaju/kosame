@@ -73,26 +73,35 @@ impl ToTokens for Query {
             tokens
         };
 
+        let lifetime = (!bind_params.is_empty()).then_some(quote! { <'a> });
+
         let module_tokens = quote! {
             mod #module_name {
                 #node_tokens
 
                 #bind_params
 
-                pub struct Query<'a> {
-                    params: Params<'a>,
+                pub struct Query #lifetime {
+                    params: Params #lifetime,
                 }
 
-                impl<'a> Query<'a> {
-                    pub fn new(params: Params<'a>) -> Self { Self { params } }
-                    pub fn params(&self) -> &Params<'_> { &self.params }
+                impl #lifetime Query #lifetime {
+                    pub fn new(params: Params #lifetime) -> Self { Self { params } }
+                    pub fn params(&self) -> &Params #lifetime { &self.params }
                     pub fn from_row(&self, row: &::kosame::postgres::internal::Row) -> Row {
                         row.into()
                     }
                 }
 
-                impl ::kosame::query::Query for Query<'_> {
+                impl #lifetime ::kosame::query::Query for Query #lifetime {
+                    type Params = Params #lifetime;
+                    type Row = Row;
+
                     const ROOT: ::kosame::query::QueryNode = #query_node;
+
+                    fn params(&self) -> &Self::Params {
+                        &self.params
+                    }
                 }
             }
         };
