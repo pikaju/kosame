@@ -38,6 +38,10 @@ pub enum BinOp {
     GreaterThan,
     LessThanOrEq,
     GreaterThanOrEq,
+    // is
+    Is,
+    IsNot,
+    IsDistinctFrom,
     // logical
     And,
     Or,
@@ -57,6 +61,9 @@ impl BinOp {
             Self::GreaterThan => formatter.write_str(" > "),
             Self::LessThanOrEq => formatter.write_str(" <= "),
             Self::GreaterThanOrEq => formatter.write_str(" >= "),
+            Self::Is => formatter.write_str(" is "),
+            Self::IsNot => formatter.write_str(" is not "),
+            Self::IsDistinctFrom => formatter.write_str(" is distinct from "),
             Self::And => formatter.write_str(" and "),
             Self::Or => formatter.write_str(" or "),
         }

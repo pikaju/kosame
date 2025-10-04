@@ -48,6 +48,11 @@ pub enum Associativity {
 mod kw {
     use syn::custom_keyword;
 
+    custom_keyword!(is);
+    custom_keyword!(not);
+    custom_keyword!(distinct);
+    custom_keyword!(from);
+
     custom_keyword!(and);
     custom_keyword!(or);
 }
@@ -68,6 +73,10 @@ pub enum BinOp {
     GreaterThan(Token![>]),
     LessThanOrEq(Token![<], Token![=]),
     GreaterThanOrEq(Token![>], Token![=]),
+    // is
+    Is(kw::is),
+    IsNot(kw::is, kw::not),
+    IsDistinctFrom(kw::is, kw::distinct, kw::from),
     // logical
     And(kw::and),
     Or(kw::or),
@@ -96,6 +105,9 @@ impl BinOp {
             Self::GreaterThan(_) => 5,
             Self::LessThanOrEq(..) => 5,
             Self::GreaterThanOrEq(..) => 5,
+            Self::Is(..) => 4,
+            Self::IsNot(..) => 4,
+            Self::IsDistinctFrom(..) => 4,
             Self::And(_) => 2,
             Self::Or(_) => 1,
         }
@@ -119,6 +131,20 @@ impl Parse for BinOp {
             return Ok(Self::And(input.parse()?));
         } else if lookahead.peek(kw::or) {
             return Ok(Self::Or(input.parse()?));
+        }
+
+        if lookahead.peek(kw::is) {
+            if input.peek2(kw::not) {
+                return Ok(Self::IsNot(input.parse()?, input.parse()?));
+            }
+            if input.peek2(kw::distinct) {
+                return Ok(Self::IsDistinctFrom(
+                    input.parse()?,
+                    input.parse()?,
+                    input.parse()?,
+                ));
+            }
+            return Ok(Self::Is(input.parse()?));
         }
 
         if lookahead.peek(Token![=]) {
@@ -165,6 +191,9 @@ impl ToTokens for BinOp {
             GreaterThan
             LessThanOrEq
             GreaterThanOrEq
+            Is
+            IsNot
+            IsDistinctFrom
             And
             Or
         );

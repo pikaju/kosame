@@ -57,7 +57,7 @@ async fn main() {
                 post { * } as cool_post,
                 offset 1
             },
-            where id = :id or not null
+            where content is null
             order by :kek + 5 desc nulls last, id + 6
             limit :limit
         }
