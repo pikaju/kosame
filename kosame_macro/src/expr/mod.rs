@@ -52,33 +52,25 @@ impl Expr {
         }
     }
 
-    // fn peek_terminator(input: ParseStream) -> bool {
-    //     Alias::peek(input) || TypeOverride::peek(input) || input.peek(Token![,])
-    // }
-
     fn parse_expr(input: ParseStream, min_precedence: u32) -> syn::Result<Expr> {
         let mut lhs = Self::parse_prefix(input)?;
 
-        loop {
-            if let Some(bin_op) = BinOp::peek(input) {
-                let precedence = bin_op.precedence();
-                if precedence < min_precedence {
-                    break;
-                }
-
-                let next_precedence = if bin_op.associativity() == Associativity::Left {
-                    precedence + 1
-                } else {
-                    precedence
-                };
-
-                let bin_op = input.parse()?;
-                let rhs = Self::parse_expr(input, next_precedence)?;
-
-                lhs = Expr::Binary(Binary::new(lhs, bin_op, rhs))
-            } else {
+        while let Some(bin_op) = BinOp::peek(input) {
+            let precedence = bin_op.precedence();
+            if precedence < min_precedence {
                 break;
             }
+
+            let next_precedence = if bin_op.associativity() == Associativity::Left {
+                precedence + 1
+            } else {
+                precedence
+            };
+
+            let bin_op = input.parse()?;
+            let rhs = Self::parse_expr(input, next_precedence)?;
+
+            lhs = Expr::Binary(Binary::new(lhs, bin_op, rhs))
         }
 
         Ok(lhs)

@@ -37,7 +37,7 @@ impl OrderBy {
     }
 
     pub fn peek(input: ParseStream) -> bool {
-        input.peek(kw::order)
+        input.peek(kw::order) && input.peek2(kw::by)
     }
 
     pub fn accept_expr<'a>(&'a self, visitor: &mut impl Visitor<'a>) {

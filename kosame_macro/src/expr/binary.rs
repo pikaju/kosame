@@ -45,6 +45,13 @@ pub enum Associativity {
     Left,
 }
 
+mod kw {
+    use syn::custom_keyword;
+
+    custom_keyword!(and);
+    custom_keyword!(or);
+}
+
 #[allow(dead_code)]
 pub enum BinOp {
     // multiplication, division, modulo
@@ -61,6 +68,9 @@ pub enum BinOp {
     GreaterThan(Token![>]),
     LessThanOrEq(Token![<], Token![=]),
     GreaterThanOrEq(Token![>], Token![=]),
+    // logical
+    And(kw::and),
+    Or(kw::or),
 }
 
 impl BinOp {
@@ -86,6 +96,8 @@ impl BinOp {
             Self::GreaterThan(_) => 5,
             Self::LessThanOrEq(..) => 5,
             Self::GreaterThanOrEq(..) => 5,
+            Self::And(_) => 2,
+            Self::Or(_) => 1,
         }
     }
 }
@@ -103,6 +115,10 @@ impl Parse for BinOp {
             return Ok(Self::Divide(input.parse()?));
         } else if lookahead.peek(Token![%]) {
             return Ok(Self::Modulo(input.parse()?));
+        } else if lookahead.peek(kw::and) {
+            return Ok(Self::And(input.parse()?));
+        } else if lookahead.peek(kw::or) {
+            return Ok(Self::Or(input.parse()?));
         }
 
         if lookahead.peek(Token![=]) {
@@ -149,6 +165,8 @@ impl ToTokens for BinOp {
             GreaterThan
             LessThanOrEq
             GreaterThanOrEq
+            And
+            Or
         );
     }
 }
