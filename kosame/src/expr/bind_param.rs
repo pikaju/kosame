@@ -1,4 +1,4 @@
-use crate::{dbms::Dialect, sql_formatter::SqlFormatter};
+use crate::sql;
 
 pub struct BindParam {
     param: &'static crate::query::BindParam,
@@ -9,7 +9,7 @@ impl BindParam {
         Self { param }
     }
 
-    pub fn fmt_sql<D: Dialect>(&self, formatter: &mut SqlFormatter<D>) -> std::fmt::Result {
+    pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
         formatter.write_bind_param(self.param.name(), self.param.ordinal())
     }
 }

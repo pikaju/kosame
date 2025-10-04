@@ -10,7 +10,7 @@ pub use column_ref::ColumnRef;
 pub use lit::Lit;
 pub use paren::Paren;
 
-use crate::{dbms::Dialect, sql_formatter::SqlFormatter};
+use crate::sql;
 
 pub enum Expr {
     Binary(Binary),
@@ -21,7 +21,7 @@ pub enum Expr {
 }
 
 impl Expr {
-    pub fn fmt_sql<D: Dialect>(&self, formatter: &mut SqlFormatter<D>) -> std::fmt::Result {
+    pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
         match self {
             Self::Binary(inner) => inner.fmt_sql(formatter),
             Self::BindParam(inner) => inner.fmt_sql(formatter),

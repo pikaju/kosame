@@ -1,4 +1,4 @@
-use crate::{dbms::Dialect, schema::Column, sql_formatter::SqlFormatter};
+use crate::{schema::Column, sql};
 
 pub struct ColumnRef {
     column: &'static Column,
@@ -9,7 +9,7 @@ impl ColumnRef {
         Self { column }
     }
 
-    pub fn fmt_sql<D: Dialect>(&self, formatter: &mut SqlFormatter<D>) -> std::fmt::Result {
+    pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
         formatter.write_ident(self.column.name())
     }
 }

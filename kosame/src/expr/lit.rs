@@ -1,6 +1,6 @@
 use std::fmt::Write;
 
-use crate::{dbms::Dialect, sql_formatter::SqlFormatter};
+use crate::sql;
 
 pub enum Lit {
     Int(i64),
@@ -10,7 +10,7 @@ pub enum Lit {
 }
 
 impl Lit {
-    pub fn fmt_sql<D: Dialect>(&self, formatter: &mut SqlFormatter<D>) -> std::fmt::Result {
+    pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
         match self {
             Self::Int(inner) => write!(formatter, "{}", inner),
             Self::Float(inner) => write!(formatter, "{}", inner),

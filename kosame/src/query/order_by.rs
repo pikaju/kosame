@@ -1,6 +1,6 @@
 use std::fmt::Write;
 
-use crate::{dbms::Dialect, expr::Expr, sql_formatter::SqlFormatter};
+use crate::{expr::Expr, sql};
 
 pub struct OrderBy {
     entries: &'static [OrderByEntry],
@@ -11,7 +11,7 @@ impl OrderBy {
         Self { entries }
     }
 
-    pub fn fmt_sql<D: Dialect>(&self, formatter: &mut SqlFormatter<D>) -> std::fmt::Result {
+    pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
         formatter.write_str(" order by ")?;
         for (index, entry) in self.entries.iter().enumerate() {
             entry.fmt_sql(formatter)?;
@@ -34,7 +34,7 @@ impl OrderByEntry {
         Self { expr, dir, nulls }
     }
 
-    pub fn fmt_sql<D: Dialect>(&self, formatter: &mut SqlFormatter<D>) -> std::fmt::Result {
+    pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
         self.expr.fmt_sql(formatter)?;
         match self.dir {
             Some(OrderByDir::Asc) => formatter.write_str(" asc")?,

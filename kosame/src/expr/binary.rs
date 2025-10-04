@@ -1,6 +1,6 @@
 use std::fmt::Write;
 
-use crate::{dbms::Dialect, sql_formatter::SqlFormatter};
+use crate::sql;
 
 use super::Expr;
 
@@ -15,7 +15,7 @@ impl Binary {
         Self { left, op, right }
     }
 
-    pub fn fmt_sql<D: Dialect>(&self, formatter: &mut SqlFormatter<D>) -> std::fmt::Result {
+    pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
         self.left.fmt_sql(formatter)?;
         self.op.fmt_sql(formatter)?;
         self.right.fmt_sql(formatter)?;
@@ -41,7 +41,7 @@ pub enum BinOp {
 }
 
 impl BinOp {
-    pub fn fmt_sql<D: Dialect>(&self, formatter: &mut SqlFormatter<D>) -> std::fmt::Result {
+    pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
         match self {
             Self::Multiply => formatter.write_str(" * "),
             Self::Divide => formatter.write_str(" / "),
