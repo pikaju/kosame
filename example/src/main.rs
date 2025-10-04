@@ -63,7 +63,7 @@ async fn main() {
             limit 3
         }
     }
-    .execute::<Client>(&mut client, &mut RecordArrayRunner {})
+    .execute(&mut client, &mut RecordArrayRunner {})
     .await
     .unwrap();
 
