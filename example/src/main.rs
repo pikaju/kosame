@@ -74,16 +74,15 @@ async fn main() {
     kosame::query! {
         #[serde(rename_all = "camelCase")]
         schema::posts {
-            /// all the post fields
-            * as all_of_them,
+            *,
             comments { * },
             limit :limit
         } as my_query
-    };
+    }
 
-    let rows = my_query::Query::new(my_query::Params { limit: &5i64 })
+    let rows = my_query::Query::new(my_query::Params { limit: &1i64 })
         .execute(&mut client, &mut RecordArrayRunner {})
         .await
         .unwrap();
-    println!("{:#?}", rows);
+    println!("{}", serde_json::to_string_pretty(&rows).unwrap());
 }

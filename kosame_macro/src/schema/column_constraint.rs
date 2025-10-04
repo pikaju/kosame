@@ -8,12 +8,12 @@ use syn::{
 pub struct ColumnConstraints(Vec<ColumnConstraint>);
 
 impl ColumnConstraints {
-    pub fn has_not_null(&self) -> bool {
-        self.0.iter().any(ColumnConstraint::is_not_null)
+    pub fn not_null(&self) -> Option<&ColumnConstraint> {
+        self.0.iter().find(|c| c.is_not_null())
     }
 
-    pub fn has_primary_key(&self) -> bool {
-        self.0.iter().any(ColumnConstraint::is_primary_key)
+    pub fn primary_key(&self) -> Option<&ColumnConstraint> {
+        self.0.iter().find(|c| c.is_primary_key())
     }
 }
 
