@@ -29,11 +29,11 @@ impl Connection for Client {
     type Row = tokio_postgres::Row;
     type Error = tokio_postgres::Error;
 
-    fn query(
+    async fn query(
         &mut self,
         sql: &str,
         params: &Self::Params<'_>,
-    ) -> impl Future<Output = Result<Vec<Self::Row>, Self::Error>> + Send {
-        Client::query(self, sql, params)
+    ) -> Result<Vec<Self::Row>, Self::Error> {
+        Client::query(self, sql, params).await
     }
 }

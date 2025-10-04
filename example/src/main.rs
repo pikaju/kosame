@@ -1,5 +1,4 @@
 use kosame::query::RecordArrayRunner;
-use tokio_postgres::Client;
 
 pub mod schema {
     kosame::table! {
@@ -58,9 +57,9 @@ async fn main() {
                 post { * } as cool_post,
                 offset 1
             },
-            where id = 5
-            // order by :kek + 5 desc nulls last, id + 6
-            limit 3
+            where id = :id
+            order by :kek + 5 desc nulls last, id + 6
+            limit :limit
         }
     }
     .execute(&mut client, &mut RecordArrayRunner {})
