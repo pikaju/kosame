@@ -50,7 +50,7 @@ async fn main() {
             /// all the post fields
             * as all_of_them,
             cast(:id as int) as id: I32,
-            "k'ek'" as pip: ::std::string::String,
+            cast(now() as text) as pip: ::std::string::String,
             comments {
                 id,
                 post_id as postid: I32,
@@ -75,7 +75,7 @@ async fn main() {
         #[serde(rename_all = "camelCase")]
         schema::posts {
             *,
-            comments { * },
+            comments { sum(cast(1 as int)) as mysum: ::std::option::Option<i32> },
             limit :limit
         } as my_query
     }

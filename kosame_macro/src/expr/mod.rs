@@ -1,5 +1,6 @@
 mod binary;
 mod bind_param;
+mod call;
 mod cast;
 mod column_ref;
 mod lit;
@@ -10,6 +11,7 @@ mod visitor;
 
 pub use binary::{Associativity, BinOp, Binary};
 pub use bind_param::BindParam;
+pub use call::Call;
 pub use cast::Cast;
 pub use column_ref::ColumnRef;
 pub use lit::Lit;
@@ -26,6 +28,7 @@ use crate::expr::unary::UnaryOp;
 pub enum Expr {
     Binary(Binary),
     BindParam(BindParam),
+    Call(Call),
     Cast(Cast),
     ColumnRef(ColumnRef),
     Lit(Lit),
@@ -46,6 +49,7 @@ impl Expr {
         branches!(
             Binary
             BindParam
+            Call
             Cast
             ColumnRef
             Lit
@@ -70,6 +74,8 @@ impl Expr {
             Ok(Expr::Cast(input.parse()?))
         } else if input.fork().parse::<Lit>().is_ok() {
             Ok(Expr::Lit(input.parse()?))
+        } else if Call::peek(input) {
+            Ok(Expr::Call(input.parse()?))
         } else if input.fork().parse::<ColumnRef>().is_ok() {
             Ok(Expr::ColumnRef(input.parse()?))
         } else {
@@ -121,6 +127,7 @@ impl ToTokens for Expr {
         branches!(
             Binary
             BindParam
+            Call
             Cast
             ColumnRef
             Lit

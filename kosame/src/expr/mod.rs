@@ -1,5 +1,6 @@
 mod binary;
 mod bind_param;
+mod call;
 mod cast;
 mod column_ref;
 mod lit;
@@ -8,6 +9,7 @@ mod unary;
 
 pub use binary::{BinOp, Binary};
 pub use bind_param::BindParam;
+pub use call::Call;
 pub use cast::Cast;
 pub use column_ref::ColumnRef;
 pub use lit::Lit;
@@ -19,6 +21,7 @@ use crate::sql;
 pub enum Expr {
     Binary(Binary),
     BindParam(BindParam),
+    Call(Call),
     Cast(Cast),
     ColumnRef(ColumnRef),
     Lit(Lit),
@@ -31,6 +34,7 @@ impl Expr {
         match self {
             Self::Binary(inner) => inner.fmt_sql(formatter),
             Self::BindParam(inner) => inner.fmt_sql(formatter),
+            Self::Call(inner) => inner.fmt_sql(formatter),
             Self::Cast(inner) => inner.fmt_sql(formatter),
             Self::ColumnRef(inner) => inner.fmt_sql(formatter),
             Self::Lit(inner) => inner.fmt_sql(formatter),
