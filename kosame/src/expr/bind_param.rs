@@ -1,4 +1,4 @@
-use crate::{dialect::Dialect, sql_writer::SqlFormatter};
+use crate::{dbms::Dialect, sql_formatter::SqlFormatter};
 
 pub struct BindParam {
     param: &'static crate::query::BindParam,

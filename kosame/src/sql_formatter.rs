@@ -1,6 +1,6 @@
 use std::fmt::Write;
 
-use crate::dialect::Dialect;
+use crate::Dialect;
 
 pub struct SqlFormatter<'a, D> {
     buf: &'a mut (dyn Write + 'a),

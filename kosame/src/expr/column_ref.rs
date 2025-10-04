@@ -1,4 +1,4 @@
-use crate::{dialect::Dialect, schema::Column, sql_writer::SqlFormatter};
+use crate::{dbms::Dialect, schema::Column, sql_formatter::SqlFormatter};
 
 pub struct ColumnRef {
     column: &'static Column,

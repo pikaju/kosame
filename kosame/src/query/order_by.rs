@@ -1,6 +1,6 @@
 use std::fmt::Write;
 
-use crate::{dialect::Dialect, expr::Expr, sql_writer::SqlFormatter};
+use crate::{dbms::Dialect, expr::Expr, sql_formatter::SqlFormatter};
 
 pub struct OrderBy {
     entries: &'static [OrderByEntry],

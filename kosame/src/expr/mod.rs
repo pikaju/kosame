@@ -10,7 +10,7 @@ pub use column_ref::ColumnRef;
 pub use lit::Lit;
 pub use paren::Paren;
 
-use crate::{dialect::Dialect, sql_writer::SqlFormatter};
+use crate::{dbms::Dialect, sql_formatter::SqlFormatter};
 
 pub enum Expr {
     Binary(Binary),

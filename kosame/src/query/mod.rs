@@ -11,7 +11,7 @@ pub use order_by::*;
 pub use runner::*;
 
 use crate::{
-    connection::Connection,
+    dbms::Connection,
     expr::Expr,
     params::Params,
     schema::{Column, Relation, Table},

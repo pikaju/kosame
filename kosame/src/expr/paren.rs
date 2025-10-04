@@ -1,6 +1,6 @@
 use std::fmt::Write;
 
-use crate::{dialect::Dialect, sql_writer::SqlFormatter};
+use crate::{dbms::Dialect, sql_formatter::SqlFormatter};
 
 use super::Expr;
 

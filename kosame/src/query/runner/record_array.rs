@@ -1,9 +1,9 @@
 use std::fmt::Write;
 
 use crate::{
-    connection::Connection,
-    dialect::{Dialect, Postgres},
-    sql_writer::SqlFormatter,
+    dbms::Connection,
+    dbms::{Dialect, postgres},
+    sql_formatter::SqlFormatter,
 };
 
 use super::*;
@@ -23,7 +23,7 @@ impl QueryRunner for RecordArrayRunner {
         for<'b> <Q as Query>::Row: From<&'b C::Row>,
     {
         let mut sql = String::new();
-        let mut formatter = SqlFormatter::<Postgres>::new(&mut sql);
+        let mut formatter = SqlFormatter::<postgres::Dialect>::new(&mut sql);
         fmt_node_sql(&mut formatter, query.root(), None)
             .expect("SQL string formatting should never fail");
         println!("==== Query ====");
