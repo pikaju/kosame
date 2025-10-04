@@ -49,6 +49,7 @@ async fn main() {
         schema::posts {
             /// all the post fields
             * as all_of_them,
+            cast(:id as int) as id: I32,
             "k'ek'" as pip: ::std::string::String,
             comments {
                 id,
