@@ -81,7 +81,7 @@ impl ToTokens for BindParams<'_> {
         let fields_len = fields.len();
         let field_names = &self.params;
 
-        let lifetime = fields_len.gt(&0).then(|| quote! { <'a> });
+        let lifetime = (fields_len > 0).then(|| quote! { <'a> });
 
         quote! {
             mod params {
@@ -92,13 +92,16 @@ impl ToTokens for BindParams<'_> {
             pub struct Params #lifetime {
                 #(pub #fields),*
             }
+        }
+        .to_tokens(tokens);
 
+        #[cfg(feature = "postgres")]
+        quote! {
             impl<'a> ::kosame::params::Params<Vec<&'a (dyn ::kosame::postgres::internal::ToSql + ::std::marker::Sync + 'a)>> for Params #lifetime {
                 fn to_driver(&self) -> Vec<&'a (dyn ::kosame::postgres::internal::ToSql + ::std::marker::Sync + 'a)> {
                     vec![#(self.#field_names),*]
                 }
             }
-        }
-        .to_tokens(tokens);
+        }.to_tokens(tokens);
     }
 }

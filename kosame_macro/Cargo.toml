@@ -8,6 +8,12 @@ proc-macro = true
 
 [features]
 default = []
+
+mssql = []
+mysql = []
+postgres = []
+sqlite = []
+
 serde = ["serde-serialize", "serde-deserialize"]
 serde-serialize = ["dep:serde"]
 serde-deserialize = ["dep:serde"]

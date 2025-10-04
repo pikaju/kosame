@@ -18,58 +18,64 @@ impl RowStruct {
     }
 
     fn to_from_row_impl(&self, tokens: &mut TokenStream) {
-        let name = &self.name;
-        let fields = self.fields.iter().enumerate().map(|(index, field)| {
-            let name = &field.name;
-            quote! {
-                #name: row.get(#index)
-            }
-        });
+        #[cfg(feature = "postgres")]
+        {
+            let name = &self.name;
+            let fields = self.fields.iter().enumerate().map(|(index, field)| {
+                let name = &field.name;
+                quote! {
+                    #name: row.get(#index)
+                }
+            });
 
-        quote! {
-            impl From<&::kosame::postgres::internal::Row> for #name {
-                fn from(row: &::kosame::postgres::internal::Row) -> Self {
-                    Self {
-                        #(#fields),*
+            quote! {
+                impl From<&::kosame::postgres::internal::Row> for #name {
+                    fn from(row: &::kosame::postgres::internal::Row) -> Self {
+                        Self {
+                            #(#fields),*
+                        }
                     }
                 }
             }
+            .to_tokens(tokens);
         }
-        .to_tokens(tokens);
     }
 
     fn to_from_sql_impl(&self, tokens: &mut TokenStream) {
-        let name = &self.name;
-        let field_count = self.fields.len() as i32;
-        let fields = self.fields.iter().map(|field| {
-            let name = &field.name;
+        #[cfg(feature = "postgres")]
+        {
+            let name = &self.name;
+            let field_count = self.fields.len() as i32;
+            let fields = self.fields.iter().map(|field| {
+                let name = &field.name;
+                quote! {
+                    #name: ::kosame::postgres::internal::record_field_from_sql(&raw, &mut offset)?
+                }
+            });
+
             quote! {
-                #name: ::kosame::postgres::internal::record_field_from_sql(&raw, &mut offset)?
-            }
-        });
+                impl<'a> ::kosame::postgres::internal::FromSql<'a> for #name {
+                    fn accepts(ty: &::kosame::postgres::internal::Type) -> bool {
+                        ty.name() == "record"
+                    }
 
-        quote! {
-            impl<'a> ::kosame::postgres::internal::FromSql<'a> for #name {
-                fn accepts(ty: &::kosame::postgres::internal::Type) -> bool {
-                    ty.name() == "record"
-                }
+                    fn from_sql(
+                        ty: &::kosame::postgres::internal::Type,
+                        raw: &[u8],
+                    ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
+                        let column_count = ::kosame::postgres::internal::int4_from_sql(&raw[..4])?;
+                        assert_eq!(column_count, #field_count);
 
-                fn from_sql(
-                    ty: &::kosame::postgres::internal::Type,
-                    raw: &[u8],
-                ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
-                    let column_count = ::kosame::postgres::internal::int4_from_sql(&raw[..4])?;
-                    assert_eq!(column_count, #field_count);
+                        let mut offset = 4;
 
-                    let mut offset = 4;
-
-                    Ok(Self {
-                        #(#fields),*
-                    })
+                        Ok(Self {
+                            #(#fields),*
+                        })
+                    }
                 }
             }
+            .to_tokens(tokens);
         }
-        .to_tokens(tokens);
     }
 }
 

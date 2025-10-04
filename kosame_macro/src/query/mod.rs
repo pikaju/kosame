@@ -115,8 +115,7 @@ impl ToTokens for Query {
 
                     #module_tokens
 
-                    let query = #module_name::Query::new(closure);
-                    query
+                    #module_name::Query::new(closure)
                 }
             }
             .to_tokens(tokens);

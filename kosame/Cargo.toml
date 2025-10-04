@@ -6,10 +6,10 @@ edition = "2024"
 [features]
 default = ["postgres"]
 
-mssql = []
-mysql = []
-postgres = ["dep:postgres-protocol", "dep:postgres-types", "dep:tokio-postgres"]
-sqlite = []
+mssql = ["kosame_macro/mssql"]
+mysql = ["kosame_macro/mysql"]
+postgres = ["kosame_macro/postgres", "dep:postgres-protocol", "dep:postgres-types", "dep:tokio-postgres"]
+sqlite = ["kosame_macro/sqlite"]
 
 serde = ["serde-serialize", "serde-deserialize", "kosame_macro/serde"]
 serde-serialize = ["dep:serde", "kosame_macro/serde-serialize"]
