@@ -3,6 +3,7 @@ mod bind_param;
 mod column_ref;
 mod lit;
 mod paren;
+mod unary;
 
 mod visitor;
 
@@ -11,11 +12,14 @@ pub use bind_param::BindParam;
 pub use column_ref::ColumnRef;
 pub use lit::Lit;
 pub use paren::Paren;
+pub use unary::Unary;
 pub use visitor::Visitor;
 
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::parse::{Parse, ParseStream};
+
+use crate::expr::unary::UnaryOp;
 
 pub enum Expr {
     Binary(Binary),
@@ -23,6 +27,7 @@ pub enum Expr {
     ColumnRef(ColumnRef),
     Lit(Lit),
     Paren(Paren),
+    Unary(Unary),
 }
 
 impl Expr {
@@ -35,7 +40,7 @@ impl Expr {
             };
         }
 
-        branches!(Binary BindParam ColumnRef Lit Paren);
+        branches!(Binary BindParam ColumnRef Lit Paren Unary);
     }
 
     fn parse_prefix(input: ParseStream) -> syn::Result<Expr> {
@@ -43,6 +48,13 @@ impl Expr {
             Ok(Expr::Paren(input.parse()?))
         } else if BindParam::peek(input) {
             Ok(Expr::BindParam(input.parse()?))
+        } else if UnaryOp::peek(input) {
+            let op = input.parse::<UnaryOp>()?;
+            let precedence = op.precedence();
+            Ok(Expr::Unary(Unary::new(
+                op,
+                Self::parse_expr(input, precedence)?,
+            )))
         } else if input.fork().parse::<Lit>().is_ok() {
             Ok(Expr::Lit(input.parse()?))
         } else if input.fork().parse::<ColumnRef>().is_ok() {
@@ -93,6 +105,6 @@ impl ToTokens for Expr {
             };
         }
 
-        branches!(Binary BindParam ColumnRef Lit Paren);
+        branches!(Binary BindParam ColumnRef Lit Paren Unary);
     }
 }

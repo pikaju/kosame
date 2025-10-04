@@ -3,12 +3,14 @@ mod bind_param;
 mod column_ref;
 mod lit;
 mod paren;
+mod unary;
 
 pub use binary::{BinOp, Binary};
 pub use bind_param::BindParam;
 pub use column_ref::ColumnRef;
 pub use lit::Lit;
 pub use paren::Paren;
+pub use unary::{Unary, UnaryOp};
 
 use crate::sql;
 
@@ -18,6 +20,7 @@ pub enum Expr {
     ColumnRef(ColumnRef),
     Lit(Lit),
     Paren(Paren),
+    Unary(Unary),
 }
 
 impl Expr {
@@ -28,6 +31,7 @@ impl Expr {
             Self::ColumnRef(inner) => inner.fmt_sql(formatter),
             Self::Lit(inner) => inner.fmt_sql(formatter),
             Self::Paren(inner) => inner.fmt_sql(formatter),
+            Self::Unary(inner) => inner.fmt_sql(formatter),
         }
     }
 }

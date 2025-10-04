@@ -7,6 +7,7 @@ pub enum Lit {
     Float(f64),
     Str(&'static str),
     Bool(bool),
+    Null,
 }
 
 impl Lit {
@@ -16,6 +17,7 @@ impl Lit {
             Self::Float(inner) => write!(formatter, "{}", inner),
             Self::Str(inner) => write!(formatter, "'{}'", inner.replace("'", "''")),
             Self::Bool(inner) => write!(formatter, "{}", inner),
+            Self::Null => formatter.write_str("null"),
         }
     }
 }

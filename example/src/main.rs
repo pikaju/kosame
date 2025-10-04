@@ -57,7 +57,7 @@ async fn main() {
                 post { * } as cool_post,
                 offset 1
             },
-            where id = :id and 5 = 6 or true = false
+            where id = :id or not null
             order by :kek + 5 desc nulls last, id + 6
             limit :limit
         }
