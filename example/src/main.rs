@@ -3,7 +3,7 @@ use kosame::query::RecordArrayRunner;
 pub mod schema {
     kosame::table! {
         create table posts (
-            id int primary key,
+            id int primary key default uuidv7(),
             title text not null,
             content text,
         );

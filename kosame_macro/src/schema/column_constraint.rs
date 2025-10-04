@@ -5,15 +5,30 @@ use syn::{
     parse::{Parse, ParseStream},
 };
 
+use crate::expr::Expr;
+
 pub struct ColumnConstraints(Vec<ColumnConstraint>);
 
 impl ColumnConstraints {
-    pub fn not_null(&self) -> Option<&ColumnConstraint> {
-        self.0.iter().find(|c| c.is_not_null())
+    pub fn not_null(&self) -> Option<&NotNull> {
+        self.0.iter().find_map(|c| match c {
+            ColumnConstraint::NotNull(inner) => Some(inner),
+            _ => None,
+        })
     }
 
-    pub fn primary_key(&self) -> Option<&ColumnConstraint> {
-        self.0.iter().find(|c| c.is_primary_key())
+    pub fn primary_key(&self) -> Option<&PrimaryKey> {
+        self.0.iter().find_map(|c| match c {
+            ColumnConstraint::PrimaryKey(inner) => Some(inner),
+            _ => None,
+        })
+    }
+
+    pub fn default(&self) -> Option<&Default> {
+        self.0.iter().find_map(|c| match c {
+            ColumnConstraint::Default(inner) => Some(inner),
+            _ => None,
+        })
     }
 }
 
@@ -39,24 +54,7 @@ impl Deref for ColumnConstraints {
 pub enum ColumnConstraint {
     NotNull(NotNull),
     PrimaryKey(PrimaryKey),
-}
-
-impl ColumnConstraint {
-    /// Returns `true` if the column constraint is [`NotNull`].
-    ///
-    /// [`NotNull`]: ColumnConstraint::NotNull
-    #[must_use]
-    pub fn is_not_null(&self) -> bool {
-        matches!(self, Self::NotNull(..))
-    }
-
-    /// Returns `true` if the column constraint is [`PrimaryKey`].
-    ///
-    /// [`PrimaryKey`]: ColumnConstraint::PrimaryKey
-    #[must_use]
-    pub fn is_primary_key(&self) -> bool {
-        matches!(self, Self::PrimaryKey(..))
-    }
+    Default(Default),
 }
 
 impl Parse for ColumnConstraint {
@@ -66,6 +64,8 @@ impl Parse for ColumnConstraint {
             Ok(Self::NotNull(input.parse()?))
         } else if lookahead.peek(kw::primary) {
             Ok(Self::PrimaryKey(input.parse()?))
+        } else if lookahead.peek(kw::default) {
+            Ok(Self::Default(input.parse()?))
         } else {
             Err(lookahead.error())
         }
@@ -77,6 +77,7 @@ impl Display for ColumnConstraint {
         match self {
             Self::NotNull(_) => f.write_str("not null")?,
             Self::PrimaryKey(_) => f.write_str("primary key")?,
+            Self::Default(_) => f.write_str("default ...")?,
         };
         Ok(())
     }
@@ -118,6 +119,20 @@ impl Parse for PrimaryKey {
         Ok(Self {
             _primary: input.parse()?,
             _key: input.parse()?,
+        })
+    }
+}
+
+pub struct Default {
+    _default: kw::default,
+    expr: Expr,
+}
+
+impl Parse for Default {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        Ok(Self {
+            _default: input.parse()?,
+            expr: input.parse()?,
         })
     }
 }
