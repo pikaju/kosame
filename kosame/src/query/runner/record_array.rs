@@ -11,11 +11,16 @@ use super::*;
 pub struct RecordArrayRunner {}
 
 impl QueryRunner for RecordArrayRunner {
-    async fn execute<C, Q>(&self, connection: &mut C, query: &Q) -> Result<Vec<Q::Row>, C::Error>
+    async fn execute<'a, C, Q>(
+        &self,
+        connection: &mut C,
+        query: &Q,
+    ) -> Result<Vec<Q::Row>, C::Error>
     where
         C: Connection,
         Q: Query + ?Sized,
-        for<'a> <Q as Query>::Row: From<&'a C::Row>,
+        <Q as Query>::Params: Params<C::Params<'a>>,
+        for<'b> <Q as Query>::Row: From<&'b C::Row>,
     {
         let mut sql = String::new();
         let mut formatter = SqlFormatter::<Postgres>::new(&mut sql);
@@ -25,7 +30,7 @@ impl QueryRunner for RecordArrayRunner {
         println!("{}", sql);
         println!("{:?}", query.params());
 
-        let rows = connection.query(&sql).await?;
+        let rows = connection.query(&sql, &query.params().to_driver()).await?;
         Ok(rows.iter().map(<Q as Query>::Row::from).collect())
     }
 }

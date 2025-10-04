@@ -87,10 +87,10 @@ impl ToTokens for Query {
 
                 impl #lifetime Query #lifetime {
                     pub fn new(params: Params #lifetime) -> Self { Self { params } }
-                    pub fn params(&self) -> &Params #lifetime { &self.params }
-                    pub fn from_row(&self, row: &::kosame::postgres::internal::Row) -> Row {
-                        row.into()
-                    }
+                    // pub fn params(&self) -> &Params #lifetime { &self.params }
+                    // pub fn from_row(&self, row: &::kosame::postgres::internal::Row) -> Row {
+                    //     row.into()
+                    // }
                 }
 
                 impl #lifetime ::kosame::query::Query for Query #lifetime {

@@ -1,6 +1,7 @@
 pub mod connection;
 pub mod dialect;
 pub mod expr;
+pub mod params;
 pub mod query;
 pub mod relation;
 pub mod schema;

@@ -1,4 +1,5 @@
 use kosame::query::RecordArrayRunner;
+use tokio_postgres::Client;
 
 pub mod schema {
     kosame::table! {
@@ -41,7 +42,7 @@ async fn main() {
     });
 
     let kek = 5;
-    let id: i32 = 8;
+    let id: i32 = 5;
     let limit: i64 = 3;
 
     let rows = kosame::query! {
@@ -57,40 +58,16 @@ async fn main() {
                 post { * } as cool_post,
                 offset 1
             },
-            where id < 8
+            where id = :id
             // order by :kek + 5 desc nulls last, id + 6
             limit 3
         }
     }
-    .execute(&mut client, &mut RecordArrayRunner {})
+    .execute::<Client>(&mut client, &mut RecordArrayRunner {})
     .await
     .unwrap();
 
     use kosame::query::Query;
 
     println!("{:#?}", rows);
-
-    // let mut sql = String::new();
-    // let mut formatter = SqlFormatter::new(&mut sql);
-    // query
-    //     .root()
-    //     .fmt_sql::<Postgres>(&mut formatter, None)
-    //     .unwrap();
-    // println!("{}", sql);
-    // println!("{:?}", query.params());
-    // println!("========");
-    //
-    // // let params = my_query::Params {
-    // //     id: &id,
-    // //     pip: &0i32,
-    // // };
-    //
-    // let result = client.query(&sql, &query.params().array()).unwrap();
-    // for row in result {
-    //     let row = query.from_row(&row);
-    //     println!("{:?}", &row);
-    //     println!("---");
-    //     println!("{}", serde_json::to_string_pretty(&row).unwrap());
-    //     println!("========");
-    // }
 }
