@@ -7,27 +7,29 @@ use super::*;
 pub struct RecordArrayRunner {}
 
 impl QueryRunner for RecordArrayRunner {
-    async fn execute<'a, C, Q>(
+    fn execute<'a, C, Q>(
         &self,
         connection: &mut C,
         query: &Q,
-    ) -> Result<Vec<Q::Row>, C::Error>
+    ) -> impl Future<Output = Result<Vec<Q::Row>, C::Error>>
     where
         C: Connection,
         Q: Query + ?Sized,
         <Q as Query>::Params: Params<C::Params<'a>>,
         for<'b> <Q as Query>::Row: From<&'b C::Row>,
     {
-        let mut sql = String::new();
-        let mut formatter = sql::Formatter::<postgres::Dialect>::new(&mut sql);
-        fmt_node_sql(&mut formatter, query.root(), None)
-            .expect("SQL string formatting should never fail");
-        println!("==== Query ====");
-        println!("{}", sql);
-        println!("{:?}", query.params());
+        async {
+            let mut sql = String::new();
+            let mut formatter = sql::Formatter::<postgres::Dialect>::new(&mut sql);
+            fmt_node_sql(&mut formatter, query.root(), None)
+                .expect("SQL string formatting should never fail");
+            println!("==== Query ====");
+            println!("{}", sql);
+            println!("{:?}", query.params());
 
-        let rows = connection.query(&sql, &query.params().to_driver()).await?;
-        Ok(rows.iter().map(<Q as Query>::Row::from).collect())
+            let rows = connection.query(&sql, &query.params().to_driver()).await?;
+            Ok(rows.iter().map(<Q as Query>::Row::from).collect())
+        }
     }
 }
 

@@ -8,11 +8,11 @@ use super::*;
 
 pub trait QueryRunner {
     #[doc(hidden)]
-    async fn execute<'a, C, Q>(
+    fn execute<'a, C, Q>(
         &self,
         connection: &mut C,
         query: &Q,
-    ) -> Result<Vec<Q::Row>, C::Error>
+    ) -> impl Future<Output = Result<Vec<Q::Row>, C::Error>>
     where
         C: Connection,
         Q: Query + ?Sized,

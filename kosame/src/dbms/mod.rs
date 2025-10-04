@@ -18,9 +18,9 @@ pub trait Connection {
     type Row;
     type Error;
 
-    async fn query(
+    fn query(
         &mut self,
         sql: &str,
         params: &Self::Params<'_>,
-    ) -> Result<Vec<Self::Row>, Self::Error>;
+    ) -> impl Future<Output = Result<Vec<Self::Row>, Self::Error>> + Send;
 }

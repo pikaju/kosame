@@ -29,16 +29,16 @@ pub trait Query {
 
     fn params(&self) -> &Self::Params;
 
-    async fn execute<'a, C>(
+    fn execute<'a, C>(
         &self,
         connection: &mut C,
         runner: &mut (impl QueryRunner + ?Sized),
-    ) -> Result<Vec<Self::Row>, C::Error>
+    ) -> impl Future<Output = Result<Vec<Self::Row>, C::Error>>
     where
         C: Connection,
         Self::Params: Params<C::Params<'a>>,
         for<'b> Self::Row: From<&'b C::Row>,
     {
-        runner.execute(connection, self).await
+        runner.execute(connection, self)
     }
 }
