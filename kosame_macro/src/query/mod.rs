@@ -87,10 +87,19 @@ impl ToTokens for Query {
 
                 impl #lifetime Query #lifetime {
                     pub fn new(params: Params #lifetime) -> Self { Self { params } }
-                    // pub fn params(&self) -> &Params #lifetime { &self.params }
-                    // pub fn from_row(&self, row: &::kosame::postgres::internal::Row) -> Row {
-                    //     row.into()
-                    // }
+
+                    pub fn execute<'c, C>(
+                        &self,
+                        connection: &mut C,
+                        runner: &mut (impl ::kosame::query::QueryRunner + ?Sized),
+                    ) -> impl Future<Output = Result<Vec<<Self as ::kosame::query::Query>::Row>, C::Error>>
+                    where
+                        C: ::kosame::Connection,
+                        <Self as ::kosame::query::Query>::Params: ::kosame::params::Params<C::Params<'c>>,
+                        for<'b> <Self as ::kosame::query::Query>::Row: From<&'b C::Row>,
+                    {
+                        runner.execute(connection, self)
+                    }
                 }
 
                 impl #lifetime ::kosame::query::Query for Query #lifetime {

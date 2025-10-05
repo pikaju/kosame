@@ -67,8 +67,6 @@ async fn main() {
     .await
     .unwrap();
 
-    use kosame::query::Query;
-
     println!("{:#?}", rows);
 
     kosame::query! {

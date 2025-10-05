@@ -11,9 +11,7 @@ pub use order_by::*;
 pub use runner::*;
 
 use crate::{
-    dbms::Connection,
     expr::Expr,
-    params::Params,
     schema::{Column, Relation, Table},
 };
 
@@ -28,17 +26,4 @@ pub trait Query {
     }
 
     fn params(&self) -> &Self::Params;
-
-    fn execute<'a, C>(
-        &self,
-        connection: &mut C,
-        runner: &mut (impl QueryRunner + ?Sized),
-    ) -> impl Future<Output = Result<Vec<Self::Row>, C::Error>>
-    where
-        C: Connection,
-        Self::Params: Params<C::Params<'a>>,
-        for<'b> Self::Row: From<&'b C::Row>,
-    {
-        runner.execute(connection, self)
-    }
 }
