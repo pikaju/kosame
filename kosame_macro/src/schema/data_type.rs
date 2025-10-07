@@ -21,15 +21,30 @@ impl Parse for DataType {
 impl ToTokens for DataType {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         match self.name.to_string().as_str() {
-            "int" => quote! { i32 },
-            "text" => quote! { ::std::string::String },
+            // Built-in / Standard library types
+            "bool" => quote! { bool },
+            "char" => quote! { i8 },
+            "smallint" | "smallserial" => quote! { i16 },
+            "int" | "serial" => quote! { i32 },
+            "oid" => quote! { u32 },
+            "bigint" | "bigserial" => quote! { i64 },
+            "real" => quote! { f32 },
+            "double precision" => quote! { f64 },
+            "varchar" | "text" | "citext" | "name" | "unknown" => quote! { ::std::string::String },
+            "bytea" => quote! { ::std::vec::Vec<u8> },
+            "hstore" => quote! { ::std::collections::HashMap<::std::string::String, ::std::option::Option<::std::string::String>> },
+            "timestamp" | "timestamptz" | "timestamp with time zone" => quote! { ::std::time::SystemTime },
+            "inet" => quote! { ::std::net::IpAddr },
+
+            // Crates
+            "uuid" => quote! { ::uuid::Uuid },
+            "json" | "jsonb" => quote! { ::serde_json::Value },
             _ => {
                 abort!(
                     self.name.span(),
                     "cannot determine rust type for unrecognized database type {}, requires type override",
                     self.name,
                 );
-                quote! { () }
             }
         }
         .to_tokens(tokens);
