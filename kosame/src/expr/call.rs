@@ -16,9 +16,9 @@ impl Call {
         formatter.write_ident(self.function)?;
         formatter.write_str("(")?;
         for (index, param) in self.params.iter().enumerate() {
-            param.fmt_sql(formatter);
+            param.fmt_sql(formatter)?;
             if index != self.params.len() - 1 {
-                formatter.write_str(", ");
+                formatter.write_str(", ")?;
             }
         }
         formatter.write_str(")")?;

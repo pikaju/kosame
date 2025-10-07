@@ -4,9 +4,9 @@ use crate::{dbms::Connection, sql};
 
 use super::*;
 
-pub struct RecordArrayRunner {}
+pub struct MultiQueryRunner {}
 
-impl Runner for RecordArrayRunner {
+impl Runner for MultiQueryRunner {
     async fn execute<'a, C, Q>(
         &self,
         connection: &mut C,
@@ -38,20 +38,9 @@ fn fmt_node_sql<D: sql::Dialect>(
 ) -> std::fmt::Result {
     formatter.write_str("select ")?;
 
-    if relation.is_some() {
-        formatter.write_str("row(")?;
-    }
-
     if node.star() {
-        formatter.write_str("row(")?;
-        for (index, column) in node.table().columns().iter().enumerate() {
+        for column in node.table().columns() {
             formatter.write_ident(column.name())?;
-            if index != node.table().columns().len() - 1 {
-                formatter.write_str(", ")?;
-            }
-        }
-        formatter.write_str(")")?;
-        if !node.fields().is_empty() {
             formatter.write_str(", ")?;
         }
     }

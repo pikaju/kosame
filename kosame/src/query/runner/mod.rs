@@ -1,12 +1,14 @@
+mod multi_query;
 mod record_array;
 
+pub use multi_query::*;
 pub use record_array::*;
 
 use crate::{dbms::Connection, params::Params};
 
 use super::*;
 
-pub trait QueryRunner {
+pub trait Runner {
     #[doc(hidden)]
     fn execute<'a, C, Q>(
         &self,

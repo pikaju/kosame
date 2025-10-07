@@ -8,6 +8,7 @@ pub mod schema {
             content text,
         );
 
+        title as tiiitle: ::std::string::String,
         comments: (id) <= comments (post_id),
     }
 
@@ -48,7 +49,7 @@ async fn main() {
         #[serde(rename_all = "camelCase")]
         schema::posts {
             /// all the post fields
-            * as all_of_them,
+            tiiitle,
             cast(:id as int) as id: I32,
             cast(now() as text) as pip: ::std::string::String,
             comments {
@@ -73,7 +74,7 @@ async fn main() {
         #[serde(rename_all = "camelCase")]
         schema::posts {
             *,
-            comments { sum(cast(1 as int)) as mysum: ::std::option::Option<i32> },
+            comments { sum(cast(1 as int)) as mysum: ::std::option::Option<i64> },
             limit :limit
         } as my_query
     }

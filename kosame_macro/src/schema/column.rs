@@ -1,7 +1,4 @@
-use std::fmt::Display;
-
 use super::{column_constraint::ColumnConstraints, data_type::DataType};
-use crate::docs::{Docs, ToDocsTokens};
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::{
@@ -48,49 +45,5 @@ impl Parse for Column {
             data_type: r#type,
             constraints: input.parse()?,
         })
-    }
-}
-
-impl ToTokens for Column {
-    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        let name = &self.name;
-        let name_string = name.to_string();
-        let data_type = &self.data_type_auto();
-        let docs = self.to_docs_token_stream();
-
-        quote! {
-            #docs
-            pub mod #name {
-                pub const COLUMN: ::kosame::schema::Column = ::kosame::schema::Column::new(#name_string);
-                pub type Type = #data_type;
-            }
-        }
-        .to_tokens(tokens);
-    }
-}
-
-impl Docs for Column {
-    fn docs(&self) -> String {
-        let name = &self.name;
-        format!(
-            "## {name} (Kosame Column)
-
-```sql
-{self}
-```"
-        )
-    }
-}
-
-impl Display for Column {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        Display::fmt(&self.name, f)?;
-        f.write_str(" ")?;
-        Display::fmt(&self.data_type, f)?;
-        for constraint in self.constraints.iter() {
-            f.write_str(" ")?;
-            Display::fmt(&constraint, f)?;
-        }
-        Ok(())
     }
 }

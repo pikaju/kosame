@@ -33,7 +33,7 @@ pub enum UnaryOp {
     Not,
 }
 
-enum Position {
+pub enum Position {
     Prefix,
     Postfix,
 }
