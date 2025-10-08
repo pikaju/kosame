@@ -36,7 +36,7 @@ impl Relation {
         let name_string = name.to_string();
 
         let target = &self.target_table;
-        let target_path = target.to_call_site(4);
+        let target_path = target.to_call_site(3);
 
         let source_columns = self.source_columns.iter();
         let source_columns2 = source_columns.clone();
@@ -53,9 +53,7 @@ impl Relation {
         quote! {
             // #docs
             pub mod #name {
-                pub mod target_table {
-                    pub use #target_path::*;
-                }
+                pub use #target_path as target_table;
 
                 pub mod source_columns {
                     #(pub use super::super::super::columns::#source_columns;)*
