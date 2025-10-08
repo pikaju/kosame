@@ -9,7 +9,7 @@ mod kw {
     custom_keyword!(null);
 }
 
-#[allow(dead_code)]
+#[allow(unused)]
 pub enum Lit {
     Int(syn::LitInt),
     Float(syn::LitFloat),

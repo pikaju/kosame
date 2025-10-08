@@ -113,7 +113,7 @@ impl Parse for Relation {
     }
 }
 
-#[allow(dead_code)]
+#[allow(unused)]
 enum Arrow {
     ManyToOne(Token![=>]),
     OneToMany(Token![<=]),

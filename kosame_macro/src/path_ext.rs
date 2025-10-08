@@ -3,7 +3,7 @@ use syn::{Ident, Path, PathSegment, Token, punctuated::Punctuated};
 
 pub trait PathExt {
     fn is_absolute(&self) -> bool;
-    #[allow(dead_code)]
+    #[allow(unused)]
     fn is_relative(&self) -> bool;
     fn to_call_site(&self, nesting_levels: usize) -> Path;
 }

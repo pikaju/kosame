@@ -39,7 +39,7 @@ mod kw {
     custom_keyword!(not);
 }
 
-#[allow(dead_code)]
+#[allow(unused)]
 pub enum UnaryOp {
     Not(kw::not),
 }

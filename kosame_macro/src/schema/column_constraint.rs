@@ -50,7 +50,7 @@ impl Deref for ColumnConstraints {
     }
 }
 
-#[allow(dead_code)]
+#[allow(unused)]
 pub enum ColumnConstraint {
     NotNull(NotNull),
     PrimaryKey(PrimaryKey),

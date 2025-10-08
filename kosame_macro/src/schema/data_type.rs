@@ -5,7 +5,6 @@ use syn::{
     parse::{Parse, ParseStream},
 };
 
-#[allow(dead_code)]
 pub struct DataType {
     name: Ident,
 }

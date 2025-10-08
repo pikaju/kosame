@@ -95,7 +95,7 @@ impl ToTokens for Table {
         for unmatched_column_override in self.unmatched_column_overrides() {
             emit_error!(
                 unmatched_column_override.name().span(),
-                "column override {} does not match any column name",
+                "column override `{}` does not match any column name",
                 unmatched_column_override.name()
             );
         }

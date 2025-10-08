@@ -57,7 +57,7 @@ mod kw {
     custom_keyword!(or);
 }
 
-#[allow(dead_code)]
+#[allow(unused)]
 pub enum BinOp {
     // multiplication, division, modulo
     Multiply(Token![*]),

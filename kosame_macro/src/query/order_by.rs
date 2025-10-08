@@ -114,7 +114,7 @@ impl ToTokens for OrderByEntry {
     }
 }
 
-#[allow(dead_code)]
+#[allow(unused)]
 pub enum OrderByDir {
     Asc(kw::asc),
     Desc(kw::desc),
@@ -143,7 +143,7 @@ impl Parse for OrderByDir {
     }
 }
 
-#[allow(dead_code)]
+#[allow(unused)]
 pub enum OrderByNulls {
     First(kw::nulls, kw::first),
     Last(kw::nulls, kw::last),
