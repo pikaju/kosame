@@ -1,8 +1,9 @@
 use super::{column::Column, field_spec::FieldSpec, relation::Relation};
 use crate::{
     row_struct::{RowStruct, RowStructField},
-    schema::column_override::ColumnWithOverride,
+    schema::column_override::{ColumnOverride, ColumnWithOverride},
 };
+use proc_macro_error::emit_error;
 use proc_macro2::Span;
 use quote::{ToTokens, quote};
 use syn::{
@@ -56,6 +57,19 @@ impl Table {
                 _ => None,
             })
     }
+
+    fn unmatched_column_overrides(&self) -> impl Iterator<Item = &ColumnOverride> {
+        self.field_specs
+            .iter()
+            .filter_map(|field_spec| match field_spec {
+                FieldSpec::ColumnOverride(column_override) => (!self
+                    .columns
+                    .iter()
+                    .any(|column| column.name() == column_override.name()))
+                .then_some(column_override),
+                _ => None,
+            })
+    }
 }
 
 impl Parse for Table {
@@ -77,6 +91,14 @@ impl ToTokens for Table {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let name = &self.name;
         let name_string = name.to_string();
+
+        for unmatched_column_override in self.unmatched_column_overrides() {
+            emit_error!(
+                unmatched_column_override.name().span(),
+                "column override {} does not match any column name",
+                unmatched_column_override.name()
+            );
+        }
 
         let columns = self.columns().collect::<Vec<_>>();
         let relations = self.relations().map(|relation| relation.to_token_stream());
