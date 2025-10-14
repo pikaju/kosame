@@ -76,7 +76,7 @@ impl ToTokens for Query {
         let lifetime = (!bind_params.is_empty()).then_some(quote! { <'a> });
 
         let module_tokens = quote! {
-            mod #module_name {
+            pub mod #module_name {
                 #node_tokens
 
                 #bind_params
@@ -87,19 +87,6 @@ impl ToTokens for Query {
 
                 impl #lifetime Query #lifetime {
                     pub fn new(params: Params #lifetime) -> Self { Self { params } }
-
-                    pub fn execute<'c, C>(
-                        &self,
-                        connection: &mut C,
-                        runner: &mut (impl ::kosame::query::Runner + ?Sized),
-                    ) -> impl Future<Output = Result<Vec<<Self as ::kosame::query::Query>::Row>, C::Error>>
-                    where
-                        C: ::kosame::Connection,
-                        <Self as ::kosame::query::Query>::Params: ::kosame::params::Params<C::Params<'c>>,
-                        for<'b> <Self as ::kosame::query::Query>::Row: From<&'b C::Row>,
-                    {
-                        runner.execute(connection, self)
-                    }
                 }
 
                 impl #lifetime ::kosame::query::Query for Query #lifetime {
@@ -110,6 +97,19 @@ impl ToTokens for Query {
 
                     fn params(&self) -> &Self::Params {
                         &self.params
+                    }
+
+                    fn execute<'c, C>(
+                        &self,
+                        connection: &mut C,
+                        runner: &mut (impl ::kosame::query::Runner + ?Sized),
+                    ) -> impl Future<Output = Result<Vec<<Self as ::kosame::query::Query>::Row>, C::Error>>
+                    where
+                        C: ::kosame::Connection,
+                        <Self as ::kosame::query::Query>::Params: ::kosame::params::Params<C::Params<'c>>,
+                        for<'b> <Self as ::kosame::query::Query>::Row: From<&'b C::Row>,
+                    {
+                        runner.execute(connection, self)
                     }
                 }
             }

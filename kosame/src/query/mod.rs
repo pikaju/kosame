@@ -26,4 +26,14 @@ pub trait Query {
     }
 
     fn params(&self) -> &Self::Params;
+
+    fn execute<'c, C>(
+        &self,
+        connection: &mut C,
+        runner: &mut (impl crate::query::Runner + ?Sized),
+    ) -> impl Future<Output = Result<Vec<<Self as crate::query::Query>::Row>, C::Error>>
+    where
+        C: crate::Connection,
+        <Self as crate::query::Query>::Params: crate::params::Params<C::Params<'c>>,
+        for<'b> <Self as crate::query::Query>::Row: From<&'b C::Row>;
 }
