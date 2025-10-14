@@ -501,7 +501,7 @@ async fn fetch_row(
 }
 ```
 
-## Can Kosame handle all use cases?
+## Can Kosame handle all use cases well?
 
 No. Kosame chooses a syntax that works well when you just want to "fetch a thing and its things and their things". Writing SQL directly will always give you more flexibility and control over what your database does, which may also allow you to optimize performance beyond what the Kosame query runner does.
 
