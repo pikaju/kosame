@@ -3,11 +3,11 @@
   <img width="256" src="./misc/readme/logo-black.svg#gh-light-mode-only" />
 </div>
 
-<br />
-
 <div align="center">
   <h3>Macro-based Rust ORM focused on developer ergonomics</h3> 
 </div>
+
+<br />
 
 Kosame (小雨, Japanese for "light rain" or "drizzle") is a Rust ORM inspired by [Prisma](https://github.com/prisma/prisma) and [Drizzle](https://github.com/drizzle-team/drizzle-orm).
 Most Rust ORMs ask the developer to write both the query they want to perform as well as the resulting struct type to store the query rows in, even though they are tightly coupled. Some TypeScript ORMs manage to solve this by inferring the row types from the query itself. They also offer relational queries, allowing developers to go from flat tables to a nested struct hirarchy. Kosame was born out of a desire to have this level of developer ergonomics in Rust, using macro magic.
@@ -108,4 +108,15 @@ Using `serde_json`, we can print the result of the `fetch_post` function for pos
   ]
 }
 ```
+
+## Planned features
+
+Kosame is an early prototype. There are many features and performance optimizations left to implement, including but not limited to:
+* Support for other database management systems. Currently, only PostgreSQL (using [`tokio_postgres`](https://docs.rs/tokio-postgres/latest/tokio_postgres/)) is supported.
+* Automatically generated database migrations based on changes in the Kosame schema.
+* Database mutations, i.e. `insert`, `update`, and `delete`. As of right now, Kosame only supports read-queries.
+* Support for more SQL expression syntax.
+* Alternative query runners, similar to the [`relationLoadStrategy` that Prisma offers](https://www.prisma.io/blog/prisma-orm-now-lets-you-choose-the-best-join-strategy-preview).
+
+## Defining the schema
 
