@@ -43,14 +43,12 @@ fn fmt_node_sql<D: sql::Dialect>(
     }
 
     if node.star() {
-        formatter.write_str("row(")?;
         for (index, column) in node.table().columns().iter().enumerate() {
             formatter.write_ident(column.name())?;
             if index != node.table().columns().len() - 1 {
                 formatter.write_str(", ")?;
             }
         }
-        formatter.write_str(")")?;
         if !node.fields().is_empty() {
             formatter.write_str(", ")?;
         }

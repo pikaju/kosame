@@ -23,7 +23,6 @@ use std::{error::Error, fmt::Debug};
 
 use kosame::query::{Query, RecordArrayRunner};
 
-// Declare your database schema.
 mod schema {
     kosame::table! {
         // Kosame uses the familiar SQL syntax to define tables.

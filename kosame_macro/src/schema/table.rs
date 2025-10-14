@@ -1,3 +1,5 @@
+use std::{cell::Cell, sync::atomic::Ordering};
+
 use super::{column::Column, field_spec::FieldSpec, relation::Relation};
 use crate::{
     row_struct::{RowStruct, RowStructField},
@@ -109,19 +111,50 @@ impl ToTokens for Table {
             .collect::<Vec<_>>();
         let relation_names = self.relations().map(Relation::name).collect::<Vec<_>>();
 
-        let select_struct = RowStruct::new(
-            vec![],
-            Ident::new("Select", Span::call_site()),
-            self.columns()
-                .map(|column| {
-                    RowStructField::new(
-                        vec![],
-                        column.name_or_alias().clone(),
-                        column.type_or_override(),
-                    )
-                })
-                .collect(),
-        );
+        // let select_struct = RowStruct::new(
+        //     vec![],
+        //     Ident::new("Select", Span::call_site()),
+        //     self.columns()
+        //         .map(|column| {
+        //             RowStructField::new(
+        //                 vec![],
+        //                 column.name_or_alias().clone(),
+        //                 column.type_or_override(),
+        //             )
+        //         })
+        //         .collect(),
+        // );
+
+        let star_macro = {
+            static UNIQUE_ID: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
+            let unique_macro_name = quote::format_ident!(
+                "__kosame_star_{}",
+                UNIQUE_ID.fetch_add(1, Ordering::Relaxed).to_string()
+            );
+
+            let fields = self.columns().map(|column| {
+                RowStructField::new(
+                    vec![],
+                    column.name_or_alias().clone(),
+                    column.type_or_override(),
+                )
+            });
+
+            quote! {
+                #[macro_export]
+                macro_rules! #unique_macro_name {
+                    ($(#[$meta:meta])* pub struct $name:ident { $($tokens:tt)* } $($tail:tt)*) => {
+                        $(#[$meta])*
+                        pub struct $name {
+                            #(#fields,)*
+                            $($tokens)*
+                        }
+                    }
+                }
+
+                pub use #unique_macro_name as star;
+            }
+        };
 
         quote! {
             // #docs
@@ -146,7 +179,8 @@ impl ToTokens for Table {
                     &[#(&relations::#relation_names::RELATION),*],
                 );
 
-                #select_struct
+                // #select_struct
+                #star_macro
             }
         }
         .to_tokens(tokens);
