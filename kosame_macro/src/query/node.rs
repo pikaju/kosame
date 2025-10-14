@@ -63,11 +63,6 @@ impl QueryNode {
         let row_struct = {
             let table_path = table_path.to_call_site(1);
 
-            // let star_field = self
-            //     .star
-            //     .iter()
-            //     .map(|star| star.to_row_struct_field(&table_path));
-            //
             RowStruct::new(
                 query.attrs.clone(),
                 node_path.to_struct_name("Row"),
@@ -75,13 +70,6 @@ impl QueryNode {
                     .iter()
                     .map(|field| field.to_row_struct_field(&table_path, node_path))
                     .collect(),
-                // star_field
-                //     .chain(
-                //         self.fields
-                //             .iter()
-                //             .map(|field| field.to_row_struct_field(&table_path, node_path)),
-                //     )
-                //     .collect(),
             )
         };
 
@@ -89,6 +77,7 @@ impl QueryNode {
             let table_path = table_path.to_call_site(1);
             quote! {
                 #table_path::star! {
+                    (#table_path)
                     #row_struct
                 }
             }

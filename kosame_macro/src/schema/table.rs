@@ -133,17 +133,21 @@ impl ToTokens for Table {
             );
 
             let fields = self.columns().map(|column| {
+                let column_name = column.name_or_alias();
                 RowStructField::new(
                     vec![],
-                    column.name_or_alias().clone(),
-                    column.type_or_override(),
+                    column_name.clone(),
+                    quote! { $($table_path)* ::columns::#column_name::Type },
                 )
             });
 
             quote! {
                 #[macro_export]
                 macro_rules! #unique_macro_name {
-                    ($(#[$meta:meta])* pub struct $name:ident { $($tokens:tt)* } $($tail:tt)*) => {
+                    (
+                        ($($table_path:tt)*)
+                        $(#[$meta:meta])* pub struct $name:ident { $($tokens:tt)* }
+                    ) => {
                         $(#[$meta])*
                         pub struct $name {
                             #(#fields,)*
