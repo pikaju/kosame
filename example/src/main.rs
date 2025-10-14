@@ -29,6 +29,24 @@ mod schema {
     }
 }
 
+kosame::query! {
+    schema::posts {
+        content,
+        where id = :id
+    }
+    as my_query
+}
+
+async fn fetch_row(
+    client: &mut tokio_postgres::Client,
+    id: i32,
+) -> Result<Vec<my_query::Row>, Box<dyn Error>> {
+    let rows = my_query::Query::new(my_query::Params { id: &id })
+        .execute(client, &mut RecordArrayRunner {})
+        .await?;
+    Ok(rows)
+}
+
 async fn fetch_post(
     client: &mut tokio_postgres::Client,
     id: i32,
