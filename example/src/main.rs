@@ -52,18 +52,21 @@ async fn fetch_post(
     id: i32,
 ) -> Result<Option<impl serde::Serialize + Debug>, Box<dyn Error>> {
     let row = kosame::query! {
-        #[serde(rename_all = "camelCase")]
         schema::posts {
-            id as my_id,
-
-            /// Rust documentation comments, like this one, are also attributes. This means you can easily document your query and query fields like this!
-            content,
+            *, // Select all columns from the posts table.
 
             comments {
-            id as my_id,
-                #[serde(rename = "cool_content")]
-                content as comment_content,
-            }
+                id,
+                content,
+                upvotes + 1 as upvotes: i32,
+
+                // Familiar syntax for "where", "order by", "limit", and "offset".
+                order by upvotes desc
+                limit 3
+            },
+
+            // The function parameter `id: i32` is used as a query parameter here.
+            where id = :id
         }
     }
     .execute(

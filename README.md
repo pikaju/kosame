@@ -68,7 +68,7 @@ async fn fetch_post(
                 limit 3
             },
 
-            // The function parameter `id: i32` is used as a query parameter here.
+            // The `fetch_post` function parameter `id: i32` is used as a query parameter here.
             where id = :id
         }
     }
@@ -128,7 +128,8 @@ Using `serde_json`, we can print the result of the `fetch_post` function for pos
 
 Kosame is an early prototype. There are many features and performance optimizations left to implement, including but not limited to:
 * Support for other database management systems. Currently, only PostgreSQL (using [`tokio_postgres`](https://docs.rs/tokio-postgres/latest/tokio_postgres/)) is supported.
-* Automatically generated database migrations based on changes in the Kosame schema.
+* CLI for generating database migrations based on changes in the Kosame schema.
+* CLI for generating a Kosame schema by introspecting a database.
 * Database mutations, i.e. `insert`, `update`, and `delete`. As of right now, Kosame only supports read-queries.
 * Support for more SQL expression syntax.
 * Alternative query runners, similar to the [`relationLoadStrategy` that Prisma offers](https://www.prisma.io/blog/prisma-orm-now-lets-you-choose-the-best-join-strategy-preview).
@@ -499,3 +500,9 @@ async fn fetch_row(
     Ok(rows)
 }
 ```
+
+## Can Kosame handle all use cases?
+
+No. Kosame chooses a syntax that works well when you just want to "fetch a thing and its things and their things". Writing SQL directly will always give you more flexibility and control over what your database does, which may also allow you to optimize performance beyond what the Kosame query runner does.
+
+But that's okay! You can combine Kosame with another method to access the database. Use Kosame for situations in which you benefit from the relational query syntax and auto-generated types. In more demanding situations, consider using a crate like [`sqlx`](https://github.com/launchbadge/sqlx).
