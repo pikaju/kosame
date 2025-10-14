@@ -18,4 +18,94 @@ Kosame requires no active database connection during development and has no buil
 
 ## Showcase
 
+```rust
+use std::{error::Error, fmt::Debug};
+
+use kosame::query::{Query, RecordArrayRunner};
+
+// Declare your database schema.
+mod schema {
+    kosame::table! {
+        // Kosame uses the familiar SQL syntax to define tables.
+        create table posts (
+            id int primary key default uuidv7(),
+            title text not null,
+            content text,
+        );
+
+        // Define a relation to another table. This enables relational queries.
+        comments: (id) <= comments (post_id),
+    }
+
+    kosame::table! {
+        create table comments (
+            id int primary key,
+            post_id int not null,
+            content text not null,
+            upvotes int not null default 0,
+        );
+
+        // You may also define the inverse relation if you need it.
+        post: (post_id) => posts (id),
+    }
+}
+
+async fn fetch_post(
+    client: &mut tokio_postgres::Client,
+    id: i32,
+) -> Result<Option<impl serde::Serialize + Debug>, Box<dyn Error>> {
+    let row = kosame::query! {
+        schema::posts {
+            *, // Select all columns from the posts table.
+
+            // Include all related comments using the relation defined above.
+            comments {
+                id,
+                content,
+                upvotes,
+
+                // Familiar syntax for "where", "order by", "limit", and "offset".
+                order by upvotes desc
+                limit 3
+            },
+
+            // The function parameter `id: i32` is used as a query parameter here.
+            where id = :id
+        }
+    }
+    .execute(
+        client,
+        // RecordArrayRunner describes the strategy to fetch rows from the database. In this case,
+        // we run just a single SQL query that makes use of PostgreSQL's arrays and anonymous records.
+        &mut RecordArrayRunner {},
+    )
+    .await?
+    .into_iter()
+    .next();
+
+    Ok(row)
+}
+```
+
+The result type implements `serde::Serialize`, making it trivial to return from an API endpoint. 
+Using `serde_json`, we can print the result of the `fetch_post` function for post ID `5`:
+```json
+{
+  "id": 5,
+  "title": "my post",
+  "content": "hi this is a post",
+  "comments": [
+    {
+      "id": 18,
+      "content": "im commenting something",
+      "upvotes": 4
+    },
+    {
+      "id": 19,
+      "content": "im another comment",
+      "upvotes": 0
+    }
+  ]
+}
+```
 

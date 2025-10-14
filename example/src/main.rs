@@ -2,14 +2,17 @@ use std::{error::Error, fmt::Debug};
 
 use kosame::query::{Query, RecordArrayRunner};
 
+// Declare your database schema.
 mod schema {
     kosame::table! {
+        // Kosame uses the familiar SQL syntax to define tables.
         create table posts (
             id int primary key default uuidv7(),
             title text not null,
             content text,
         );
 
+        // Define a relation to another table. This enables relational queries.
         comments: (id) <= comments (post_id),
     }
 
@@ -21,6 +24,7 @@ mod schema {
             upvotes int not null default 0,
         );
 
+        // You may also define the inverse relation if you need it.
         post: (post_id) => posts (id),
     }
 }
@@ -30,18 +34,28 @@ async fn fetch_post(
     id: i32,
 ) -> Result<Option<impl serde::Serialize + Debug>, Box<dyn Error>> {
     let row = kosame::query! {
-        #[serde(rename_all = "camelCase")]
         schema::posts {
-            *,
+            *, // Select all columns from the posts table.
             comments {
                 id,
-                content
+                content,
+                upvotes,
+
+                // Familiar syntax for "where", "order by", "limit", and "offset".
+                order by upvotes desc
+                limit 3
             },
 
+            // The function parameter `id: i32` is used as a query parameter here.
             where id = :id
         }
     }
-    .execute(client, &mut RecordArrayRunner {})
+    .execute(
+        client,
+        // RecordArrayRunner describes the strategy to fetch rows from the database. In this case,
+        // we run just a single SQL query that makes use of PostgreSQL's arrays and anonymous records.
+        &mut RecordArrayRunner {},
+    )
     .await?
     .into_iter()
     .next();
@@ -67,6 +81,7 @@ async fn main() {
     });
 
     let post = fetch_post(&mut client, 5).await.unwrap();
+    println!("{}", serde_json::to_string_pretty(&post).unwrap());
     println!("{:#?}", post);
 
     // let smep = {
