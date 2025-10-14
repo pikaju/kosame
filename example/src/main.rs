@@ -36,6 +36,7 @@ async fn fetch_post(
     let row = kosame::query! {
         schema::posts {
             *, // Select all columns from the posts table.
+
             comments {
                 id,
                 content,

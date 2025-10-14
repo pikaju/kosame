@@ -86,7 +86,23 @@ async fn fetch_post(
 }
 ```
 
-The result type implements `serde::Serialize`, making it trivial to return from an API endpoint. 
+To execute the query, the Kosame macro automatically generates the following row structs (simplified):
+```rust
+struct Row {
+    id: i32,
+    title: String,
+    content: Option<String>,
+    comments: Vec<RowComments>,
+}
+
+struct RowComments {
+    id: i32,
+    content: String,
+    upvotes: i32,
+}
+```
+
+If the `serde` feature is enabled, the row structs implement `serde::Serialize`, making it trivial to return from an API endpoint. 
 Using `serde_json`, we can print the result of the `fetch_post` function for post ID `5`:
 ```json
 {
@@ -119,3 +135,121 @@ Kosame is an early prototype. There are many features and performance optimizati
 
 ## Defining the schema
 
+Before you can write queries with Kosame, you must declare your database schema. Instead of inventing a new syntax, Kosame tries to follow the existing `CREATE TABLE` syntax closely.
+```rust
+kosame::table! {
+    create table posts (
+        id int primary key default uuidv7(),
+        title text not null,
+        content text, // trailing comma is allowed
+    );
+}
+```
+This means declaring your schema may be as simple as copying a `pg_dump` into the Kosame macro. However, to force consistency, all SQL keywords must be lowercase.
+Kosame has a basic SQL expression parser, which allows you to define the `default` expression of a column.
+
+### Column aliases and type overrides
+
+If you are not happy with the name your column has in your database schema or want to refer to it by a different name in Rust, you can use a column alias:
+```rust
+kosame::table! {
+    create table my_table (
+        MyColumn text not null,
+    );
+
+    MyColumn as my_column,
+}
+```
+
+Kosame attempts to guess the Rust type of a column based on its database type. For example, a PostgreSQL column of type `text` will be represented by a Rust `String`. If you want to use a different type, or if the database type is unknown to Kosame (e.g. for PostgreSQL custom types), you can specify a type override:
+
+```rust
+use smol_str;
+
+kosame::table! {
+    create table my_table (
+        my_column text not null,
+    );
+
+    my_column: smol_str::SmolStr,
+}
+```
+Note that the specified type must be declared or `use`d in the scope surrounding the `kosame::table!` call.
+
+Aliases and type overrides can be combined as follows:
+
+```rust
+use smol_str::SmolStr;
+
+kosame::table! {
+    create table my_table (
+        MyColumn text not null,
+    );
+
+    MyColumn as my_column: SmolStr,
+}
+```
+
+### Relations
+
+In addition to column aliases and type overrides, you can also declare relation fields. Relations tell Kosame how different tables can be queries together.
+```rust
+kosame::table! {
+    create table posts_table (
+        id int primary key default uuidv7(),
+        content text not null,
+    );
+
+    comments: (id) <= my_module::comments_table (post_id),
+}
+
+mod my_module {
+    kosame::table! {
+        create table comments_table (
+            id int primary key default uuidv7(),
+            post_id int not null,
+            content text not null,
+        );
+
+        post: (post_id) => super::posts_table (id),
+    }
+}
+```
+
+In this example, we have a table `posts_table` and a table `comments_table`. For each row in `posts_table`, we expect there to be any number of comments. Conversely, each row in the `comments_table` has exactly one post associated with it, as defined by the `post_id` column.
+
+The relation field declaration
+```
+comments: (id) <= my_module::comments_table (post_id)
+```
+describes a relation called `comments`. It states that there is another table named `comments_table` in the module `my_module` which has a column `post_id` that "points to" the `id` column of `posts_table`. Although a Kosame relation does not have to map to a database foreign key, you may think of the `<=` as pointing in the direction of the foreign key "pointer". With this relation field, we can query all comments associated with a given post:
+```rust
+kosame::query! {
+    posts_table {
+        id,
+        content,
+        comments {
+            id,
+            content,
+        }
+    }
+}
+```
+
+In the comments table, we have the inverse relation:
+```
+post: (post_id) => super::posts_table (id),
+```
+It states that `post` is a row in the `super::posts_table`, and it is referred to by matching the `comment_table`'s `post_id` column with the `post_table`'s `id` column. Note that the arrow (`=>`) points in the other direction here. In this case, Kosame expects there to be at most one post per comment.
+```rust
+kosame::query! {
+    my_module::comments_table {
+        id,
+        content,
+        post {
+            id,
+            content,
+        }
+    }
+}
+```
