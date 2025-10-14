@@ -132,7 +132,7 @@ Kosame is an early prototype. There are many features and performance optimizati
 * Database mutations, i.e. `insert`, `update`, and `delete`. As of right now, Kosame only supports read-queries.
 * Support for more SQL expression syntax.
 * Alternative query runners, similar to the [`relationLoadStrategy` that Prisma offers](https://www.prisma.io/blog/prisma-orm-now-lets-you-choose-the-best-join-strategy-preview).
-* Type inference for bind parameters
+* Type inference for bind parameters.
 
 ## Defining the schema
 
@@ -340,6 +340,7 @@ Kosame allows you to annotate your query and its fields with Rust attributes. At
 
 ```rust
 kosame::query! {
+    #[derive(serde::Serialize)]
     #[serde(rename_all = "camelCase")]
     schema::posts {
         id as my_id,
@@ -357,7 +358,7 @@ kosame::query! {
 }
 ```
 
-Serializing the result of the query above using `serde_json` returns the following JSON string:
+Serializing the result of the query above using `serde_json` returns the following JSON string.
 ```json
 {
   "myId": 5,
@@ -374,6 +375,69 @@ Serializing the result of the query above using `serde_json` returns the followi
   ]
 }
 ```
+You can also enable the `serde` feature to automatically annotate all row structs with serde derives.
+
+### Expressions
+
+Kosame can parse basic SQL expressions. Expressions can be used in various places, one of which is an expression field in your query:
+```rust
+kosame::query! {
+    posts {
+        id,
+        upvotes + 1 as reddit_upvotes: i32,
+        cast(now() as text) as current_time: String,
+        title is not null or content is not null as has_content: bool,
+    }
+}
+```
+Like in the table definition, SQL keywords have to be lowercase. Expression fields in a query **must** be aliased **and** given a type override. Kosame makes no attempt to deduce the name or type of an expression automatically.
+
+The main difference in the syntax of Kosame expressions and SQL expressions are the string literals and identifiers. Unlike in PostgreSQL, you do not need to use double-quotes to make your identifiers case-sensitive. Strings are written using double-quoted Rust strings, as opposed to single quotes:
+```rust
+kosame::query! {
+    my_table {
+        "Hello world!" as hello_world: ::std::string::String,
+    }
+}
+```
+
+### Bind parameters
+
+Kosame uses the `:param_name` syntax for using bind parameters in expressions:
+
+```rust
+kosame::query! {
+    my_table {
+        :my_param + 5 as add_5: i32,
+    }
+}
+```
+
+Kosame generates a `Params` struct containing a borrowed field for each parameter referenced in your query. When executing the query, the bind parameters are converted to the respective database management system's parameter syntax, e.g. `$1`, `$2` etc. for PostgreSQL.
+
+### `where`, `order by`, `limit`, `offset`
+
+Kosame uses the familiar syntax for `where`, `order by`, `limit` and `offset`. You can use expressions for each of these:
+```rust
+kosame::query! {
+    posts {
+        id,
+        content,
+        comments {
+            content,
+            
+            order by upvotes desc, id asc nulls last
+            limit 5
+        },
+
+        where id = :id and content is not null
+        limit :page_size
+        offset :page * :page_size
+    }
+}
+```
+
+`where`, `order by`, `limit` and `offset` must be specified in this order. They must come at the end of a block in a query. Make sure your last query field has a trailing comma.
 
 ### Named vs. anonymous queries
 
@@ -422,8 +486,7 @@ kosame::query! {
 }
 ```
 
-You can now refer to all generated types:
-
+You can now refer to all generated types by name:
 ```rust
 async fn fetch_row(
     client: &mut tokio_postgres::Client,
