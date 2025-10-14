@@ -111,19 +111,19 @@ impl ToTokens for Table {
             .collect::<Vec<_>>();
         let relation_names = self.relations().map(Relation::name).collect::<Vec<_>>();
 
-        // let select_struct = RowStruct::new(
-        //     vec![],
-        //     Ident::new("Select", Span::call_site()),
-        //     self.columns()
-        //         .map(|column| {
-        //             RowStructField::new(
-        //                 vec![],
-        //                 column.name_or_alias().clone(),
-        //                 column.type_or_override(),
-        //             )
-        //         })
-        //         .collect(),
-        // );
+        let select_struct = RowStruct::new(
+            vec![],
+            Ident::new("Select", Span::call_site()),
+            self.columns()
+                .map(|column| {
+                    RowStructField::new(
+                        vec![],
+                        column.name_or_alias().clone(),
+                        column.type_or_override(),
+                    )
+                })
+                .collect(),
+        );
 
         let star_macro = {
             static UNIQUE_ID: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
@@ -183,7 +183,7 @@ impl ToTokens for Table {
                     &[#(&relations::#relation_names::RELATION),*],
                 );
 
-                // #select_struct
+                #select_struct
                 #star_macro
             }
         }
