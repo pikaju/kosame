@@ -1,7 +1,7 @@
 <div align="center">
     <picture>
         <source srcset="https://raw.githubusercontent.com/pikaju/kosame/refs/heads/main/misc/readme/logo-white.svg" media="(prefers-color-scheme: dark)">
-        <img src="https://raw.githubusercontent.com/pikaju/kosame/refs/heads/main/misc/readme/logo-black.svg" alt="Kosame Logo">
+        <img width="256" src="https://raw.githubusercontent.com/pikaju/kosame/refs/heads/main/misc/readme/logo-black.svg" alt="Kosame Logo">
     </picture>
 </div>
 
