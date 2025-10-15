@@ -1,6 +1,6 @@
 use std::fmt::Write;
 
-use crate::{dbms::Connection, sql};
+use crate::{Error, dbms::Connection, sql};
 
 use super::*;
 
@@ -11,7 +11,7 @@ impl Runner for RecordArrayRunner {
         &self,
         connection: &mut C,
         query: &Q,
-    ) -> Result<Vec<Q::Row>, C::Error>
+    ) -> Result<Vec<Q::Row>, Error<C>>
     where
         C: Connection,
         Q: Query + ?Sized,
@@ -26,7 +26,10 @@ impl Runner for RecordArrayRunner {
         println!("{}", sql);
         println!("{:?}", query.params());
 
-        let rows = connection.query(&sql, &query.params().to_driver()).await?;
+        let rows = match connection.query(&sql, &query.params().to_driver()).await {
+            Ok(rows) => rows,
+            Err(error) => return Err(Error::Connection(error)),
+        };
         Ok(rows.iter().map(<Q as Query>::Row::from).collect())
     }
 }

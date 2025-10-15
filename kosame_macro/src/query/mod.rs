@@ -103,7 +103,7 @@ impl ToTokens for Query {
                         &self,
                         connection: &mut C,
                         runner: &mut (impl ::kosame::query::Runner + ?Sized),
-                    ) -> impl Future<Output = Result<Vec<<Self as ::kosame::query::Query>::Row>, C::Error>>
+                    ) -> impl Future<Output = Result<Vec<<Self as ::kosame::query::Query>::Row>, ::kosame::Error<C>>>
                     where
                         C: ::kosame::Connection,
                         <Self as ::kosame::query::Query>::Params: ::kosame::params::Params<C::Params<'c>>,

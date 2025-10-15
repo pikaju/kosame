@@ -1,10 +1,8 @@
-mod multi_query;
 mod record_array;
 
-pub use multi_query::*;
 pub use record_array::*;
 
-use crate::{dbms::Connection, params::Params};
+use crate::{Error, dbms::Connection, params::Params};
 
 use super::*;
 
@@ -14,7 +12,7 @@ pub trait Runner {
         &self,
         connection: &mut C,
         query: &Q,
-    ) -> impl Future<Output = Result<Vec<Q::Row>, C::Error>>
+    ) -> impl Future<Output = Result<Vec<Q::Row>, Error<C>>>
     where
         C: Connection,
         Q: Query + ?Sized,
