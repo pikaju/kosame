@@ -1,11 +1,12 @@
 <div align="center">
-  <!-- <img width="256" src="./misc/readme/logo-white.svg#gh-dark-mode-only" /> -->
-  <!-- <img width="256" src="./misc/readme/logo-black.svg#gh-light-mode-only" /> -->
-  <img width="256" src="./misc/readme/logo-bg.svg" />
+    <picture>
+        <source srcset="https://raw.githubusercontent.com/pikaju/kosame/refs/heads/main/misc/readme/logo-white.svg" media="(prefers-color-scheme: dark)">
+        <img src="https://raw.githubusercontent.com/pikaju/kosame/refs/heads/main/misc/readme/logo-black.svg" alt="Kosame Logo">
+    </picture>
 </div>
 
 <div align="center">
-  <h3>Macro-based Rust ORM focused on developer ergonomics</h3> 
+    <h3>Macro-based Rust ORM focused on developer ergonomics</h3> 
 </div>
 
 <br />
