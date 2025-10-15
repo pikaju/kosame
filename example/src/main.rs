@@ -30,24 +30,6 @@ mod schema {
     }
 }
 
-kosame::query! {
-    schema::posts {
-        content,
-        where id = :id
-    }
-    as my_query
-}
-
-async fn fetch_row(
-    client: &mut tokio_postgres::Client,
-    id: i32,
-) -> Result<Vec<my_query::Row>, Box<dyn Error>> {
-    let rows = my_query::Query::new(my_query::Params { id: &id })
-        .execute(client, &mut RecordArrayRunner {})
-        .await?;
-    Ok(rows)
-}
-
 async fn fetch_post(
     client: &mut tokio_postgres::Client,
     id: i32,
@@ -96,107 +78,7 @@ async fn main() {
         }
     });
 
-    {
-        let mut transaction = client.transaction().await.unwrap();
-        let row = kosame::query! {
-            schema::posts {
-                *, // Select all columns from the posts table.
-
-                comments {
-                    id,
-                    content,
-                    upvotes + 1 as upvotes: i32,
-
-                    // Familiar syntax for "where", "order by", "limit", and "offset".
-                    order by upvotes desc
-                    limit 3
-                },
-
-                // The function parameter `id: i32` is used as a query parameter here.
-                where id = 5
-            }
-        }
-        .execute_opt(
-            &mut transaction,
-            // RecordArrayRunner describes the strategy to fetch rows from the database. In this case,
-            // we run just a single SQL query that makes use of PostgreSQL's arrays and anonymous records.
-            &mut RecordArrayRunner {},
-        )
-        .await
-        .unwrap();
-        println!("{:#?}", row);
-    }
-
-    // let post = fetch_post(&mut client, 5).await.unwrap();
-    // println!("{}", serde_json::to_string_pretty(&post).unwrap());
-    // println!("{:#?}", post);
-
-    // let smep = {
-    //     mod internal {
-    //         #[derive(Debug)]
-    //         pub struct Kek {
-    //             pub x: i32,
-    //         }
-    //     }
-    //
-    //     pub struct Smep {}
-    //
-    //     pub trait SmepTrait {
-    //         fn make_kek(&self) -> internal::Kek;
-    //     }
-    //
-    //     impl SmepTrait for Smep {
-    //         fn make_kek(&self) -> internal::Kek {
-    //             internal::Kek { x: 5 }
-    //         }
-    //     }
-    //
-    //     Smep { lel: 5 }
-    // };
-    // let lel = smep.make_kek();
-    // println!("{:?}", lel);
-
-    // let kek = 5;
-    // let id: i32 = 5;
-    // let limit: i64 = 3;
-    //
-    // let rows = kosame::query! {
-    //     #[serde(rename_all = "camelCase")]
-    //     schema::posts {
-    //         /// all the post fields
-    //         title,
-    //         cast(:id as int) as id: I32,
-    //         cast(now() as text) as pip: ::std::string::String,
-    //         comments {
-    //             id,
-    //             post_id as postid: I32,
-    //             content: ::std::string::String,
-    //             post { * } as cool_post,
-    //             offset 1
-    //         },
-    //         where content is null
-    //         order by :kek + 5 desc nulls last, id + 6
-    //         limit :limit
-    //     }
-    // }
-    // .execute(&mut client, &mut RecordArrayRunner {})
-    // .await
-    // .unwrap();
-    //
-    // println!("{:#?}", rows);
-    //
-    // kosame::query! {
-    //     #[serde(rename_all = "camelCase")]
-    //     schema::posts {
-    //         *,
-    //         comments { sum(cast(1 as int)) as mysum: ::std::option::Option<i64> },
-    //         limit :limit
-    //     } as my_query
-    // }
-    //
-    // let rows = my_query::Query::new(my_query::Params { limit: &1i64 })
-    //     .execute(&mut client, &mut RecordArrayRunner {})
-    //     .await
-    //     .unwrap();
-    // println!("{}", serde_json::to_string_pretty(&rows).unwrap());
+    let post = fetch_post(&mut client, 5).await.unwrap();
+    println!("{:#?}", post);
+    println!("{}", serde_json::to_string_pretty(&post).unwrap());
 }
