@@ -257,7 +257,7 @@ dependencies = [
 
 [[package]]
 name = "kosame"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "fallible-iterator",
  "futures-core",
@@ -270,7 +270,7 @@ dependencies = [
 
 [[package]]
 name = "kosame_macro"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "convert_case",
  "proc-macro-error",
