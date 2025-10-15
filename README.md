@@ -13,9 +13,9 @@
 
 Kosame (小雨, Japanese for "light rain" or "drizzle") is a Rust ORM inspired by [Prisma](https://github.com/prisma/prisma) and [Drizzle](https://github.com/drizzle-team/drizzle-orm).
 
-Some TypeScript ORMs like Prisma can infer the result type of a database query based solely on the database schema and the query itself. Conversely, most Rust ORMs ask the developer to write both the query they want to perform as well as the resulting struct type to store the query rows in, even though they are tightly coupled. Kosame was born out of a desire to have this level of developer ergonomics in Rust, using macro magic. Kosame also offers relational queries, allowing the user to fetch many nested 1:N relationships in a single statement.
+Some TypeScript ORMs like Prisma can infer the result type of a database query based solely on the database schema and the query itself. Conversely, most Rust ORMs require developers to manually define a struct for the query's results, even though this type is tightly coupled to the query itself. Kosame was born out of a desire to have this level of developer ergonomics in Rust, using macro magic. Kosame also offers relational queries, allowing you to fetch multiple nested 1:N relationships in a single statement.
 
-Kosame requires no active database connection during development and has no build step. Despite this, Kosame offers strong typing and rust-analyzer auto-completions.
+Kosame requires no active database connection during development and has no build step. Despite this, Kosame offers strong typing and rust-analyzer auto-completion.
 
 **Kosame is currently a prototype and not recommended for production use.**
 
@@ -66,7 +66,7 @@ async fn fetch_post(
                 content,
                 upvotes,
 
-                // Familiar syntax for "where", "order by", "limit", and "offset".
+                // Familiar syntax for `where`, `order by`, `limit`, and `offset`.
                 order by upvotes desc
                 limit 3
             },
@@ -78,7 +78,7 @@ async fn fetch_post(
     .execute_opt(
         client,
         // RecordArrayRunner describes the strategy to fetch rows from the database. In this case,
-        // we run just a single SQL query that makes use of PostgreSQL's arrays and anonymous records.
+        // we run just a single SQL query that uses PostgreSQL's arrays and anonymous records.
         &mut RecordArrayRunner {},
     )
     .await?;
@@ -88,6 +88,7 @@ async fn fetch_post(
 ```
 
 To execute the query, the Kosame macro automatically generates the following row structs (simplified):
+
 ```rust
 struct Row {
     id: i32,
@@ -103,8 +104,8 @@ struct RowComments {
 }
 ```
 
-If the `serde` feature is enabled, the row structs implement `serde::Serialize`, making it trivial to return from an API endpoint. 
-Using `serde_json`, we can print the result of the `fetch_post` function for post ID `5`:
+If the `serde` feature is enabled, the row structs implement `serde::Serialize`, making it trivial to return them from an API endpoint. Using `serde_json`, we can print the result of the `fetch_post` function for post ID `5`:
+
 ```json
 {
   "id": 5,
@@ -128,10 +129,11 @@ Using `serde_json`, we can print the result of the `fetch_post` function for pos
 ## Planned features
 
 Kosame is an early prototype. There are many features and performance optimizations left to implement, including but not limited to:
+
 * Support for other database management systems. Currently, only PostgreSQL (using [`tokio_postgres`](https://docs.rs/tokio-postgres/latest/tokio_postgres/)) is supported.
-* CLI for generating database migrations based on changes in the Kosame schema.
-* CLI for generating a Kosame schema by introspecting a database.
-* Database mutations, i.e. `insert`, `update`, and `delete`. As of right now, Kosame only supports read-queries.
+* A CLI for generating database migrations based on changes in the Kosame schema.
+* A CLI for generating a Kosame schema by introspecting a database.
+* Database mutations (i.e., `insert`, `update`, and `delete`). Currently, Kosame only supports read queries.
 * Support for more SQL expression syntax.
 * Alternative query runners, similar to the [`relationLoadStrategy` that Prisma offers](https://www.prisma.io/blog/prisma-orm-now-lets-you-choose-the-best-join-strategy-preview).
 * Type inference for bind parameters.
@@ -139,6 +141,7 @@ Kosame is an early prototype. There are many features and performance optimizati
 ## Defining the schema
 
 Before you can write queries with Kosame, you must declare your database schema. Instead of inventing a new syntax, Kosame tries to follow the existing `CREATE TABLE` syntax closely.
+
 ```rust
 kosame::table! {
     create table posts (
@@ -148,12 +151,13 @@ kosame::table! {
     );
 }
 ```
-This means declaring your schema may be as simple as copying a `pg_dump` into the Kosame macro. However, to force consistency, all SQL keywords must be lowercase.
-Kosame has a basic SQL expression parser, which allows you to define the `default` expression of a column.
+
+This means declaring your schema may be as simple as copying a `pg_dump` into the Kosame macro. However, to enforce consistency, all SQL keywords must be lowercase. Kosame has a basic SQL expression parser, which allows you to define the `default` expression of a column.
 
 ### Column aliases and type overrides
 
-If you are not happy with the name your column has in your database schema or want to refer to it by a different name in Rust, you can use a column alias:
+If you want to refer to a database column by a different name in Rust, you can use a column alias:
+
 ```rust
 kosame::table! {
     create table my_table (
@@ -164,7 +168,7 @@ kosame::table! {
 }
 ```
 
-Kosame attempts to guess the Rust type of a column based on its database type. For example, a PostgreSQL column of type `text` will be represented by a Rust `String`. If you want to use a different type, or if the database type is unknown to Kosame (e.g. for PostgreSQL custom types), you can specify a type override:
+Kosame attempts to guess the Rust type of a column based on its database type. For example, a PostgreSQL column of type `text` will be represented by a Rust `String`. If you want to use a different type, or if the database type is unknown to Kosame (e.g., for PostgreSQL custom types), you can specify a type override:
 
 ```rust
 use smol_str;
@@ -177,7 +181,8 @@ kosame::table! {
     my_column: smol_str::SmolStr,
 }
 ```
-Note that the specified type must either be declared or `use`d in the scope surrounding the `kosame::table!` call or be an "absolute" path (e.g. `crate::MyType` or `::std::string::String`).
+
+Note that the specified type must either be declared or `use`d in the scope of the `kosame::table!` call or be a fully qualified path (e.g., `crate::MyType` or `::std::string::String`).
 
 Aliases and type overrides can be combined as follows:
 
@@ -195,7 +200,8 @@ kosame::table! {
 
 ### Relations
 
-In addition to column aliases and type overrides, you can also declare relation fields. Relations tell Kosame how different tables can be queries together.
+In addition to column aliases and type overrides, you can also declare relation fields. Relations tell Kosame how different tables can be queried together.
+
 ```rust
 kosame::table! {
     create table posts_table (
@@ -219,13 +225,16 @@ mod my_module {
 }
 ```
 
-In this example, we have a table `posts_table` and a table `comments_table`. For each row in `posts_table`, we expect there to be any number of comments. Conversely, each row in the `comments_table` has exactly one post associated with it, as defined by the `post_id` column.
+In this example, we have a `posts_table` and a `comments_table`. For each row in `posts_table`, we expect there to be zero or more comments. Conversely, each row in the `comments_table` has exactly one post associated with it, as defined by the `post_id` column.
 
 The relation field declaration
+
 ```
 comments: (id) <= my_module::comments_table (post_id)
 ```
-describes a relation called `comments`. It states that there is another table named `comments_table` in the module `my_module` which has a column `post_id` that "points to" the `id` column of `posts_table`. Although a Kosame relation does not have to map to a database foreign key, you may think of the `<=` as pointing in the direction of the foreign key "pointer". With this relation field, we can query all comments associated with a given post:
+
+describes a relation called `comments`. It specifies that the `post_id` column in `my_module::comments_table` "points to" the `id` column of `posts_table`. Although a Kosame relation does not have to map to a database foreign key, you can think of the `<=` as pointing in the direction of the foreign key "pointer". With this relation field, we can query all comments associated with a given post:
+
 ```rust
 kosame::query! {
     posts_table {
@@ -240,10 +249,13 @@ kosame::query! {
 ```
 
 In the comments table, we have the inverse relation:
+
 ```
 post: (post_id) => super::posts_table (id),
 ```
-It states that `post` is a row in the `super::posts_table`, and it is referred to by matching the `comment_table`'s `post_id` column with the `post_table`'s `id` column. Note that the arrow (`=>`) points in the other direction here. In this case, Kosame expects there to be at most one post per comment.
+
+This states that `post` is a row in `super::posts_table`, and it is linked by matching the `comments_table`'s `post_id` column with the `posts_table`'s `id` column. Note that the arrow (`=>`) points in the other direction here. In this case, Kosame expects there to be at most one post per comment.
+
 ```rust
 kosame::query! {
     my_module::comments_table {
@@ -261,7 +273,8 @@ kosame::query! {
 
 ### Columns and relations
 
-A basic Kosame query starts by defining the root table you want to read from. This can be a relative or absolute path to where your table is declared.
+A basic Kosame query starts by defining the root table you want to read from. This can be a relative or absolute path to your table's declaration.
+
 ```rust
 pub mod schema {
     ...
@@ -282,7 +295,8 @@ kosame::query! {
 }
 ```
 
-In the query, you can list all column and relation fields you want to read. Relations can be nested as often as desired.
+In the query, you can list the column and relation fields you want to read. Relations can be nested as often as desired.
+
 ```rust
 kosame::query! {
     schema::posts {
@@ -307,6 +321,7 @@ kosame::query! {
 ```
 
 Instead of listing each column manually, you can also use `*` to select all columns of a table.
+
 ```rust
 kosame::query! {
     schema::posts {
@@ -322,6 +337,7 @@ kosame::query! {
 ### Aliases and type overrides
 
 Just like in the table definition, you can also rename column or relation fields for each query. You can also change the Rust type of a column.
+
 ```rust
 kosame::query! {
     schema::posts {
@@ -334,6 +350,7 @@ kosame::query! {
     }
 }
 ```
+
 The row structs generated by Kosame will use the new aliases and data types.
 
 ### Attributes
@@ -347,7 +364,8 @@ kosame::query! {
     schema::posts {
         id as my_id,
         
-        /// Rust documentation comments, like this one, are also attributes. This means you can easily document your query and query fields like this!
+        /// Rust documentation comments, like this one, are also attributes.
+        /// This means you can easily document your query and its fields!
         content,
 
         comments {
@@ -360,7 +378,8 @@ kosame::query! {
 }
 ```
 
-Serializing the result of the query above using `serde_json` returns the following JSON string.
+Serializing the result of the query above using `serde_json` returns the following JSON string:
+
 ```json
 {
   "myId": 5,
@@ -377,11 +396,13 @@ Serializing the result of the query above using `serde_json` returns the followi
   ]
 }
 ```
-You can also enable the `serde` feature to automatically annotate all row structs with serde derives.
+
+You can also enable the `serde` feature to automatically annotate all row structs with Serde derives.
 
 ### Expressions
 
 Kosame can parse basic SQL expressions. Expressions can be used in various places, one of which is an expression field in your query:
+
 ```rust
 kosame::query! {
     posts {
@@ -392,9 +413,11 @@ kosame::query! {
     }
 }
 ```
-Like in the table definition, SQL keywords have to be lowercase. Expression fields in a query **must** be aliased **and** given a type override. Kosame makes no attempt to deduce the name or type of an expression automatically.
 
-The main difference in the syntax of Kosame expressions and SQL expressions are the string literals and identifiers. Unlike in PostgreSQL, you do not need to use double-quotes to make your identifiers case-sensitive. Strings are written using double-quoted Rust strings, as opposed to single quotes:
+Like in the table definition, SQL keywords must be lowercase. Expression fields in a query **must** be aliased **and** given a type override. Kosame makes no attempt to deduce the name or type of an expression automatically.
+
+The main difference between the syntax of Kosame expressions and SQL expressions is the handling of string literals and identifiers. Unlike in PostgreSQL, you do not need to use double-quotes to make your identifiers case-sensitive. Strings are written using double-quoted Rust strings, as opposed to single quotes:
+
 ```rust
 kosame::query! {
     my_table {
@@ -415,11 +438,12 @@ kosame::query! {
 }
 ```
 
-Kosame generates a `Params` struct containing a borrowed field for each parameter referenced in your query. When executing the query, the bind parameters are converted to the respective database management system's parameter syntax, e.g. `$1`, `$2` etc. for PostgreSQL.
+Kosame generates a `Params` struct containing a borrowed field for each parameter referenced in your query. When executing the query, the bind parameters are converted to the respective database management system's parameter syntax (e.g., `$1`, `$2`, etc., for PostgreSQL).
 
-### `where`, `order by`, `limit`, `offset`
+### `where`, `order by`, `limit`, and `offset`
 
-Kosame uses the familiar syntax for `where`, `order by`, `limit` and `offset`. You can use expressions for each of these:
+Kosame uses the familiar syntax for `where`, `order by`, `limit`, and `offset`. You can use expressions for each of these:
+
 ```rust
 kosame::query! {
     posts {
@@ -439,11 +463,11 @@ kosame::query! {
 }
 ```
 
-`where`, `order by`, `limit` and `offset` must be specified in this order. They must come at the end of a block in a query. Make sure your last query field has a trailing comma.
+`where`, `order by`, `limit`, and `offset` must be specified in this order. They must come at the end of a block in a query. Make sure your last query field has a trailing comma.
 
 ### Named vs. anonymous queries
 
-Kosame supports both named and anonymous queries. Anonymous queries are defined inline and act as a Rust expression that can be executed immediately. They also allow closuring variables from the surrounding scope as bind parameters for the query (`:id` in this example):
+Kosame supports both named and anonymous queries. Anonymous queries are defined inline and act as a Rust expression that can be executed immediately. They also allow capturing variables from the surrounding scope as bind parameters for the query (`:id` in this example):
 
 ```rust
 let id = 5;
@@ -458,7 +482,8 @@ let rows = kosame::query! {
 .await?;
 ```
 
-While they are concise, anonymous queries come with the drawback that the row types generated by Kosame cannot be named. This makes it difficult to specify concrete return types. We can only resort to the `impl Trait` syntax.
+While they are concise, anonymous queries have the drawback that the row types generated by Kosame cannot be named. This makes it difficult to specify concrete return types. We can only resort to the `impl Trait` syntax.
+
 ```rust
 async fn fetch_row(
     client: &mut tokio_postgres::Client,
@@ -478,6 +503,7 @@ async fn fetch_row(
 ```
 
 Named queries solve this problem by declaring the query upfront. To do this, give your query an alias that will be used as the module name generated by Kosame:
+
 ```rust
 kosame::query! {
     posts {
@@ -489,6 +515,7 @@ kosame::query! {
 ```
 
 You can now refer to all generated types by name:
+
 ```rust
 async fn fetch_row(
     client: &mut tokio_postgres::Client,
@@ -504,6 +531,6 @@ async fn fetch_row(
 
 ## Can Kosame handle all use cases well?
 
-No. Kosame chooses a syntax that works well when you just want to "fetch a thing and its things and their things". Writing SQL directly will always give you more flexibility and control over what your database does, which may also allow you to optimize performance beyond what the Kosame query runner does.
+No. Kosame chooses a syntax that works well when you just want to "fetch a thing and its things and their things." Writing SQL directly will always give you more flexibility and control over what your database does, which may also allow you to optimize performance beyond what the Kosame query runner does.
 
 But that's okay! You can combine Kosame with another method to access the database. Use Kosame for situations in which you benefit from the relational query syntax and auto-generated types. In more demanding situations, consider using a crate like [`sqlx`](https://github.com/launchbadge/sqlx).
