@@ -13,7 +13,7 @@ description = "Macro-based Rust ORM focused on developer ergonomics"
 repository = "https://github.com/pikaju/kosame"
 documentation = "https://docs.rs/kosame"
 readme = "README.md"
-license-file = "LICENSE"
+license = "Apache 2.0"
 keywords = ["orm", "database", "query", "postgresql", "postgres"]
 publish = ["kosame", "kosame_macro"]
 

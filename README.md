@@ -1,6 +1,7 @@
 <div align="center">
-  <img width="256" src="./misc/readme/logo-white.svg#gh-dark-mode-only" />
-  <img width="256" src="./misc/readme/logo-black.svg#gh-light-mode-only" />
+  <!-- <img width="256" src="./misc/readme/logo-white.svg#gh-dark-mode-only" /> -->
+  <!-- <img width="256" src="./misc/readme/logo-black.svg#gh-light-mode-only" /> -->
+  <img width="256" src="./misc/readme/logo-bg.svg" />
 </div>
 
 <div align="center">
