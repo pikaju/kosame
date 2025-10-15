@@ -1,7 +1,6 @@
 use std::{error::Error, fmt::Debug};
 
 use kosame::query::{Query, RecordArrayRunner};
-use tokio_postgres::GenericClient;
 
 // Declare your database schema.
 mod schema {

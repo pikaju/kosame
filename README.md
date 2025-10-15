@@ -12,7 +12,8 @@
 <br />
 
 Kosame (小雨, Japanese for "light rain" or "drizzle") is a Rust ORM inspired by [Prisma](https://github.com/prisma/prisma) and [Drizzle](https://github.com/drizzle-team/drizzle-orm).
-Most Rust ORMs ask the developer to write both the query they want to perform as well as the resulting struct type to store the query rows in, even though they are tightly coupled. Some TypeScript ORMs manage to solve this by inferring the row types from the query itself. They also offer relational queries, allowing developers to go from flat tables to a nested struct hirarchy. Kosame was born out of a desire to have this level of developer ergonomics in Rust, using macro magic.
+
+Some TypeScript ORMs like Prisma can infer the result type of a database query based solely on the database schema and the query itself. Conversely, most Rust ORMs ask the developer to write both the query they want to perform as well as the resulting struct type to store the query rows in, even though they are tightly coupled. Kosame was born out of a desire to have this level of developer ergonomics in Rust, using macro magic. Kosame also offers relational queries, allowing the user to fetch many nested 1:N relationships in a single statement.
 
 Kosame requires no active database connection during development and has no build step. Despite this, Kosame offers strong typing and rust-analyzer auto-completions.
 
