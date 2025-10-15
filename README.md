@@ -9,9 +9,13 @@
     <h3>Macro-based Rust ORM focused on developer ergonomics</h3> 
 </div>
 
-[![Crates.io](https://img.shields.io/crates/v/kosame.svg)](https://crates.io/crates/kosame)
-[![Docs.rs](https://docs.rs/kosame/badge.svg)](https://docs.rs/kosame)
-[![License](https://img.shields.io/crates/l/kosame.svg)](https://crates.io/crates/kosame)
+<p align="center">
+
+    [![Crates.io](https://img.shields.io/crates/v/kosame.svg)](https://crates.io/crates/kosame)
+    [![Docs.rs](https://docs.rs/kosame/badge.svg)](https://docs.rs/kosame)
+    [![License](https://img.shields.io/crates/l/kosame.svg)](https://crates.io/crates/kosame)
+
+</p>
 
 <br />
 
