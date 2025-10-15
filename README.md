@@ -262,7 +262,7 @@ kosame::query! {
 
 A basic Kosame query starts by defining the root table you want to read from. This can be a relative or absolute path to where your table is declared.
 ```rust
-mod schema {
+pub mod schema {
     ...
 }
 
