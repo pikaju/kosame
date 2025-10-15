@@ -1,6 +1,6 @@
 use std::fmt::Write;
 
-use tokio_postgres::Client;
+use tokio_postgres::{Client, Transaction};
 
 use crate::{dbms::Connection, query::BindParamOrdinal};
 
@@ -35,5 +35,20 @@ impl Connection for Client {
         params: &Self::Params<'_>,
     ) -> Result<Vec<Self::Row>, Self::Error> {
         Client::query(self, sql, params).await
+    }
+}
+
+impl Connection for Transaction<'_> {
+    type Dialect = Dialect;
+    type Params<'a> = Vec<&'a (dyn postgres_types::ToSql + std::marker::Sync + 'a)>;
+    type Row = tokio_postgres::Row;
+    type Error = tokio_postgres::Error;
+
+    async fn query(
+        &mut self,
+        sql: &str,
+        params: &Self::Params<'_>,
+    ) -> Result<Vec<Self::Row>, Self::Error> {
+        Transaction::<'_>::query(self, sql, params).await
     }
 }

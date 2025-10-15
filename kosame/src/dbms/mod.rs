@@ -16,7 +16,7 @@ pub trait Connection {
     type Dialect: sql::Dialect;
     type Params<'a>;
     type Row;
-    type Error;
+    type Error: std::error::Error;
 
     fn query(
         &mut self,

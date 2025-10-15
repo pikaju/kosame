@@ -1,6 +1,7 @@
 use std::{error::Error, fmt::Debug};
 
 use kosame::query::{Query, RecordArrayRunner};
+use tokio_postgres::GenericClient;
 
 // Declare your database schema.
 mod schema {
@@ -95,9 +96,40 @@ async fn main() {
         }
     });
 
-    let post = fetch_post(&mut client, 5).await.unwrap();
-    println!("{}", serde_json::to_string_pretty(&post).unwrap());
-    println!("{:#?}", post);
+    {
+        let mut transaction = client.transaction().await.unwrap();
+        let row = kosame::query! {
+            schema::posts {
+                *, // Select all columns from the posts table.
+
+                comments {
+                    id,
+                    content,
+                    upvotes + 1 as upvotes: i32,
+
+                    // Familiar syntax for "where", "order by", "limit", and "offset".
+                    order by upvotes desc
+                    limit 3
+                },
+
+                // The function parameter `id: i32` is used as a query parameter here.
+                where id = 5
+            }
+        }
+        .execute_opt(
+            &mut transaction,
+            // RecordArrayRunner describes the strategy to fetch rows from the database. In this case,
+            // we run just a single SQL query that makes use of PostgreSQL's arrays and anonymous records.
+            &mut RecordArrayRunner {},
+        )
+        .await
+        .unwrap();
+        println!("{:#?}", row);
+    }
+
+    // let post = fetch_post(&mut client, 5).await.unwrap();
+    // println!("{}", serde_json::to_string_pretty(&post).unwrap());
+    // println!("{:#?}", post);
 
     // let smep = {
     //     mod internal {
