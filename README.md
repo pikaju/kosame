@@ -536,6 +536,6 @@ async fn fetch_row(
 
 ## Can Kosame handle all use cases well?
 
-No. Kosame chooses a syntax that works well when you just want to "fetch a thing and its things and their things." Writing SQL directly will always give you more flexibility and control over what your database does, which may also allow you to optimize performance beyond what the Kosame query runner does.
+No. Kosame chooses a syntax that works well when you just want to "fetch a thing and its things and their things." Writing SQL directly will always give you more flexibility and control over what your database does, which may also allow you to optimize performance beyond what the Kosame query runner can come up with.
 
 But that's okay! You can combine Kosame with another method to access the database. Use Kosame for situations in which you benefit from the relational query syntax and auto-generated types. In more demanding situations, consider using a crate like [`sqlx`](https://github.com/launchbadge/sqlx).
