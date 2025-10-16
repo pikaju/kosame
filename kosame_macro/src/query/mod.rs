@@ -98,19 +98,6 @@ impl ToTokens for Query {
                     fn params(&self) -> &Self::Params {
                         &self.params
                     }
-
-                    fn execute<'c, C>(
-                        &self,
-                        connection: &mut C,
-                        runner: &mut (impl ::kosame::query::Runner + ?Sized),
-                    ) -> impl Future<Output = Result<Vec<<Self as ::kosame::query::Query>::Row>, ::kosame::Error<C>>>
-                    where
-                        C: ::kosame::driver::Connection,
-                        <Self as ::kosame::query::Query>::Params: ::kosame::params::Params<C::Params<'c>>,
-                        for<'b> <Self as ::kosame::query::Query>::Row: From<&'b C::Row>,
-                    {
-                        runner.execute(connection, self)
-                    }
                 }
             }
         };

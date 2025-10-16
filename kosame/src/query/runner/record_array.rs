@@ -7,11 +7,7 @@ use super::*;
 pub struct RecordArrayRunner {}
 
 impl Runner for RecordArrayRunner {
-    async fn execute<'a, C, Q>(
-        &self,
-        connection: &mut C,
-        query: &Q,
-    ) -> Result<Vec<Q::Row>, Error<C>>
+    async fn run<'a, C, Q>(&self, connection: &mut C, query: &Q) -> Result<Vec<Q::Row>, Error<C>>
     where
         C: Connection,
         Q: Query + ?Sized,

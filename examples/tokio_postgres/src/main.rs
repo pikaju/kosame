@@ -51,7 +51,7 @@ async fn fetch_post(
             where id = :id
         }
     }
-    .execute_opt(
+    .exec_opt(
         client,
         // RecordArrayRunner describes the strategy to fetch rows from the database. In this case,
         // we run just a single SQL query that makes use of PostgreSQL's arrays and anonymous records.

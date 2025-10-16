@@ -8,7 +8,7 @@ use super::*;
 
 pub trait Runner {
     #[doc(hidden)]
-    fn execute<'a, C, Q>(
+    fn run<'a, C, Q>(
         &self,
         connection: &mut C,
         query: &Q,

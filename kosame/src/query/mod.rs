@@ -10,6 +10,8 @@ pub use node::*;
 pub use order_by::*;
 pub use runner::*;
 
+use pollster::FutureExt;
+
 use crate::{
     Error,
     driver::Connection,
@@ -29,7 +31,7 @@ pub trait Query {
 
     fn params(&self) -> &Self::Params;
 
-    fn execute<'c, C>(
+    fn exec<'c, C>(
         &self,
         connection: &mut C,
         runner: &mut (impl crate::query::Runner + ?Sized),
@@ -37,9 +39,12 @@ pub trait Query {
     where
         C: Connection,
         Self::Params: crate::params::Params<C::Params<'c>>,
-        for<'b> Self::Row: From<&'b C::Row>;
+        for<'b> Self::Row: From<&'b C::Row>,
+    {
+        async { runner.run(connection, self).await }
+    }
 
-    fn execute_one<'c, C>(
+    fn exec_one<'c, C>(
         &self,
         connection: &mut C,
         runner: &mut (impl crate::query::Runner + ?Sized),
@@ -50,13 +55,13 @@ pub trait Query {
         for<'b> Self::Row: From<&'b C::Row>,
     {
         async {
-            self.execute_opt(connection, runner)
+            self.exec_opt(connection, runner)
                 .await
                 .and_then(|res| res.ok_or(Error::RowCount))
         }
     }
 
-    fn execute_opt<'c, C>(
+    fn exec_opt<'c, C>(
         &self,
         connection: &mut C,
         runner: &mut (impl crate::query::Runner + ?Sized),
@@ -67,7 +72,7 @@ pub trait Query {
         for<'b> Self::Row: From<&'b C::Row>,
     {
         async {
-            self.execute(connection, runner).await.and_then(|res| {
+            self.exec(connection, runner).await.and_then(|res| {
                 let mut iter = res.into_iter();
                 let row = iter.next();
                 if iter.next().is_some() {
@@ -76,5 +81,44 @@ pub trait Query {
                 Ok(row)
             })
         }
+    }
+
+    fn exec_sync<'c, C>(
+        &self,
+        connection: &mut C,
+        runner: &mut (impl crate::query::Runner + ?Sized),
+    ) -> Result<Vec<<Self as crate::query::Query>::Row>, Error<C>>
+    where
+        C: Connection,
+        Self::Params: crate::params::Params<C::Params<'c>>,
+        for<'b> Self::Row: From<&'b C::Row>,
+    {
+        self.exec(connection, runner).block_on()
+    }
+
+    fn exec_one_sync<'c, C>(
+        &self,
+        connection: &mut C,
+        runner: &mut (impl crate::query::Runner + ?Sized),
+    ) -> Result<<Self as crate::query::Query>::Row, Error<C>>
+    where
+        C: Connection,
+        Self::Params: crate::params::Params<C::Params<'c>>,
+        for<'b> Self::Row: From<&'b C::Row>,
+    {
+        self.exec_one(connection, runner).block_on()
+    }
+
+    fn exec_opt_sync<'c, C>(
+        &self,
+        connection: &mut C,
+        runner: &mut (impl crate::query::Runner + ?Sized),
+    ) -> Result<Option<<Self as crate::query::Query>::Row>, Error<C>>
+    where
+        C: Connection,
+        Self::Params: crate::params::Params<C::Params<'c>>,
+        for<'b> Self::Row: From<&'b C::Row>,
+    {
+        self.exec_opt(connection, runner).block_on()
     }
 }

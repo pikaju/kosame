@@ -3,7 +3,8 @@ resolver = "3"
 members = [
     "kosame",
     "kosame_macro",
-    "example",
+    "examples/postgres",
+    "examples/tokio_postgres",
 ]
 
 [workspace.package]
