@@ -28,9 +28,9 @@ impl ToTokens for RowStruct {
         let derives = [
             quote! { ::kosame::Row },
             quote! { Debug },
-            #[cfg(feature = "serde-serialize")]
+            #[cfg(feature = "serde")]
             quote! { ::serde::Serialize },
-            #[cfg(feature = "serde-deserialize")]
+            #[cfg(feature = "serde-full")]
             quote! { ::serde::Deserialize },
         ];
 

@@ -1,6 +1,4 @@
-use std::fmt::Write;
-
-use crate::{driver::Connection, query::BindParamOrdinal};
+use crate::driver::Connection;
 
 impl Connection for tokio_postgres::Client {
     type Dialect = crate::dbms::postgres::Dialect;

@@ -17,7 +17,8 @@ pub struct Star {
 impl Star {
     pub fn to_row_struct_field(&self, table_path: impl ToTokens) -> RowStructField {
         let additional_attrs = [
-            #[cfg(any(feature = "serde-serialize", feature = "serde-deserialize"))]
+            parse_quote! { #[star] },
+            #[cfg(feature = "serde")]
             parse_quote! { #[serde(flatten)] },
         ];
 
@@ -33,6 +34,10 @@ impl Star {
             },
             quote! { #table_path::Select },
         )
+    }
+
+    pub fn alias(&self) -> Option<&Alias> {
+        self.alias.as_ref()
     }
 }
 

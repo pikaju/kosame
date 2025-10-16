@@ -1,8 +1,6 @@
 use std::fmt::Write;
 
-use tokio_postgres::{Client, Transaction};
-
-use crate::{driver::Connection, query::BindParamOrdinal};
+use crate::query::BindParamOrdinal;
 
 pub enum Dialect {}
 

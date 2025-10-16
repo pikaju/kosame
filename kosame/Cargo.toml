@@ -23,9 +23,8 @@ dbms-mysql = []
 dbms-postgres = []
 dbms-sqlite = []
 
-serde = ["serde-serialize", "serde-deserialize", "kosame_macro/serde"]
-serde-serialize = ["dep:serde", "kosame_macro/serde-serialize"]
-serde-deserialize = ["dep:serde", "kosame_macro/serde-deserialize"]
+serde = ["dep:serde", "kosame_macro/serde"]
+serde-full = ["serde", "kosame_macro/serde-full"]
 
 [dependencies]
 fallible-iterator = "0.2.0"

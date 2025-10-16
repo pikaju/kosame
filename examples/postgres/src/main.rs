@@ -1,5 +1,3 @@
-use std::{error::Error, fmt::Debug};
-
 use kosame::query::{Query, RecordArrayRunner};
 
 // Declare your database schema.

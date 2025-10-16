@@ -7,7 +7,6 @@ use crate::{Error, driver::Connection, params::Params};
 use super::*;
 
 pub trait Runner {
-    #[doc(hidden)]
     fn run<'a, C, Q>(
         &self,
         connection: &mut C,

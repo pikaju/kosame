@@ -1,4 +1,4 @@
-use std::{cell::Cell, sync::atomic::Ordering};
+use std::sync::atomic::Ordering;
 
 use super::{column::Column, field_spec::FieldSpec, relation::Relation};
 use crate::{
@@ -184,6 +184,7 @@ impl ToTokens for Table {
                 );
 
                 #select_struct
+
                 #star_macro
             }
         }

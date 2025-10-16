@@ -26,7 +26,7 @@ pub fn query(tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
 }
 
 #[proc_macro_error]
-#[proc_macro_derive(Row)]
+#[proc_macro_derive(Row, attributes(star))]
 pub fn derive_row(tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(tokens as DeriveInput);
     let name = &input.ident;

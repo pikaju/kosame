@@ -80,7 +80,7 @@ async fn fetch_post(
             where id = :id
         }
     }
-    .execute_opt(
+    .exec_opt(
         client,
         // RecordArrayRunner describes the strategy to fetch rows from the database. In this case,
         // we run just a single SQL query that uses PostgreSQL's arrays and anonymous records.
@@ -483,7 +483,7 @@ let rows = kosame::query! {
         where id = :id
     }
 }
-.execute(client, &mut RecordArrayRunner {})
+.exec(client, &mut RecordArrayRunner {})
 .await?;
 ```
 
@@ -500,7 +500,7 @@ async fn fetch_row(
             where id = :id
         }
     }
-    .execute(client, &mut RecordArrayRunner {})
+    .exec(client, &mut RecordArrayRunner {})
     .await?;
 
     Ok(rows)
@@ -527,7 +527,7 @@ async fn fetch_row(
     id: i32,
 ) -> Result<Vec<my_query::Row>, Box<dyn Error>> {
     let rows = my_query::Query::new(my_query::Params { id: &id })
-        .execute(client, &mut RecordArrayRunner {})
+        .exec(client, &mut RecordArrayRunner {})
         .await?;
 
     Ok(rows)
