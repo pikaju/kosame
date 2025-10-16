@@ -75,7 +75,7 @@ impl ToTokens for BindParams<'_> {
         let mut fields = vec![];
         for name in &self.params {
             fields.push(quote! {
-                #name: &'a (dyn ::kosame::postgres::internal::ToSql + ::std::marker::Sync)
+                #name: &'a (dyn ::kosame::driver::postgres_types::ToSql + ::std::marker::Sync)
             });
         }
         let fields_len = fields.len();
@@ -95,10 +95,10 @@ impl ToTokens for BindParams<'_> {
         }
         .to_tokens(tokens);
 
-        #[cfg(feature = "postgres")]
+        #[cfg(feature = "postgres-types")]
         quote! {
-            impl<'a> ::kosame::params::Params<Vec<&'a (dyn ::kosame::postgres::internal::ToSql + ::std::marker::Sync + 'a)>> for Params #lifetime {
-                fn to_driver(&self) -> Vec<&'a (dyn ::kosame::postgres::internal::ToSql + ::std::marker::Sync + 'a)> {
+            impl<'a> ::kosame::params::Params<Vec<&'a (dyn ::kosame::driver::postgres_types::ToSql + ::std::marker::Sync + 'a)>> for Params #lifetime {
+                fn to_driver(&self) -> Vec<&'a (dyn ::kosame::driver::postgres_types::ToSql + ::std::marker::Sync + 'a)> {
                     vec![#(self.#field_names),*]
                 }
             }

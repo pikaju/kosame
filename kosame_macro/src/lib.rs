@@ -36,7 +36,7 @@ pub fn derive_row(tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
     let mut tokens = proc_macro2::TokenStream::new();
 
-    #[cfg(feature = "postgres")]
+    #[cfg(feature = "postgres-types")]
     {
         let fields = data.fields.iter().enumerate().map(|(index, field)| {
             let name = &field.ident;
@@ -46,8 +46,8 @@ pub fn derive_row(tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
         });
 
         quote! {
-            impl From<&::kosame::postgres::internal::Row> for #name {
-                fn from(row: &::kosame::postgres::internal::Row) -> Self {
+            impl From<&::kosame::driver::postgres_types::Row> for #name {
+                fn from(row: &::kosame::driver::postgres_types::Row) -> Self {
                     Self {
                         #(#fields),*
                     }
@@ -57,27 +57,27 @@ pub fn derive_row(tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
         .to_tokens(&mut tokens);
     }
 
-    #[cfg(feature = "postgres")]
+    #[cfg(feature = "postgres-types")]
     {
         let field_count = data.fields.len() as i32;
         let fields = data.fields.iter().map(|field| {
             let name = &field.ident;
             quote! {
-                #name: ::kosame::postgres::internal::record_field_from_sql(&raw, &mut offset)?
+                #name: ::kosame::driver::postgres_types::record_field_from_sql(&raw, &mut offset)?
             }
         });
 
         quote! {
-            impl<'a> ::kosame::postgres::internal::FromSql<'a> for #name {
-                fn accepts(ty: &::kosame::postgres::internal::Type) -> bool {
+            impl<'a> ::kosame::driver::postgres_types::FromSql<'a> for #name {
+                fn accepts(ty: &::kosame::driver::postgres_types::Type) -> bool {
                     ty.name() == "record"
                 }
 
                 fn from_sql(
-                    ty: &::kosame::postgres::internal::Type,
+                    ty: &::kosame::driver::postgres_types::Type,
                     raw: &[u8],
                 ) -> Result<Self, Box<dyn std::error::Error + Sync + Send>> {
-                    let column_count = ::kosame::postgres::internal::int4_from_sql(&raw[..4])?;
+                    let column_count = ::kosame::driver::postgres_types::int4_from_sql(&raw[..4])?;
                     assert_eq!(column_count, #field_count);
 
                     let mut offset = 4;

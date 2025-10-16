@@ -1,4 +1,4 @@
-use crate::Connection;
+use crate::driver::Connection;
 
 #[derive(Clone)]
 pub enum Error<C: Connection> {

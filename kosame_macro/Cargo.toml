@@ -16,10 +16,15 @@ proc-macro = true
 [features]
 default = []
 
-mssql = []
-mysql = []
-postgres = []
-sqlite = []
+postgres = ["dbms-postgres", "postgres-types"]
+tokio-postgres = ["dbms-postgres", "postgres-types"]
+
+postgres-types = []
+
+dbms-mssql = []
+dbms-mysql = []
+dbms-postgres = []
+dbms-sqlite = []
 
 serde = ["serde-serialize", "serde-deserialize"]
 serde-serialize = ["dep:serde"]

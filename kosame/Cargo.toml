@@ -11,12 +11,17 @@ license.workspace = true
 keywords.workspace = true
 
 [features]
-default = ["postgres"]
+default = []
 
-mssql = ["kosame_macro/mssql"]
-mysql = ["kosame_macro/mysql"]
-postgres = ["kosame_macro/postgres", "dep:postgres-protocol", "dep:postgres-types", "dep:tokio-postgres"]
-sqlite = ["kosame_macro/sqlite"]
+postgres = ["kosame_macro/postgres", "dbms-postgres", "postgres-types", "dep:postgres"]
+tokio-postgres = ["kosame_macro/tokio-postgres", "dbms-postgres", "postgres-types", "dep:tokio-postgres"]
+
+postgres-types = ["dep:postgres-protocol", "dep:postgres-types", "dep:tokio-postgres"]
+
+dbms-mssql = []
+dbms-mysql = []
+dbms-postgres = []
+dbms-sqlite = []
 
 serde = ["serde-serialize", "serde-deserialize", "kosame_macro/serde"]
 serde-serialize = ["dep:serde", "kosame_macro/serde-serialize"]
@@ -26,6 +31,7 @@ serde-deserialize = ["dep:serde", "kosame_macro/serde-deserialize"]
 fallible-iterator = "0.2.0"
 futures-core = "0.3.31"
 kosame_macro.workspace = true
+postgres = { version = "0.19.12", optional = true }
 postgres-protocol = { version = "0.6.8", optional = true }
 postgres-types = { version = "0.2.9", optional = true }
 serde = { version = "1.0.226", optional = true }

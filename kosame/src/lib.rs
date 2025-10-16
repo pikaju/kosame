@@ -1,4 +1,5 @@
 mod dbms;
+pub mod driver;
 mod error;
 pub mod expr;
 pub mod params;

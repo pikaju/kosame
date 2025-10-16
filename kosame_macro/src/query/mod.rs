@@ -105,7 +105,7 @@ impl ToTokens for Query {
                         runner: &mut (impl ::kosame::query::Runner + ?Sized),
                     ) -> impl Future<Output = Result<Vec<<Self as ::kosame::query::Query>::Row>, ::kosame::Error<C>>>
                     where
-                        C: ::kosame::Connection,
+                        C: ::kosame::driver::Connection,
                         <Self as ::kosame::query::Query>::Params: ::kosame::params::Params<C::Params<'c>>,
                         for<'b> <Self as ::kosame::query::Query>::Row: From<&'b C::Row>,
                     {

@@ -2,10 +2,7 @@ use std::fmt::Write;
 
 use tokio_postgres::{Client, Transaction};
 
-use crate::{dbms::Connection, query::BindParamOrdinal};
-
-#[doc(hidden)]
-pub mod internal;
+use crate::{driver::Connection, query::BindParamOrdinal};
 
 pub enum Dialect {}
 
@@ -20,35 +17,5 @@ impl crate::sql::Dialect for Dialect {
         ordinal: BindParamOrdinal,
     ) -> std::fmt::Result {
         write!(formatter, "${}", ordinal + 1)
-    }
-}
-
-impl Connection for Client {
-    type Dialect = Dialect;
-    type Params<'a> = Vec<&'a (dyn postgres_types::ToSql + std::marker::Sync + 'a)>;
-    type Row = tokio_postgres::Row;
-    type Error = tokio_postgres::Error;
-
-    async fn query(
-        &mut self,
-        sql: &str,
-        params: &Self::Params<'_>,
-    ) -> Result<Vec<Self::Row>, Self::Error> {
-        Client::query(self, sql, params).await
-    }
-}
-
-impl Connection for Transaction<'_> {
-    type Dialect = Dialect;
-    type Params<'a> = Vec<&'a (dyn postgres_types::ToSql + std::marker::Sync + 'a)>;
-    type Row = tokio_postgres::Row;
-    type Error = tokio_postgres::Error;
-
-    async fn query(
-        &mut self,
-        sql: &str,
-        params: &Self::Params<'_>,
-    ) -> Result<Vec<Self::Row>, Self::Error> {
-        Transaction::<'_>::query(self, sql, params).await
     }
 }

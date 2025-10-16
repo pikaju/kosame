@@ -1,6 +1,6 @@
 use std::fmt::Write;
 
-use crate::{Error, dbms::Connection, sql};
+use crate::{Error, driver::Connection, sql};
 
 use super::*;
 

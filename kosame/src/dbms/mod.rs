@@ -1,26 +1,11 @@
-#[cfg(feature = "mssql")]
+#[cfg(feature = "dbms-mssql")]
 pub mod mssql;
 
-#[cfg(feature = "mysql")]
+#[cfg(feature = "dbms-mysql")]
 pub mod mysql;
 
-#[cfg(feature = "postgres")]
+#[cfg(feature = "dbms-postgres")]
 pub mod postgres;
 
-#[cfg(feature = "sqlite")]
+#[cfg(feature = "dbms-sqlite")]
 pub mod sqlite;
-
-use crate::sql;
-
-pub trait Connection {
-    type Dialect: sql::Dialect;
-    type Params<'a>;
-    type Row;
-    type Error: std::error::Error;
-
-    fn query(
-        &mut self,
-        sql: &str,
-        params: &Self::Params<'_>,
-    ) -> impl Future<Output = Result<Vec<Self::Row>, Self::Error>> + Send;
-}

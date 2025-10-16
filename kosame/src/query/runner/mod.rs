@@ -2,7 +2,7 @@ mod record_array;
 
 pub use record_array::*;
 
-use crate::{Error, dbms::Connection, params::Params};
+use crate::{Error, driver::Connection, params::Params};
 
 use super::*;
 

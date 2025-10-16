@@ -262,6 +262,7 @@ dependencies = [
  "fallible-iterator",
  "futures-core",
  "kosame_macro",
+ "postgres",
  "postgres-protocol",
  "postgres-types",
  "serde",
@@ -423,6 +424,20 @@ name = "pin-utils"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
+
+[[package]]
+name = "postgres"
+version = "0.19.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e7c48ece1c6cda0db61b058c1721378da76855140e9214339fa1317decacb176"
+dependencies = [
+ "bytes",
+ "fallible-iterator",
+ "futures-util",
+ "log",
+ "tokio",
+ "tokio-postgres",
+]
 
 [[package]]
 name = "postgres-protocol"
@@ -732,9 +747,9 @@ dependencies = [
 
 [[package]]
 name = "tokio-postgres"
-version = "0.7.14"
+version = "0.7.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a156efe7fff213168257853e1dfde202eed5f487522cbbbf7d219941d753d853"
+checksum = "2b40d66d9b2cfe04b628173409368e58247e8eddbbd3b0e6c6ba1d09f20f6c9e"
 dependencies = [
  "async-trait",
  "byteorder",
