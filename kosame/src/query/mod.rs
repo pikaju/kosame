@@ -75,7 +75,7 @@ pub trait Query {
             self.exec(connection, runner).await.and_then(|res| {
                 let mut iter = res.into_iter();
                 let row = iter.next();
-                if iter.next().is_some() {
+                if row.is_some() && iter.next().is_some() {
                     return Err(Error::RowCount);
                 }
                 Ok(row)

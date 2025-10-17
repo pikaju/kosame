@@ -6,6 +6,16 @@ use super::*;
 
 pub struct RecordArrayRunner {}
 
+impl RecordArrayRunner {
+    pub fn query_to_sql<D: sql::Dialect>(&self, query: &(impl Query + ?Sized)) -> String {
+        let mut sql = String::new();
+        let mut formatter = sql::Formatter::<D>::new(&mut sql);
+        fmt_node_sql(&mut formatter, query.root(), None)
+            .expect("string formatting should never fail");
+        sql
+    }
+}
+
 impl Runner for RecordArrayRunner {
     async fn run<'a, C, Q>(&self, connection: &mut C, query: &Q) -> Result<Vec<Q::Row>, Error<C>>
     where
@@ -14,14 +24,7 @@ impl Runner for RecordArrayRunner {
         <Q as Query>::Params: Params<C::Params<'a>>,
         for<'b> <Q as Query>::Row: From<&'b C::Row>,
     {
-        let mut sql = String::new();
-        let mut formatter = sql::Formatter::<C::Dialect>::new(&mut sql);
-        fmt_node_sql(&mut formatter, query.root(), None)
-            .expect("SQL string formatting should never fail");
-        println!("==== Query ====");
-        println!("{}", sql);
-        println!("{:?}", query.params());
-
+        let sql = self.query_to_sql::<C::Dialect>(query);
         let rows = match connection.query(&sql, &query.params().to_driver()).await {
             Ok(rows) => rows,
             Err(error) => return Err(Error::Connection(error)),

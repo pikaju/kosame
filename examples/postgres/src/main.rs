@@ -34,12 +34,19 @@ fn main() {
     )
     .unwrap();
 
-    let rows = kosame::query! {
+    let query = kosame::query! {
         schema::posts {
             *, // Select all columns from the posts table.
         }
-    }
-    .exec_sync(&mut client, &mut RecordArrayRunner {})
-    .unwrap();
+    };
+    println!(
+        "=== Query ===\n{}\n=========",
+        RecordArrayRunner {}.query_to_sql::<kosame::postgres::Dialect>(&query)
+    );
+
+    let rows = query
+        .exec_sync(&mut client, &mut RecordArrayRunner {})
+        .unwrap();
+
     println!("{:#?}", rows);
 }
