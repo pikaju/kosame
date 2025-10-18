@@ -461,7 +461,7 @@ kosame::query! {
             limit 5
         },
 
-        where id = :id and content is not null
+        where title = :title and content is not null
         limit :page_size
         offset :page * :page_size
     }
