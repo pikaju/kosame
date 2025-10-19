@@ -1,3 +1,5 @@
+use crate::attribute::Attribute;
+
 use super::{column_constraint::ColumnConstraints, data_type::DataType};
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
@@ -7,6 +9,7 @@ use syn::{
 };
 
 pub struct Column {
+    attrs: Vec<Attribute>,
     name: Ident,
     data_type: DataType,
     constraints: ColumnConstraints,
@@ -37,12 +40,14 @@ impl Column {
 
 impl Parse for Column {
     fn parse(input: ParseStream) -> syn::Result<Self> {
+        let attrs = Attribute::parse_outer(input)?;
         let name = input.parse()?;
-        let r#type = input.parse()?;
+        let data_type = input.parse()?;
 
         Ok(Self {
+            attrs,
             name,
-            data_type: r#type,
+            data_type,
             constraints: input.parse()?,
         })
     }

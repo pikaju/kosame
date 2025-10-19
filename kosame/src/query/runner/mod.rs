@@ -15,6 +15,6 @@ pub trait Runner {
     where
         C: Connection,
         Q: Query + ?Sized,
-        <Q as Query>::Params: Params<C::Params<'a>>,
-        for<'b> <Q as Query>::Row: From<&'b C::Row>;
+        Q::Params: Params<C::Params<'a>>,
+        for<'b> Q::Row: From<&'b C::Row>;
 }

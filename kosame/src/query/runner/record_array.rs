@@ -21,8 +21,8 @@ impl Runner for RecordArrayRunner {
     where
         C: Connection,
         Q: Query + ?Sized,
-        <Q as Query>::Params: Params<C::Params<'a>>,
-        for<'b> <Q as Query>::Row: From<&'b C::Row>,
+        Q::Params: Params<C::Params<'a>>,
+        for<'b> Q::Row: From<&'b C::Row>,
     {
         let sql = self.query_to_sql::<C::Dialect>(query);
         let rows = match connection.query(&sql, &query.params().to_driver()).await {

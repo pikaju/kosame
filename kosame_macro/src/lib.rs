@@ -1,4 +1,6 @@
 pub(crate) mod alias;
+pub(crate) mod attribute;
+pub(crate) mod dbms;
 pub(crate) mod docs;
 pub(crate) mod expr;
 pub(crate) mod path_ext;

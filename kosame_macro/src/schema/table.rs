@@ -9,7 +9,7 @@ use proc_macro_error::emit_error;
 use proc_macro2::Span;
 use quote::{ToTokens, quote};
 use syn::{
-    Ident, Token,
+    Attribute, Ident, Token,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
 };
@@ -20,6 +20,8 @@ mod kw {
 }
 
 pub struct Table {
+    attrs: Vec<Attribute>,
+
     _create: kw::create,
     _table: kw::table,
     _paren: syn::token::Paren,
@@ -78,6 +80,7 @@ impl Parse for Table {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let content;
         Ok(Self {
+            attrs: Attribute::parse_outer(input)?,
             _create: input.parse()?,
             _table: input.parse()?,
             name: input.parse()?,
@@ -161,7 +164,6 @@ impl ToTokens for Table {
         };
 
         quote! {
-            // #docs
             pub mod #name {
                 pub mod columns {
                     #(#columns)*

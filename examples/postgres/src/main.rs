@@ -3,9 +3,11 @@ use kosame::query::{Query, RecordArrayRunner};
 // Declare your database schema.
 mod schema {
     kosame::table! {
+        #[kosame(rename_all = "snake_case")]
         // Kosame uses the familiar SQL syntax to define tables.
         create table posts (
             id int primary key default uuidv7(),
+            #[kosame(rename = "t_tle", rename = "pip")]
             title text not null,
             content text,
         );
@@ -34,11 +36,23 @@ fn main() {
     )
     .unwrap();
 
+    let id = 5;
     let query = kosame::query! {
         schema::posts {
-            *, // Select all columns from the posts table.
+            *,
+            comments {
+                id,
+                content,
+                cast(now() as text) as current_time: ::std::string::String,
+
+                order by upvotes desc
+                limit 5
+            }
+
+            where id = :id
         }
     };
+
     println!(
         "=== Query ===\n{}\n=========",
         RecordArrayRunner {}.query_to_sql::<kosame::postgres::Dialect>(&query)
