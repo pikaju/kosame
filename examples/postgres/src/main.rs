@@ -3,10 +3,10 @@ use kosame::query::{Query, RecordArrayRunner};
 // Declare your database schema.
 mod schema {
     kosame::table! {
-        #[kosame(rename_all = "snake_case")]
         // Kosame uses the familiar SQL syntax to define tables.
         create table posts (
             id int primary key default uuidv7(),
+            #[kosame(rename = "tiitle", ty = ::std::string::String)]
             title text not null,
             content text,
         );

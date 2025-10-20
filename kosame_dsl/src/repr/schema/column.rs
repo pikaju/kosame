@@ -25,10 +25,13 @@ impl From<crate::dsl::schema::Column> for Column {
 
         use crate::dsl::path_ext::PathExt;
 
-        let rust_name = Ident::new(
-            &value.name.to_string().to_case(Case::Snake),
-            value.name.span(),
-        );
+        let rust_name = match value.attrs.rename() {
+            Some(name) => Ident::new(&name.value(), name.span()),
+            None => Ident::new(
+                &value.name.to_string().to_case(Case::Snake),
+                value.name.span(),
+            ),
+        };
 
         let data_type = value.data_type;
         let rust_type_not_null = match value.attrs.type_override() {

@@ -11,26 +11,23 @@ mod kw {
     custom_keyword!(kosame);
 
     custom_keyword!(rename);
-    custom_keyword!(rename_all);
     custom_keyword!(ty);
 }
 
 pub struct ParsedAttributes {
     attrs: Vec<Attribute>,
     rename: Option<Rename>,
-    rename_all: Option<RenameAll>,
     type_override: Option<TypeOverride>,
 }
 
 impl ParsedAttributes {
     pub fn require_no_global(&self) -> Result<(), syn::Error> {
-        match &self.rename_all {
-            Some(rename_all) => Err(syn::Error::new(
-                rename_all.path.span(),
-                "global attributes are not allowed in this position",
-            )),
-            _ => Ok(()),
-        }
+        // currently no global attributes
+        // Err(syn::Error::new(
+        //     rename_all.path.span(),
+        //     "global attributes are not allowed in this position",
+        // ))
+        Ok(())
     }
 
     pub fn attrs(&self) -> &[Attribute] {
@@ -39,10 +36,6 @@ impl ParsedAttributes {
 
     pub fn rename(&self) -> Option<&LitStr> {
         self.rename.as_ref().map(|v| &v.value)
-    }
-
-    pub fn rename_all(&self) -> Option<&LitStr> {
-        self.rename_all.as_ref().map(|v| &v.value)
     }
 
     pub fn type_override(&self) -> Option<&Path> {
@@ -54,7 +47,6 @@ impl Parse for ParsedAttributes {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let attrs = Attribute::parse_outer(input)?;
         let mut rename = None;
-        let mut rename_all = None;
         let mut type_override = None;
         for attr in attrs.iter() {
             if attr.path().is_ident("kosame") {
@@ -73,15 +65,6 @@ impl Parse for ParsedAttributes {
                             }
                             rename = Some(v);
                         }
-                        MetaItem::RenameAll(v) => {
-                            if rename_all.is_some() {
-                                return Err(syn::Error::new(
-                                    v.path.span(),
-                                    "duplicate meta field `rename_all`",
-                                ));
-                            }
-                            rename_all = Some(v);
-                        }
                         MetaItem::TypeOverride(v) => {
                             if type_override.is_some() {
                                 return Err(syn::Error::new(
@@ -98,7 +81,6 @@ impl Parse for ParsedAttributes {
         Ok(Self {
             attrs,
             rename,
-            rename_all,
             type_override,
         })
     }
@@ -106,7 +88,6 @@ impl Parse for ParsedAttributes {
 
 enum MetaItem {
     Rename(Rename),
-    RenameAll(RenameAll),
     TypeOverride(TypeOverride),
 }
 
@@ -115,8 +96,6 @@ impl Parse for MetaItem {
         let lookahead = input.lookahead1();
         if lookahead.peek(kw::rename) {
             Ok(Self::Rename(input.parse()?))
-        } else if lookahead.peek(kw::rename_all) {
-            Ok(Self::RenameAll(input.parse()?))
         } else if lookahead.peek(kw::ty) {
             Ok(Self::TypeOverride(input.parse()?))
         } else {
@@ -132,22 +111,6 @@ struct Rename {
 }
 
 impl Parse for Rename {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        Ok(Self {
-            path: input.parse()?,
-            _eq_token: input.parse()?,
-            value: input.parse()?,
-        })
-    }
-}
-
-struct RenameAll {
-    path: kw::rename_all,
-    _eq_token: Token![=],
-    value: LitStr,
-}
-
-impl Parse for RenameAll {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             path: input.parse()?,
