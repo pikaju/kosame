@@ -1,15 +1,14 @@
 use std::sync::atomic::Ordering;
 
-use super::{column::Column, field_spec::FieldSpec, relation::Relation};
+use super::{column::Column, relation::Relation};
 use crate::{
+    attribute::ParsedAttributes,
     row_struct::{RowStruct, RowStructField},
-    schema::column_override::{ColumnOverride, ColumnWithOverride},
 };
-use proc_macro_error::emit_error;
 use proc_macro2::Span;
 use quote::{ToTokens, quote};
 use syn::{
-    Attribute, Ident, Token,
+    Ident, Token,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
 };
@@ -20,7 +19,7 @@ mod kw {
 }
 
 pub struct Table {
-    attrs: Vec<Attribute>,
+    attrs: ParsedAttributes,
 
     _create: kw::create,
     _table: kw::table,
@@ -31,63 +30,21 @@ pub struct Table {
 
     _semi: Token![;],
 
-    field_specs: Punctuated<FieldSpec, Token![,]>,
-}
-
-impl Table {
-    fn columns(&self) -> impl Iterator<Item = ColumnWithOverride<'_>> {
-        self.columns.iter().map(|column| {
-            ColumnWithOverride::new(
-                column,
-                self.field_specs
-                    .iter()
-                    .find_map(|field_spec| match field_spec {
-                        FieldSpec::ColumnOverride(column_override)
-                            if column_override.name() == column.name() =>
-                        {
-                            Some(column_override)
-                        }
-                        _ => None,
-                    }),
-            )
-        })
-    }
-
-    fn relations(&self) -> impl Iterator<Item = &Relation> {
-        self.field_specs
-            .iter()
-            .filter_map(|field_spec| match field_spec {
-                FieldSpec::Relation(relation) => Some(relation),
-                _ => None,
-            })
-    }
-
-    fn unmatched_column_overrides(&self) -> impl Iterator<Item = &ColumnOverride> {
-        self.field_specs
-            .iter()
-            .filter_map(|field_spec| match field_spec {
-                FieldSpec::ColumnOverride(column_override) => (!self
-                    .columns
-                    .iter()
-                    .any(|column| column.name() == column_override.name()))
-                .then_some(column_override),
-                _ => None,
-            })
-    }
+    relations: Punctuated<Relation, Token![,]>,
 }
 
 impl Parse for Table {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let content;
         Ok(Self {
-            attrs: Attribute::parse_outer(input)?,
+            attrs: input.parse()?,
             _create: input.parse()?,
             _table: input.parse()?,
             name: input.parse()?,
             _paren: syn::parenthesized!(content in input),
             columns: content.parse_terminated(Column::parse, Token![,])?,
             _semi: input.parse()?,
-            field_specs: input.parse_terminated(FieldSpec::parse, Token![,])?,
+            relations: input.parse_terminated(Relation::parse, Token![,])?,
         })
     }
 }
@@ -97,33 +54,31 @@ impl ToTokens for Table {
         let name = &self.name;
         let name_string = name.to_string();
 
-        for unmatched_column_override in self.unmatched_column_overrides() {
-            emit_error!(
-                unmatched_column_override.name().span(),
-                "column override `{}` does not match any column name",
-                unmatched_column_override.name()
-            );
-        }
-
-        let columns = self.columns().collect::<Vec<_>>();
-        let relations = self.relations().map(|relation| relation.to_token_stream());
-
-        let column_names = columns
+        let columns = self.columns.iter().collect::<Vec<_>>();
+        let relations = self
+            .relations
             .iter()
-            .map(ColumnWithOverride::name_or_alias)
+            .map(|relation| relation.to_token_stream());
+
+        let column_names = self
+            .columns
+            .iter()
+            .map(Column::rust_name)
             .collect::<Vec<_>>();
-        let relation_names = self.relations().map(Relation::name).collect::<Vec<_>>();
+        let relation_names = self
+            .relations
+            .iter()
+            .map(Relation::name)
+            .collect::<Vec<_>>();
 
         let select_struct = RowStruct::new(
             vec![],
             Ident::new("Select", Span::call_site()),
-            self.columns()
+            self.columns
+                .iter()
                 .map(|column| {
-                    RowStructField::new(
-                        vec![],
-                        column.name_or_alias().clone(),
-                        column.type_or_override(),
-                    )
+                    let column = column.rust_name();
+                    RowStructField::new(vec![], column.clone(), quote! { columns::#column::Type })
                 })
                 .collect(),
         );
@@ -135,8 +90,8 @@ impl ToTokens for Table {
                 UNIQUE_ID.fetch_add(1, Ordering::Relaxed).to_string()
             );
 
-            let fields = self.columns().map(|column| {
-                let column_name = column.name_or_alias();
+            let fields = self.columns.iter().map(|column| {
+                let column_name = column.rust_name();
                 RowStructField::new(
                     vec![],
                     column_name.clone(),

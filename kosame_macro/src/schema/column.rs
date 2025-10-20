@@ -1,6 +1,7 @@
-use crate::attribute::ParsedAttributes;
+use crate::{attribute::ParsedAttributes, path_ext::PathExt};
 
 use super::{column_constraint::ColumnConstraints, data_type::DataType};
+use convert_case::{Case, Casing};
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::{
@@ -20,27 +21,46 @@ impl Column {
         &self.name
     }
 
-    pub fn data_type_not_null(&self) -> &DataType {
+    pub fn rust_name(&self) -> Ident {
+        Ident::new(
+            &self.name.to_string().to_case(Case::Snake),
+            self.name.span(),
+        )
+    }
+
+    pub fn data_type(&self) -> &DataType {
         &self.data_type
     }
 
-    pub fn data_type_nullable(&self) -> TokenStream {
-        let data_type = self.data_type_not_null();
+    fn rust_type(&self) -> TokenStream {
+        let data_type = self.data_type();
+        match self.attrs.type_override() {
+            Some(path) => {
+                let path = path.to_call_site(3);
+                quote! { #path }
+            }
+            None => quote! { #data_type },
+        }
+    }
+
+    fn rust_type_nullable(&self) -> TokenStream {
+        let data_type = self.data_type();
         quote! { Option<#data_type> }
     }
 
-    pub fn data_type_auto(&self) -> TokenStream {
+    fn rust_type_auto(&self) -> TokenStream {
         if self.constraints.not_null().is_none() && self.constraints.primary_key().is_none() {
-            self.data_type_nullable()
+            self.rust_type_nullable()
         } else {
-            self.data_type_not_null().to_token_stream()
+            self.rust_type()
         }
     }
 }
 
 impl Parse for Column {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let attrs = input.parse()?;
+        let attrs: ParsedAttributes = input.parse()?;
+        attrs.require_no_global()?;
         let name = input.parse()?;
         let data_type = input.parse()?;
 
@@ -50,5 +70,25 @@ impl Parse for Column {
             data_type,
             constraints: input.parse()?,
         })
+    }
+}
+
+impl ToTokens for Column {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let name_string = self.name.to_string();
+        let rust_name = self.rust_name();
+        let rust_name_string = rust_name.to_string();
+
+        let rust_type_auto = self.rust_type_auto();
+        let rust_type_nullable = self.rust_type_nullable();
+
+        quote! {
+            pub mod #rust_name {
+                pub const COLUMN: ::kosame::schema::Column = ::kosame::schema::Column::new(#name_string, Some(#rust_name_string));
+                pub type Type = #rust_type_auto;
+                pub type TypeNullable = #rust_type_nullable;
+            }
+        }
+        .to_tokens(tokens);
     }
 }
