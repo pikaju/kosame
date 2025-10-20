@@ -1,4 +1,4 @@
-use crate::{schema::Column, sql};
+use crate::{runtime::schema::Column, sql};
 
 pub struct ColumnRef {
     column: &'static Column,

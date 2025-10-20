@@ -2,6 +2,7 @@
 resolver = "3"
 members = [
     "kosame",
+    "kosame_dsl",
     "kosame_macro",
     "examples/postgres",
     "examples/tokio_postgres",
@@ -20,5 +21,6 @@ publish = ["kosame", "kosame_macro"]
 
 [workspace.dependencies]
 kosame = { path = "kosame", version = "0.1.0" }
+kosame_dsl = { path = "kosame_dsl", version = "0.1.0" }
 kosame_macro = { path = "kosame_macro", version = "0.1.0" }
 

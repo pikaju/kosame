@@ -7,7 +7,6 @@ mod schema {
         // Kosame uses the familiar SQL syntax to define tables.
         create table posts (
             id int primary key default uuidv7(),
-            #[kosame(rename = "t_tle", ty = i32)]
             title text not null,
             content text,
         );

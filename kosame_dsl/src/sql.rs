@@ -1,6 +1,6 @@
 use std::fmt::Write;
 
-use crate::query::BindParamOrdinal;
+use crate::runtime::expr::BindParamOrdinal;
 
 pub trait Dialect {
     fn ident_esc() -> (&'static str, &'static str);

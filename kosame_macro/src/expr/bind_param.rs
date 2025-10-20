@@ -37,11 +37,6 @@ impl Parse for BindParam {
 impl ToTokens for BindParam {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let name = &self.name;
-        quote! {
-            ::kosame::expr::BindParam::new(
-                &scope::params::#name::BIND_PARAM,
-            )
-        }
-        .to_tokens(tokens)
+        quote! { scope::params::#name::BIND_PARAM }.to_tokens(tokens)
     }
 }

@@ -1,0 +1,37 @@
+[package]
+name = "kosame_dsl"
+
+version.workspace = true
+edition.workspace = true
+description.workspace = true
+repository.workspace = true
+documentation.workspace = true
+readme.workspace = true
+license.workspace = true
+keywords.workspace = true
+
+[features]
+default = []
+
+postgres = []
+tokio-postgres = []
+
+postgres-types = []
+
+dbms-mssql = []
+dbms-mysql = []
+dbms-postgres = []
+dbms-sqlite = []
+
+serde = []
+serde-full = []
+
+dsl = []
+repr = []
+runtime = []
+
+[dependencies]
+convert_case = "0.8.0"
+proc-macro2 = "1.0.101"
+quote = "1.0.40"
+syn = "2.0.106"

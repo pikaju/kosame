@@ -67,7 +67,7 @@ impl ToTokens for BindParams<'_> {
             let name_string = name.to_string();
             modules.push(quote! {
                 pub(super) mod #name {
-                    pub const BIND_PARAM: ::kosame::query::BindParam = ::kosame::query::BindParam::new(#name_string, #ordinal);
+                    pub const BIND_PARAM: ::kosame::expr::BindParam = ::kosame::expr::BindParam::new(#name_string, #ordinal);
                 }
             });
         }

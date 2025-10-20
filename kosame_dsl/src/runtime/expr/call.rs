@@ -1,6 +1,7 @@
 use std::fmt::Write;
 
-use crate::{expr::Expr, sql};
+use super::Expr;
+use crate::sql;
 
 pub struct Call {
     function: &'static str,
