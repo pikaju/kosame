@@ -6,7 +6,7 @@ mod schema {
         // Kosame uses the familiar SQL syntax to define tables.
         create table posts (
             id int primary key default uuidv7(),
-            #[kosame(rename = "tiitle", ty = ::std::string::String)]
+            #[kosame(rename = tiitle, ty = ::std::string::String)]
             title text not null,
             content text,
         );

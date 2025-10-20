@@ -31,7 +31,7 @@ impl From<crate::dsl::schema::Column> for Column {
         use crate::dsl::path_ext::PathExt;
 
         let rust_name = match value.attrs.rename() {
-            Some(name) => Ident::new(&name.value(), name.span()),
+            Some(name) => name.clone(),
             None => Ident::new(
                 &value.name.to_string().to_case(Case::Snake),
                 value.name.span(),

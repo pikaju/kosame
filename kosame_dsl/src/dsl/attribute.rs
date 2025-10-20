@@ -1,5 +1,5 @@
 use syn::{
-    Attribute, LitStr, Path, Token,
+    Attribute, Ident, LitStr, Path, Token,
     parse::{Parse, ParseStream, Parser},
     punctuated::Punctuated,
     spanned::Spanned,
@@ -34,7 +34,7 @@ impl ParsedAttributes {
         &self.attrs
     }
 
-    pub fn rename(&self) -> Option<&LitStr> {
+    pub fn rename(&self) -> Option<&Ident> {
         self.rename.as_ref().map(|v| &v.value)
     }
 
@@ -107,7 +107,7 @@ impl Parse for MetaItem {
 struct Rename {
     path: kw::rename,
     _eq_token: Token![=],
-    value: LitStr,
+    value: Ident,
 }
 
 impl Parse for Rename {
