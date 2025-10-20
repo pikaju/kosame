@@ -1,14 +1,4 @@
-pub(crate) mod alias;
-pub(crate) mod attribute;
-pub(crate) mod dbms;
-pub(crate) mod docs;
-pub(crate) mod expr;
-pub(crate) mod path_ext;
-pub(crate) mod query;
-pub(crate) mod row_struct;
-pub(crate) mod schema;
-pub(crate) mod type_override;
-
+use kosame_dsl::dsl;
 use proc_macro_error::proc_macro_error;
 use quote::{ToTokens, quote};
 use syn::{DeriveInput, parse_macro_input};
@@ -16,14 +6,14 @@ use syn::{DeriveInput, parse_macro_input};
 #[proc_macro_error]
 #[proc_macro]
 pub fn table(tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let input = parse_macro_input!(tokens as schema::table::Table);
+    let input = parse_macro_input!(tokens as dsl::schema::table::Table);
     quote! { #input }.into()
 }
 
 #[proc_macro_error]
 #[proc_macro]
 pub fn query(tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let input = parse_macro_input!(tokens as query::Query);
+    let input = parse_macro_input!(tokens as dsl::query::Query);
     quote! { #input }.into()
 }
 

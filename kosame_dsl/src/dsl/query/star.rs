@@ -6,7 +6,7 @@ use syn::{
     parse_quote,
 };
 
-use crate::{alias::Alias, row_struct::RowStructField};
+use crate::dsl::{alias::Alias, row_struct::RowStructField};
 
 pub struct Star {
     attrs: Vec<Attribute>,

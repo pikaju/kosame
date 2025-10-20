@@ -9,21 +9,19 @@ mod unary;
 
 mod visitor;
 
-pub use binary::{Associativity, BinOp, Binary};
-pub use bind_param::BindParam;
-pub use call::Call;
-pub use cast::Cast;
-pub use column_ref::ColumnRef;
-pub use lit::Lit;
-pub use paren::Paren;
-pub use unary::Unary;
-pub use visitor::Visitor;
+pub use binary::*;
+pub use bind_param::*;
+pub use call::*;
+pub use cast::*;
+pub use column_ref::*;
+pub use lit::*;
+pub use paren::*;
+pub use unary::*;
+pub use visitor::*;
 
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::parse::{Parse, ParseStream};
-
-use crate::expr::unary::UnaryOp;
 
 pub enum Expr {
     Binary(Binary),

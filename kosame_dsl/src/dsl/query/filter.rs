@@ -1,19 +1,16 @@
-use syn::parse::{Parse, ParseStream};
+use syn::{
+    Token,
+    parse::{Parse, ParseStream},
+};
 
-use crate::expr::Expr;
+use crate::dsl::expr::Expr;
 
-mod kw {
-    use syn::custom_keyword;
-
-    custom_keyword!(offset);
-}
-
-pub struct Offset {
-    _offset: kw::offset,
+pub struct Filter {
+    _where: Token![where],
     expr: Expr,
 }
 
-impl Offset {
+impl Filter {
     pub fn expr(&self) -> &Expr {
         &self.expr
     }
@@ -23,14 +20,14 @@ impl Offset {
     }
 
     pub fn peek(input: ParseStream) -> bool {
-        input.peek(kw::offset)
+        input.peek(Token![where])
     }
 }
 
-impl Parse for Offset {
+impl Parse for Filter {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            _offset: input.parse()?,
+            _where: input.parse()?,
             expr: input.parse()?,
         })
     }

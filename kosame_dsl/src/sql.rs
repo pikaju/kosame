@@ -1,14 +1,8 @@
 use std::fmt::Write;
 
-use crate::runtime::expr::BindParamOrdinal;
-
 pub trait Dialect {
     fn ident_esc() -> (&'static str, &'static str);
-    fn fmt_bind_param(
-        formatter: &mut impl Write,
-        name: &str,
-        ordinal: BindParamOrdinal,
-    ) -> std::fmt::Result;
+    fn fmt_bind_param(formatter: &mut impl Write, name: &str, ordinal: u32) -> std::fmt::Result;
 }
 
 pub struct Formatter<'a, D> {

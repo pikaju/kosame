@@ -22,7 +22,7 @@ use syn::{
     parse::{Parse, ParseStream},
 };
 
-use crate::{alias::Alias, path_ext::PathExt, query::bind_params::BindParamsBuilder};
+use crate::dsl::{alias::Alias, path_ext::PathExt, query::bind_params::BindParamsBuilder};
 
 pub struct Query {
     attrs: Vec<Attribute>,

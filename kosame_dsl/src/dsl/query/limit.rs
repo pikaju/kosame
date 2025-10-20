@@ -1,16 +1,19 @@
-use syn::{
-    Token,
-    parse::{Parse, ParseStream},
-};
+use syn::parse::{Parse, ParseStream};
 
-use crate::expr::Expr;
+use crate::dsl::expr::Expr;
 
-pub struct Filter {
-    _where: Token![where],
+mod kw {
+    use syn::custom_keyword;
+
+    custom_keyword!(limit);
+}
+
+pub struct Limit {
+    _limit: kw::limit,
     expr: Expr,
 }
 
-impl Filter {
+impl Limit {
     pub fn expr(&self) -> &Expr {
         &self.expr
     }
@@ -20,14 +23,14 @@ impl Filter {
     }
 
     pub fn peek(input: ParseStream) -> bool {
-        input.peek(Token![where])
+        input.peek(kw::limit)
     }
 }
 
-impl Parse for Filter {
+impl Parse for Limit {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            _where: input.parse()?,
+            _limit: input.parse()?,
             expr: input.parse()?,
         })
     }

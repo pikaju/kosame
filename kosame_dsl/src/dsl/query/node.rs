@@ -1,5 +1,5 @@
-use crate::expr::Visitor;
-use crate::row_struct::RowStruct;
+use crate::dsl::expr::Visitor;
+use crate::dsl::row_struct::RowStruct;
 
 use super::star::Star;
 use super::*;

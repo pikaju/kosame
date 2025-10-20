@@ -1,4 +1,4 @@
-use crate::{attribute::ParsedAttributes, path_ext::PathExt};
+use crate::{dsl::attribute::ParsedAttributes, dsl::path_ext::PathExt};
 
 use super::{column_constraint::ColumnConstraints, data_type::DataType};
 use convert_case::{Case, Casing};

@@ -1,7 +1,7 @@
 use std::sync::atomic::Ordering;
 
 use super::{column::Column, relation::Relation};
-use crate::{
+use crate::dsl::{
     attribute::ParsedAttributes,
     row_struct::{RowStruct, RowStructField},
 };

@@ -1,5 +1,5 @@
 use super::QueryNode;
-use crate::{
+use crate::dsl::{
     alias::Alias, expr::Expr, path_ext::PathExt, query::node_path::QueryNodePath,
     row_struct::RowStructField, type_override::TypeOverride,
 };

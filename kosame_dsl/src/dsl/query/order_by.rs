@@ -6,7 +6,7 @@ use syn::{
     punctuated::Punctuated,
 };
 
-use crate::{
+use crate::dsl::{
     expr::{Expr, Visitor},
     query::limit::Limit,
 };

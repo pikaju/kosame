@@ -5,11 +5,7 @@ impl crate::sql::Dialect for Dialect {
         ("[", "]")
     }
 
-    fn fmt_bind_param(
-        formatter: &mut impl Write,
-        name: &str,
-        _ordinal: BindParamOrdinal,
-    ) -> std::fmt::Result {
+    fn fmt_bind_param(formatter: &mut impl Write, name: &str, _ordinal: u32) -> std::fmt::Result {
         write!(formatter, "@{name}")
     }
 }

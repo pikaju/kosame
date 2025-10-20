@@ -1,7 +1,5 @@
 use std::fmt::Write;
 
-use crate::query::BindParamOrdinal;
-
 pub enum Dialect {}
 
 impl crate::sql::Dialect for Dialect {
@@ -9,11 +7,7 @@ impl crate::sql::Dialect for Dialect {
         ("\"", "\"")
     }
 
-    fn fmt_bind_param(
-        formatter: &mut impl Write,
-        _name: &str,
-        ordinal: BindParamOrdinal,
-    ) -> std::fmt::Result {
+    fn fmt_bind_param(formatter: &mut impl Write, _name: &str, ordinal: u32) -> std::fmt::Result {
         write!(formatter, "${}", ordinal + 1)
     }
 }

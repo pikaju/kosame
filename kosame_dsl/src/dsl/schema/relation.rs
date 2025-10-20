@@ -10,7 +10,7 @@ use syn::{
     spanned::Spanned,
 };
 
-use crate::{
+use crate::dsl::{
     docs::{Docs, ToDocsTokens},
     path_ext::PathExt,
 };
