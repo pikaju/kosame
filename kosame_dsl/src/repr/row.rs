@@ -2,13 +2,13 @@ use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::{Attribute, Ident};
 
-pub struct RowStruct {
+pub struct Row {
     attrs: Vec<Attribute>,
     name: Ident,
     fields: Vec<RowField>,
 }
 
-impl RowStruct {
+impl Row {
     pub fn new(attrs: Vec<Attribute>, name: Ident, fields: Vec<RowField>) -> Self {
         Self {
             attrs,
@@ -18,7 +18,7 @@ impl RowStruct {
     }
 }
 
-impl ToTokens for RowStruct {
+impl ToTokens for Row {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let attrs = &self.attrs;
         let name = &self.name;

@@ -1,5 +1,5 @@
 use crate::dsl::expr::Visitor;
-use crate::{dsl::clause::*, repr::row::RowStruct};
+use crate::{dsl::clause::*, repr::row::Row};
 
 use super::star::Star;
 use super::*;
@@ -48,7 +48,7 @@ impl Node {
         }
     }
 
-    pub fn to_row_struct_tokens(
+    pub fn to_row_tokens(
         &self,
         tokens: &mut TokenStream,
         query: &Query,
@@ -60,7 +60,7 @@ impl Node {
             &table_path,
         ));
 
-        let row_struct = {
+        let row = {
             let table_path = table_path.to_call_site(1);
 
             let star_field = self.star.as_ref().and_then(|star| {
@@ -69,7 +69,7 @@ impl Node {
                     .then(|| star.to_row_field(&table_path))
             });
 
-            RowStruct::new(
+            Row::new(
                 query.attrs.clone(),
                 node_path.to_struct_name("Row"),
                 star_field
@@ -90,12 +90,12 @@ impl Node {
             quote! {
                 #table_path::star! {
                     (#table_path)
-                    #row_struct
+                    #row
                 }
             }
             .to_tokens(tokens);
         } else {
-            row_struct.to_tokens(tokens);
+            row.to_tokens(tokens);
         }
 
         // Recursively call to_tokens on child nodes.
@@ -103,7 +103,7 @@ impl Node {
             if let Field::Relation { name, node, .. } = field {
                 let mut node_path = node_path.clone();
                 node_path.append(name.clone());
-                node.to_row_struct_tokens(tokens, query, &node_path);
+                node.to_row_tokens(tokens, query, &node_path);
             }
         }
     }

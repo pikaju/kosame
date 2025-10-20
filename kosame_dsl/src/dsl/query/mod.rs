@@ -54,7 +54,7 @@ impl ToTokens for Query {
         let node_tokens = {
             let mut tokens = proc_macro2::TokenStream::new();
             self.body
-                .to_row_struct_tokens(&mut tokens, self, &QueryNodePath::new());
+                .to_row_tokens(&mut tokens, self, &QueryNodePath::new());
             tokens
         };
 

@@ -3,7 +3,7 @@ use std::sync::atomic::Ordering;
 use super::{column::Column, relation::Relation};
 use crate::{
     dsl::attribute::ParsedAttributes,
-    repr::row::{RowField, RowStruct},
+    repr::row::{Row, RowField},
 };
 use proc_macro2::Span;
 use quote::{ToTokens, quote};
@@ -71,7 +71,7 @@ impl ToTokens for Table {
             .map(Relation::name)
             .collect::<Vec<_>>();
 
-        let select_struct = RowStruct::new(
+        let select_struct = Row::new(
             vec![],
             Ident::new("Select", Span::call_site()),
             self.columns
