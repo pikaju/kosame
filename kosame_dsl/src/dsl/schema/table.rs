@@ -3,7 +3,7 @@ use std::sync::atomic::Ordering;
 use super::{column::Column, relation::Relation};
 use crate::{
     dsl::attribute::ParsedAttributes,
-    repr::row::{RowStruct, RowStructField},
+    repr::row::{RowField, RowStruct},
 };
 use proc_macro2::Span;
 use quote::{ToTokens, quote};
@@ -78,7 +78,7 @@ impl ToTokens for Table {
                 .iter()
                 .map(|column| {
                     let column = column.rust_name();
-                    RowStructField::new(vec![], column.clone(), quote! { columns::#column::Type })
+                    RowField::new(vec![], column.clone(), quote! { columns::#column::Type })
                 })
                 .collect(),
         );
@@ -92,7 +92,7 @@ impl ToTokens for Table {
 
             let fields = self.columns.iter().map(|column| {
                 let column_name = column.rust_name();
-                RowStructField::new(
+                RowField::new(
                     vec![],
                     column_name.clone(),
                     quote! { $($table_path)* ::columns::#column_name::Type },

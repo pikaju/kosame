@@ -5,11 +5,11 @@ use syn::{Attribute, Ident};
 pub struct RowStruct {
     attrs: Vec<Attribute>,
     name: Ident,
-    fields: Vec<RowStructField>,
+    fields: Vec<RowField>,
 }
 
 impl RowStruct {
-    pub fn new(attrs: Vec<Attribute>, name: Ident, fields: Vec<RowStructField>) -> Self {
+    pub fn new(attrs: Vec<Attribute>, name: Ident, fields: Vec<RowField>) -> Self {
         Self {
             attrs,
             name,
@@ -44,13 +44,13 @@ impl ToTokens for RowStruct {
     }
 }
 
-pub struct RowStructField {
+pub struct RowField {
     attrs: Vec<Attribute>,
     name: Ident,
     r#type: TokenStream,
 }
 
-impl RowStructField {
+impl RowField {
     pub fn new(attrs: Vec<Attribute>, name: Ident, r#type: TokenStream) -> Self {
         Self {
             attrs,
@@ -60,7 +60,7 @@ impl RowStructField {
     }
 }
 
-impl ToTokens for RowStructField {
+impl ToTokens for RowField {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         for attribute in &self.attrs {
             attribute.to_tokens(tokens);

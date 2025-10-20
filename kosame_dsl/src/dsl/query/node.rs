@@ -66,7 +66,7 @@ impl Node {
             let star_field = self.star.as_ref().and_then(|star| {
                 star.alias()
                     .is_some()
-                    .then(|| star.to_row_struct_field(&table_path))
+                    .then(|| star.to_row_field(&table_path))
             });
 
             RowStruct::new(
@@ -77,7 +77,7 @@ impl Node {
                     .chain(
                         self.fields
                             .iter()
-                            .map(|field| field.to_row_struct_field(&table_path, node_path)),
+                            .map(|field| field.to_row_field(&table_path, node_path)),
                     )
                     .collect(),
             )

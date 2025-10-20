@@ -4,7 +4,7 @@ use crate::{
         alias::Alias, expr::Expr, path_ext::PathExt, query::node_path::QueryNodePath,
         type_override::TypeOverride,
     },
-    repr::row::RowStructField,
+    repr::row::RowField,
 };
 use proc_macro2::Span;
 use quote::{ToTokens, quote};
@@ -68,11 +68,7 @@ impl Field {
         matches!(self, Self::Column { .. })
     }
 
-    pub fn to_row_struct_field(
-        &self,
-        table_path: &Path,
-        node_path: &QueryNodePath,
-    ) -> RowStructField {
+    pub fn to_row_field(&self, table_path: &Path, node_path: &QueryNodePath) -> RowField {
         match self {
             Field::Column {
                 attrs,
@@ -92,7 +88,7 @@ impl Field {
                     .map(|type_override| type_override.type_path().to_call_site(1))
                     .unwrap_or_else(|| parse_quote! { #table_path::columns::#name::Type });
 
-                RowStructField::new(
+                RowField::new(
                     attrs.clone(),
                     alias_or_name,
                     type_override_or_default.to_token_stream(),
@@ -111,7 +107,7 @@ impl Field {
                 node_path.append(name.clone());
                 let inner_type = node_path.to_struct_name("Row");
 
-                RowStructField::new(
+                RowField::new(
                     attrs.clone(),
                     alias_or_name,
                     quote! { #table_path::relations::#name::Type<#inner_type> },
@@ -122,7 +118,7 @@ impl Field {
                 alias,
                 type_override,
                 ..
-            } => RowStructField::new(
+            } => RowField::new(
                 attrs.clone(),
                 alias.ident().clone(),
                 type_override.type_path().to_call_site(1).to_token_stream(),

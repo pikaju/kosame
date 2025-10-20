@@ -6,7 +6,7 @@ use syn::{
     parse_quote,
 };
 
-use crate::{dsl::alias::Alias, repr::row::RowStructField};
+use crate::{dsl::alias::Alias, repr::row::RowField};
 
 pub struct Star {
     attrs: Vec<Attribute>,
@@ -15,14 +15,14 @@ pub struct Star {
 }
 
 impl Star {
-    pub fn to_row_struct_field(&self, table_path: impl ToTokens) -> RowStructField {
+    pub fn to_row_field(&self, table_path: impl ToTokens) -> RowField {
         let additional_attrs = [
             parse_quote! { #[star] },
             #[cfg(feature = "serde")]
             parse_quote! { #[serde(flatten)] },
         ];
 
-        RowStructField::new(
+        RowField::new(
             self.attrs
                 .iter()
                 .chain(additional_attrs.iter())
