@@ -20,10 +20,9 @@ impl RowStruct {
 
 impl ToTokens for RowStruct {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        let attrs = &self.attrs;
         let name = &self.name;
         let fields = &self.fields;
-
-        let attrs = &self.attrs;
 
         let derives = [
             quote! { ::kosame::Row },

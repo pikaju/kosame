@@ -1,9 +1,9 @@
 use std::sync::atomic::Ordering;
 
 use super::{column::Column, relation::Relation};
-use crate::dsl::{
-    attribute::ParsedAttributes,
-    row_struct::{RowStruct, RowStructField},
+use crate::{
+    dsl::attribute::ParsedAttributes,
+    repr::row::{RowStruct, RowStructField},
 };
 use proc_macro2::Span;
 use quote::{ToTokens, quote};

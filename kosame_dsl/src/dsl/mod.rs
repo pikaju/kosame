@@ -5,6 +5,5 @@ mod docs;
 mod expr;
 mod path_ext;
 pub mod query;
-mod row_struct;
 pub mod schema;
 mod type_override;
