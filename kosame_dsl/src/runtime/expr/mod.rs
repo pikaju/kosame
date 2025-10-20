@@ -29,17 +29,31 @@ pub enum Expr {
     Unary(Unary),
 }
 
+macro_rules! variants {
+    ($macro:ident!()) => {
+        $macro!(
+            Binary
+            BindParam
+            Call
+            Cast
+            ColumnRef
+            Lit
+            Paren
+            Unary
+        )
+    };
+}
+
 impl Expr {
     pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
-        match self {
-            Self::Binary(inner) => inner.fmt_sql(formatter),
-            Self::BindParam(inner) => inner.fmt_sql(formatter),
-            Self::Call(inner) => inner.fmt_sql(formatter),
-            Self::Cast(inner) => inner.fmt_sql(formatter),
-            Self::ColumnRef(inner) => inner.fmt_sql(formatter),
-            Self::Lit(inner) => inner.fmt_sql(formatter),
-            Self::Paren(inner) => inner.fmt_sql(formatter),
-            Self::Unary(inner) => inner.fmt_sql(formatter),
+        macro_rules! branches {
+            ($($variant:ident)*) => {
+                match self {
+                    $(Self::$variant(inner) => inner.fmt_sql(formatter)),*
+                }
+            };
         }
+
+        variants!(branches!())
     }
 }

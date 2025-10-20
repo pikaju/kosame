@@ -34,6 +34,21 @@ pub enum Expr {
     Unary(Unary),
 }
 
+macro_rules! variants {
+    ($macro:ident!()) => {
+        $macro!(
+            Binary
+            BindParam
+            Call
+            Cast
+            ColumnRef
+            Lit
+            Paren
+            Unary
+        )
+    };
+}
+
 impl Expr {
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
         macro_rules! branches {
@@ -44,16 +59,7 @@ impl Expr {
             };
         }
 
-        branches!(
-            Binary
-            BindParam
-            Call
-            Cast
-            ColumnRef
-            Lit
-            Paren
-            Unary
-        );
+        variants!(branches!());
     }
 
     fn parse_prefix(input: ParseStream) -> syn::Result<Expr> {
@@ -122,15 +128,6 @@ impl ToTokens for Expr {
             };
         }
 
-        branches!(
-            Binary
-            BindParam
-            Call
-            Cast
-            ColumnRef
-            Lit
-            Paren
-            Unary
-        );
+        variants!(branches!());
     }
 }
