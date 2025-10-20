@@ -10,6 +10,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/kosame.svg)](https://crates.io/crates/kosame)
 [![Docs.rs](https://docs.rs/kosame/badge.svg)](https://docs.rs/kosame)
+[![GitHub](https://img.shields.io/badge/GitHub-pikaju%2Fkosame-blue?style=flat&logo=github)](https://github.com/pikaju/kosame)
 [![License](https://img.shields.io/crates/l/kosame.svg)](https://crates.io/crates/kosame)
 
 </div>
