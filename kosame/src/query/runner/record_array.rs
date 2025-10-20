@@ -58,15 +58,15 @@ fn fmt_node_sql<D: sql::Dialect>(
 
     for (index, field) in node.fields().iter().enumerate() {
         match field {
-            QueryField::Column { column, .. } => {
+            Field::Column { column, .. } => {
                 formatter.write_ident(column.name())?;
             }
-            QueryField::Relation { node, relation, .. } => {
+            Field::Relation { node, relation, .. } => {
                 formatter.write_str("array(")?;
                 fmt_node_sql::<D>(formatter, node, Some(relation))?;
                 formatter.write_str(")")?;
             }
-            QueryField::Expr { expr, .. } => {
+            Field::Expr { expr, .. } => {
                 expr.fmt_sql(formatter)?;
             }
         }

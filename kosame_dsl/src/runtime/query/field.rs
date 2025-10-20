@@ -4,7 +4,7 @@ use crate::runtime::{
     schema::{Column, Relation},
 };
 
-pub enum QueryField {
+pub enum Field {
     Column {
         column: &'static Column,
         alias: Option<&'static str>,

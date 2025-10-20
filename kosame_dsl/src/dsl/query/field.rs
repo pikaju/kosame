@@ -11,7 +11,7 @@ use syn::{
     parse_quote,
 };
 
-pub enum QueryField {
+pub enum Field {
     Column {
         attrs: Vec<Attribute>,
         name: Ident,
@@ -32,7 +32,7 @@ pub enum QueryField {
     },
 }
 
-impl QueryField {
+impl Field {
     pub fn name(&self) -> &Ident {
         match self {
             Self::Column { name, .. } => name,
@@ -59,7 +59,7 @@ impl QueryField {
 
     /// Returns `true` if the query field is [`Column`].
     ///
-    /// [`Column`]: QueryField::Column
+    /// [`Column`]: Field::Column
     #[must_use]
     pub fn is_column(&self) -> bool {
         matches!(self, Self::Column { .. })
@@ -71,7 +71,7 @@ impl QueryField {
         node_path: &QueryNodePath,
     ) -> RowStructField {
         match self {
-            QueryField::Column {
+            Field::Column {
                 attrs,
                 name,
                 alias,
@@ -95,7 +95,7 @@ impl QueryField {
                     type_override_or_default.to_token_stream(),
                 )
             }
-            QueryField::Relation {
+            Field::Relation {
                 attrs, name, alias, ..
             } => {
                 let alias_or_name = alias
@@ -114,7 +114,7 @@ impl QueryField {
                     quote! { #table_path::relations::#name::Type<#inner_type> },
                 )
             }
-            QueryField::Expr {
+            Field::Expr {
                 attrs,
                 alias,
                 type_override,
@@ -128,7 +128,7 @@ impl QueryField {
     }
 }
 
-impl Parse for QueryField {
+impl Parse for Field {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let attrs = input.call(Attribute::parse_outer)?;
 

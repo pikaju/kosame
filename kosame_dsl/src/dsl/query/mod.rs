@@ -8,7 +8,7 @@ mod offset;
 mod order_by;
 mod star;
 
-use field::QueryField;
+use field::Field;
 use filter::Filter;
 use limit::Limit;
 use node::Node;

@@ -5,7 +5,7 @@ use super::*;
 pub struct Node {
     table: &'static Table,
     star: bool,
-    fields: &'static [QueryField],
+    fields: &'static [Field],
     filter: Option<Expr>,
     order_by: Option<OrderBy>,
     limit: Option<Expr>,
@@ -16,7 +16,7 @@ impl Node {
     pub const fn new(
         table: &'static Table,
         star: bool,
-        fields: &'static [QueryField],
+        fields: &'static [Field],
         filter: Option<Expr>,
         order_by: Option<OrderBy>,
         limit: Option<Expr>,
@@ -41,7 +41,7 @@ impl Node {
         self.star
     }
 
-    pub const fn fields(&self) -> &'static [QueryField] {
+    pub const fn fields(&self) -> &'static [Field] {
         self.fields
     }
 

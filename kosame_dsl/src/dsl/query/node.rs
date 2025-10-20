@@ -14,7 +14,7 @@ use syn::{
 pub struct Node {
     _brace: syn::token::Brace,
     star: Option<Star>,
-    fields: Punctuated<QueryField, Token![,]>,
+    fields: Punctuated<Field, Token![,]>,
     filter: Option<Filter>,
     order_by: Option<OrderBy>,
     limit: Option<Limit>,
@@ -25,8 +25,8 @@ impl Node {
     pub fn accept_expr<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
         for field in &self.fields {
             match field {
-                QueryField::Relation { node, .. } => node.accept_expr(visitor),
-                QueryField::Expr { expr, .. } => expr.accept(visitor),
+                Field::Relation { node, .. } => node.accept_expr(visitor),
+                Field::Expr { expr, .. } => expr.accept(visitor),
                 _ => {}
             }
         }
@@ -100,7 +100,7 @@ impl Node {
 
         // Recursively call to_tokens on child nodes.
         for field in &self.fields {
-            if let QueryField::Relation { name, node, .. } = field {
+            if let Field::Relation { name, node, .. } = field {
                 let mut node_path = node_path.clone();
                 node_path.append(name.clone());
                 node.to_row_struct_tokens(tokens, query, &node_path);
@@ -118,9 +118,9 @@ impl Node {
 
         for field in self.fields.iter() {
             let name = match field {
-                QueryField::Column { name, .. } => name,
-                QueryField::Relation { name, .. } => name,
-                QueryField::Expr { .. } => continue,
+                Field::Column { name, .. } => name,
+                Field::Relation { name, .. } => name,
+                Field::Expr { .. } => continue,
             };
             module_rows.push(quote! {
                 use #table_path::columns_and_relations::#name;
@@ -157,7 +157,7 @@ impl Node {
         let mut fields = vec![];
         for field in &self.fields {
             match field {
-                QueryField::Column { name, alias, .. } => {
+                Field::Column { name, alias, .. } => {
                     let alias = match alias {
                         Some(alias) => {
                             let alias = alias.ident().to_string();
@@ -166,13 +166,13 @@ impl Node {
                         None => quote! { None },
                     };
                     fields.push(quote! {
-                        ::kosame::query::QueryField::Column {
+                        ::kosame::query::Field::Column {
                             column: &#table_path_call_site::columns::#name::COLUMN,
                             alias: #alias
                         }
                     });
                 }
-                QueryField::Relation {
+                Field::Relation {
                     name, node, alias, ..
                 } => {
                     let alias = match alias {
@@ -197,20 +197,20 @@ impl Node {
                     let relation_path = relation_path.to_call_site(1);
 
                     fields.push(quote! {
-                        ::kosame::query::QueryField::Relation {
+                        ::kosame::query::Field::Relation {
                             relation: &#relation_path::RELATION,
                             node: #tokens,
                             alias: #alias
                         }
                     });
                 }
-                QueryField::Expr { expr, alias, .. } => {
+                Field::Expr { expr, alias, .. } => {
                     let alias = alias.ident().to_string();
 
                     fields.push(quote! {
                         {
                             #scope_module
-                            ::kosame::query::QueryField::Expr {
+                            ::kosame::query::Field::Expr {
                                 expr: #expr,
                                 alias: #alias
                             }
@@ -287,7 +287,7 @@ impl Parse for Node {
             None
         };
 
-        let mut fields = Punctuated::<QueryField, _>::new();
+        let mut fields = Punctuated::<Field, _>::new();
         while !content.is_empty() {
             if Filter::peek(&content)
                 || OrderBy::peek(&content)
