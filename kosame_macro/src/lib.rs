@@ -28,7 +28,7 @@ pub fn derive_row(tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
     let mut tokens = proc_macro2::TokenStream::new();
 
-    #[cfg(feature = "postgres-types")]
+    #[cfg(any(feature = "postgres", feature = "tokio-postgres"))]
     {
         let fields = data.fields.iter().enumerate().map(|(index, field)| {
             let name = &field.ident;
@@ -49,7 +49,7 @@ pub fn derive_row(tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
         .to_tokens(&mut tokens);
     }
 
-    #[cfg(feature = "postgres-types")]
+    #[cfg(any(feature = "postgres", feature = "tokio-postgres"))]
     {
         let field_count = data.fields.len() as i32;
         let fields = data.fields.iter().map(|field| {

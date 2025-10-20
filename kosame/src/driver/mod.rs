@@ -4,7 +4,7 @@ pub mod postgres;
 #[cfg(feature = "tokio-postgres")]
 pub mod tokio_postgres;
 
-#[cfg(feature = "postgres-types")]
+#[cfg(any(feature = "postgres", feature = "tokio-postgres"))]
 #[doc(hidden)]
 pub mod postgres_types;
 

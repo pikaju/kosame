@@ -1,11 +1,11 @@
-#[cfg(feature = "dbms-mssql")]
+#[cfg(false)]
 pub mod mssql;
 
-#[cfg(feature = "dbms-mysql")]
+#[cfg(false)]
 pub mod mysql;
 
-#[cfg(feature = "dbms-postgres")]
+#[cfg(any(feature = "postgres", feature = "tokio-postgres"))]
 pub mod postgres;
 
-#[cfg(feature = "dbms-sqlite")]
+#[cfg(false)]
 pub mod sqlite;

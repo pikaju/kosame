@@ -95,7 +95,7 @@ impl ToTokens for BindParams<'_> {
         }
         .to_tokens(tokens);
 
-        #[cfg(feature = "postgres-types")]
+        #[cfg(any(feature = "postgres", feature = "tokio-postgres"))]
         quote! {
             impl<'a> ::kosame::params::Params<Vec<&'a (dyn ::kosame::driver::postgres_types::ToSql + ::std::marker::Sync + 'a)>> for Params #lifetime {
                 fn to_driver(&self) -> Vec<&'a (dyn ::kosame::driver::postgres_types::ToSql + ::std::marker::Sync + 'a)> {

@@ -13,15 +13,19 @@ keywords.workspace = true
 [features]
 default = []
 
-postgres = ["kosame_macro/postgres", "dbms-postgres", "postgres-types", "dep:postgres"]
-tokio-postgres = ["kosame_macro/tokio-postgres", "dbms-postgres", "postgres-types", "dep:tokio-postgres"]
-
-postgres-types = ["dep:postgres-protocol", "dep:postgres-types", "dep:tokio-postgres"]
-
-dbms-mssql = []
-dbms-mysql = []
-dbms-postgres = []
-dbms-sqlite = []
+postgres = [
+	"kosame_macro/postgres",
+	"dep:postgres",
+	"dep:tokio-postgres",
+	"dep:postgres-types",
+	"dep:postgres-protocol",
+]
+tokio-postgres = [
+	"kosame_macro/tokio-postgres",
+	"dep:tokio-postgres",
+	"dep:postgres-types",
+	"dep:postgres-protocol",
+]
 
 serde = ["dep:serde", "kosame_macro/serde"]
 serde-full = ["serde", "kosame_macro/serde-full"]

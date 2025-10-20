@@ -16,18 +16,11 @@ proc-macro = true
 [features]
 default = []
 
-postgres = ["kosame_dsl/postgres", "dbms-postgres", "postgres-types"]
-tokio-postgres = ["kosame_dsl/tokio-postgres", "dbms-postgres", "postgres-types"]
-
-postgres-types = ["kosame_dsl/postgres-types"]
-
-dbms-mssql = []
-dbms-mysql = []
-dbms-postgres = []
-dbms-sqlite = []
+postgres = ["kosame_dsl/postgres"]
+tokio-postgres = ["kosame_dsl/tokio-postgres"]
 
 serde = ["kosame_dsl/serde"]
-serde-full = ["serde", "kosame_dsl/serde-full"]
+serde-full = ["kosame_dsl/serde-full"]
 
 [dependencies]
 convert_case = "0.8.0"
