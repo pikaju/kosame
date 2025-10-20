@@ -1,8 +1,11 @@
-use std::sync::atomic::Ordering;
+use std::{
+    hash::{Hash, Hasher},
+    sync::atomic::Ordering,
+};
 
 use proc_macro2::{Span, TokenStream};
-use quote::{ToTokens, quote};
-use syn::Ident;
+use quote::{ToTokens, format_ident, quote};
+use syn::{Ident, spanned::Spanned};
 
 use crate::repr::row::{Row, RowField};
 
@@ -67,11 +70,20 @@ impl ToTokens for Table {
         );
 
         let star_macro = {
-            static UNIQUE_ID: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
-            let unique_macro_name = quote::format_ident!(
-                "__kosame_star_{}",
-                UNIQUE_ID.fetch_add(1, Ordering::Relaxed).to_string()
-            );
+            static AUTO_INCREMENT: std::sync::atomic::AtomicU32 =
+                std::sync::atomic::AtomicU32::new(0);
+            let increment = AUTO_INCREMENT.fetch_add(1, Ordering::Relaxed);
+            let file = self.name.span().file();
+            let line_column = self.name.span().start();
+            let hash = {
+                let mut hasher = std::hash::DefaultHasher::new();
+                file.hash(&mut hasher);
+                line_column.line.hash(&mut hasher);
+                line_column.column.hash(&mut hasher);
+                increment.hash(&mut hasher);
+                hasher.finish()
+            };
+            let unique_macro_name = format_ident!("__kosame_star_{}", hash);
 
             let fields = self.columns.iter().map(|column| {
                 let column_name = column.rust_name();
