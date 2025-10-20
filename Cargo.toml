@@ -2,6 +2,7 @@
 resolver = "3"
 members = [
     "kosame",
+    "kosame_cli",
     "kosame_dsl",
     "kosame_macro",
     "examples/postgres",
