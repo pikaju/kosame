@@ -13,4 +13,24 @@ impl Column {
     pub const fn name(&self) -> &'static str {
         self.name
     }
+
+    #[inline]
+    pub const fn data_type(&self) -> &'static str {
+        self.data_type
+    }
+
+    #[inline]
+    pub const fn primary_key(&self) -> bool {
+        self.primary_key
+    }
+
+    #[inline]
+    pub const fn not_null(&self) -> bool {
+        self.not_null
+    }
+
+    #[inline]
+    pub const fn default(&self) -> Option<&'static Expr> {
+        self.default
+    }
 }

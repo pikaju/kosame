@@ -33,30 +33,37 @@ impl Node {
         }
     }
 
+    #[inline]
     pub const fn table(&self) -> &'static Table {
         self.table
     }
 
+    #[inline]
     pub const fn star(&self) -> bool {
         self.star
     }
 
+    #[inline]
     pub const fn fields(&self) -> &'static [Field] {
         self.fields
     }
 
+    #[inline]
     pub const fn r#where(&self) -> Option<&Where> {
         self.r#where.as_ref()
     }
 
+    #[inline]
     pub const fn order_by(&self) -> Option<&OrderBy> {
         self.order_by.as_ref()
     }
 
+    #[inline]
     pub const fn limit(&self) -> Option<&Limit> {
         self.limit.as_ref()
     }
 
+    #[inline]
     pub const fn offset(&self) -> Option<&Offset> {
         self.offset.as_ref()
     }

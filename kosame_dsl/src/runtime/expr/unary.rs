@@ -10,10 +10,12 @@ pub struct Unary {
 }
 
 impl Unary {
+    #[inline]
     pub const fn new(op: UnaryOp, operand: &'static Expr) -> Self {
         Self { op, operand }
     }
 
+    #[inline]
     pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
         match self.op.position() {
             Position::Prefix => {
@@ -39,12 +41,14 @@ pub enum Position {
 }
 
 impl UnaryOp {
+    #[inline]
     pub fn position(&self) -> Position {
         match self {
             Self::Not => Position::Prefix,
         }
     }
 
+    #[inline]
     pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
         match self {
             Self::Not => formatter.write_str("not "),

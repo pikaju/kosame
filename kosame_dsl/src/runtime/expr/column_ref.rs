@@ -5,10 +5,12 @@ pub struct ColumnRef {
 }
 
 impl ColumnRef {
+    #[inline]
     pub const fn new(column: &'static Column) -> Self {
         Self { column }
     }
 
+    #[inline]
     pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
         formatter.write_ident(self.column.name())
     }

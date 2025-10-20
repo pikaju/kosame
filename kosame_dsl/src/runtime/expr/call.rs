@@ -9,10 +9,12 @@ pub struct Call {
 }
 
 impl Call {
+    #[inline]
     pub const fn new(function: &'static str, params: &'static [&'static Expr]) -> Self {
         Self { function, params }
     }
 
+    #[inline]
     pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
         formatter.write_ident(self.function)?;
         formatter.write_str("(")?;

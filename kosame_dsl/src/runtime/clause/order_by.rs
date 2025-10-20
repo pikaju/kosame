@@ -7,10 +7,12 @@ pub struct OrderBy {
 }
 
 impl OrderBy {
+    #[inline]
     pub const fn new(entries: &'static [OrderByEntry]) -> Self {
         Self { entries }
     }
 
+    #[inline]
     pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
         formatter.write_str(" order by ")?;
         for (index, entry) in self.entries.iter().enumerate() {
@@ -30,10 +32,12 @@ pub struct OrderByEntry {
 }
 
 impl OrderByEntry {
+    #[inline]
     pub const fn new(expr: Expr, dir: Option<OrderByDir>, nulls: Option<OrderByNulls>) -> Self {
         Self { expr, dir, nulls }
     }
 
+    #[inline]
     pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
         self.expr.fmt_sql(formatter)?;
         match self.dir {

@@ -11,10 +11,12 @@ pub struct Binary {
 }
 
 impl Binary {
+    #[inline]
     pub const fn new(left: &'static Expr, op: BinOp, right: &'static Expr) -> Self {
         Self { left, op, right }
     }
 
+    #[inline]
     pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
         self.left.fmt_sql(formatter)?;
         self.op.fmt_sql(formatter)?;

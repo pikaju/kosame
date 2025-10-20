@@ -30,22 +30,27 @@ impl Relation {
         self.name
     }
 
+    #[inline]
     pub const fn source_table(&self) -> &'static str {
         self.source_table
     }
 
+    #[inline]
     pub const fn source_columns(&self) -> &'static [&'static Column] {
         self.source_columns
     }
 
+    #[inline]
     pub const fn target_table(&self) -> &'static str {
         self.target_table
     }
 
+    #[inline]
     pub const fn target_columns(&self) -> &'static [&'static Column] {
         self.target_columns
     }
 
+    #[inline]
     pub fn column_pairs(&self) -> impl Iterator<Item = (&Column, &Column)> {
         self.source_columns
             .iter()

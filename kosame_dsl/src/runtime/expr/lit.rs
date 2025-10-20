@@ -11,6 +11,7 @@ pub enum Lit {
 }
 
 impl Lit {
+    #[inline]
     pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
         match self {
             Self::Int(inner) => write!(formatter, "{}", inner),
