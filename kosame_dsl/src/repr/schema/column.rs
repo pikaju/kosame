@@ -4,11 +4,16 @@ use syn::{Ident, Path};
 
 pub struct Column {
     name: String,
-    data_type: String,
     rust_name: Ident,
+
+    data_type: String,
     rust_type_not_null: Path,
     rust_type_nullable: Path,
     rust_type_auto: Path,
+
+    not_null: bool,
+    primary_key: bool,
+    default: Option<TokenStream>,
 }
 
 impl Column {
@@ -49,11 +54,17 @@ impl From<crate::dsl::schema::Column> for Column {
 
         Self {
             name: value.name.to_string(),
-            data_type: data_type.name().to_string(),
             rust_name,
+            data_type: data_type.name().to_string(),
             rust_type_not_null,
             rust_type_nullable,
             rust_type_auto,
+            not_null: value.constraints.not_null().is_some(),
+            primary_key: value.constraints.primary_key().is_some(),
+            default: value.constraints.default().map(|default| {
+                let expr = default.expr();
+                expr.to_token_stream()
+            }),
         }
     }
 }
@@ -61,18 +72,28 @@ impl From<crate::dsl::schema::Column> for Column {
 impl ToTokens for Column {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let name = &self.name;
-        let data_type = &self.data_type;
         let rust_name = &self.rust_name;
 
+        let data_type = &self.data_type;
         let rust_type_not_null = &self.rust_type_not_null;
         let rust_type_nullable = &self.rust_type_nullable;
         let rust_type_auto = &self.rust_type_auto;
+
+        let not_null = self.not_null;
+        let primary_key = self.primary_key;
+        let default = match &self.default {
+            Some(default) => quote! { Some(&#default) },
+            None => quote! { None },
+        };
 
         quote! {
             pub mod #rust_name {
                 pub const COLUMN: ::kosame::schema::Column = ::kosame::schema::Column {
                     name: #name,
                     data_type: #data_type,
+                    not_null: #not_null,
+                    primary_key: #primary_key,
+                    default: #default,
                 };
                 pub type TypeNotNull = #rust_type_not_null;
                 pub type TypeNullable = #rust_type_nullable;

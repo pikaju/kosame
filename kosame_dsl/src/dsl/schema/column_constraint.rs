@@ -128,6 +128,12 @@ pub struct Default {
     expr: Expr,
 }
 
+impl Default {
+    pub fn expr(&self) -> &Expr {
+        &self.expr
+    }
+}
+
 impl Parse for Default {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
