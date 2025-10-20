@@ -8,10 +8,10 @@
 <div align="center">
     <h3>Macro-based Rust ORM focused on developer ergonomics</h3> 
 
-[![Crates.io](https://img.shields.io/crates/v/kosame.svg?style=flat-square)](https://crates.io/crates/kosame)
-[![Docs.rs](https://docs.rs/kosame/badge.svg?style=flat-square)](https://docs.rs/kosame)
-[![GitHub](https://img.shields.io/badge/GitHub-pikaju%2Fkosame-blue?style=flat-square&logo=github)](https://github.com/pikaju/kosame)
-[![License](https://img.shields.io/crates/l/kosame.svg?style=flat-square)](https://crates.io/crates/kosame)
+[![Crates.io](https://img.shields.io/crates/v/kosame.svg?style=for-the-badge)](https://crates.io/crates/kosame)
+[![Docs.rs](https://img.shields.io/badge/Status-Complete-66c2a5?style=for-the-badge&labelColor=555&logo=rust&logoColor=white))](https://docs.rs/kosame)
+[![GitHub](https://img.shields.io/badge/GitHub-pikaju%2Fkosame-blue?style=for-the-badge&logo=github)](https://github.com/pikaju/kosame)
+[![License](https://img.shields.io/crates/l/kosame.svg?style=for-the-badge)](https://crates.io/crates/kosame)
 
 </div>
 
