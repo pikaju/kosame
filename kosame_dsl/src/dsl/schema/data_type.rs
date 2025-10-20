@@ -9,6 +9,12 @@ pub struct DataType {
     name: Ident,
 }
 
+impl DataType {
+    pub fn name(&self) -> &Ident {
+        &self.name
+    }
+}
+
 impl Parse for DataType {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {

@@ -1,8 +1,4 @@
-use std::fmt::Display;
-
 use proc_macro_error::emit_error;
-use proc_macro2::TokenStream;
-use quote::{ToTokens, quote};
 use syn::{
     Ident, Token, parenthesized,
     parse::{Parse, ParseStream},
@@ -10,70 +6,20 @@ use syn::{
     spanned::Spanned,
 };
 
-use crate::dsl::{
-    docs::{Docs, ToDocsTokens},
-    path_ext::PathExt,
-};
-
 pub struct Relation {
-    name: Ident,
-    _colon: Token![:],
-    _source_paren: syn::token::Paren,
-    source_columns: Punctuated<Ident, Token![,]>,
-    arrow: Arrow,
-    target_table: syn::Path,
-    _target_paren: syn::token::Paren,
-    target_columns: Punctuated<Ident, Token![,]>,
+    pub name: Ident,
+    pub _colon: Token![:],
+    pub _source_paren: syn::token::Paren,
+    pub source_columns: Punctuated<Ident, Token![,]>,
+    pub arrow: Arrow,
+    pub target_table: syn::Path,
+    pub _target_paren: syn::token::Paren,
+    pub target_columns: Punctuated<Ident, Token![,]>,
 }
 
 impl Relation {
     pub fn name(&self) -> &Ident {
         &self.name
-    }
-
-    pub fn to_token_stream(&self) -> TokenStream {
-        let name = &self.name;
-        let name_string = name.to_string();
-
-        let target = &self.target_table;
-        let target_path = target.to_call_site(3);
-
-        let source_columns = self.source_columns.iter();
-        let source_columns2 = source_columns.clone();
-        let target_columns = self.target_columns.iter();
-        let target_columns2 = target_columns.clone();
-
-        let relation_type = match self.arrow {
-            Arrow::ManyToOne(_) => quote! { ::kosame::relation::ManyToOne<T> },
-            Arrow::OneToMany(_) => quote! { ::kosame::relation::OneToMany<T> },
-        };
-
-        let docs = self.to_docs_token_stream();
-
-        quote! {
-            // #docs
-            pub mod #name {
-                pub use #target_path as target_table;
-
-                pub mod source_columns {
-                    #(pub use super::super::super::columns::#source_columns;)*
-                }
-
-                pub mod target_columns {
-                    #(pub use super::target_table::columns::#target_columns;)*
-                }
-
-                pub const RELATION: ::kosame::schema::Relation = ::kosame::schema::Relation::new(
-                    #name_string,
-                    super::super::NAME,
-                    &[#(&source_columns::#source_columns2::COLUMN),*],
-                    target_table::NAME,
-                    &[#(&target_columns::#target_columns2::COLUMN),*],
-                );
-
-                pub type Type<T> = #relation_type;
-            }
-        }
     }
 }
 
@@ -112,7 +58,7 @@ impl Parse for Relation {
 }
 
 #[allow(unused)]
-enum Arrow {
+pub enum Arrow {
     ManyToOne(Token![=>]),
     OneToMany(Token![<=]),
 }
@@ -127,51 +73,5 @@ impl Parse for Arrow {
         } else {
             Err(lookahead.error())
         }
-    }
-}
-
-impl Docs for Relation {
-    fn docs(&self) -> String {
-        let name = &self.name;
-        format!(
-            "## {name} (Kosame Relation)
-
-```sql
-{self}
-```"
-        )
-    }
-}
-
-impl Display for Relation {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        Display::fmt(&self.name, f)?;
-        f.write_str(": (")?;
-        f.write_str(
-            &self
-                .source_columns
-                .iter()
-                .map(|column| column.to_string())
-                .collect::<Vec<_>>()
-                .join(", "),
-        )?;
-        f.write_str(") ")?;
-        match self.arrow {
-            Arrow::ManyToOne(_) => f.write_str("=>")?,
-            Arrow::OneToMany(_) => f.write_str("<=")?,
-        };
-        f.write_str(" ")?;
-        f.write_str(&self.target_table.to_token_stream().to_string())?;
-        f.write_str(" (")?;
-        f.write_str(
-            &self
-                .target_columns
-                .iter()
-                .map(|column| column.to_string())
-                .collect::<Vec<_>>()
-                .join(", "),
-        )?;
-        f.write_str(")")?;
-        Ok(())
     }
 }
