@@ -45,7 +45,7 @@ fn main() {
                 cast(now() as text) as current_time: ::std::string::String,
 
                 order by upvotes desc
-                limit 5
+                limit 5 offset 1
             }
 
             where id = :id

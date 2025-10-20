@@ -82,11 +82,11 @@ fn fmt_node_sql<D: sql::Dialect>(
     formatter.write_str(" from ")?;
     formatter.write_ident(node.table().name())?;
 
-    if relation.is_some() || node.filter().is_some() {
+    if relation.is_some() || node.r#where().is_some() {
         formatter.write_str(" where ")?;
     }
 
-    if relation.is_some() && node.filter().is_some() {
+    if relation.is_some() && node.r#where().is_some() {
         formatter.write_str("(")?;
     }
 
@@ -105,15 +105,15 @@ fn fmt_node_sql<D: sql::Dialect>(
         }
     }
 
-    if relation.is_some() && node.filter().is_some() {
+    if relation.is_some() && node.r#where().is_some() {
         formatter.write_str(") and (")?;
     }
 
-    if let Some(filter) = &node.filter() {
-        filter.fmt_sql(formatter)?;
+    if let Some(r#where) = &node.r#where() {
+        r#where.expr().fmt_sql(formatter)?;
     }
 
-    if relation.is_some() && node.filter().is_some() {
+    if relation.is_some() && node.r#where().is_some() {
         formatter.write_str(")")?;
     }
 
@@ -122,12 +122,10 @@ fn fmt_node_sql<D: sql::Dialect>(
     }
 
     if let Some(limit) = &node.limit() {
-        formatter.write_str(" limit ")?;
         limit.fmt_sql(formatter)?;
     }
 
     if let Some(offset) = &node.offset() {
-        formatter.write_str(" offset ")?;
         offset.fmt_sql(formatter)?;
     }
 

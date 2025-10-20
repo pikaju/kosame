@@ -1,3 +1,4 @@
+use crate::dsl::clause::*;
 use crate::dsl::expr::Visitor;
 use crate::dsl::row_struct::RowStruct;
 
@@ -15,7 +16,7 @@ pub struct Node {
     _brace: syn::token::Brace,
     star: Option<Star>,
     fields: Punctuated<Field, Token![,]>,
-    filter: Option<Filter>,
+    r#where: Option<Where>,
     order_by: Option<OrderBy>,
     limit: Option<Limit>,
     offset: Option<Offset>,
@@ -31,8 +32,8 @@ impl Node {
             }
         }
 
-        if let Some(filter) = &self.filter {
-            filter.expr().accept(visitor);
+        if let Some(r#where) = &self.r#where {
+            r#where.expr().accept(visitor);
         }
 
         if let Some(order_by) = &self.order_by {
@@ -222,35 +223,23 @@ impl Node {
 
         let star = self.star.is_some();
 
-        let filter = match &self.filter {
-            Some(filter) => {
-                let expr = filter.expr();
-                quote! { Some(#expr) }
-            }
+        let filter = match &self.r#where {
+            Some(r#where) => quote! { Some(#r#where) },
             None => quote! { None },
         };
 
         let order_by = match &self.order_by {
-            Some(order_by) => {
-                let expr = order_by.to_token_stream();
-                quote! { Some(#expr) }
-            }
+            Some(order_by) => quote! { Some(#order_by) },
             None => quote! { None },
         };
 
         let limit = match &self.limit {
-            Some(limit) => {
-                let expr = limit.expr();
-                quote! { Some(#expr) }
-            }
+            Some(limit) => quote! { Some(#limit) },
             None => quote! { None },
         };
 
         let offset = match &self.offset {
-            Some(offset) => {
-                let expr = offset.expr();
-                quote! { Some(#expr) }
-            }
+            Some(offset) => quote! { Some(#offset) },
             None => quote! { None },
         };
 
@@ -289,7 +278,7 @@ impl Parse for Node {
 
         let mut fields = Punctuated::<Field, _>::new();
         while !content.is_empty() {
-            if Filter::peek(&content)
+            if Where::peek(&content)
                 || OrderBy::peek(&content)
                 || Limit::peek(&content)
                 || Offset::peek(&content)
@@ -334,7 +323,7 @@ impl Parse for Node {
             _brace,
             star,
             fields,
-            filter: content.call(Filter::parse_optional)?,
+            r#where: content.call(Where::parse_optional)?,
             order_by: content.call(OrderBy::parse_optional)?,
             limit: content.call(Limit::parse_optional)?,
             offset: content.call(Offset::parse_optional)?,

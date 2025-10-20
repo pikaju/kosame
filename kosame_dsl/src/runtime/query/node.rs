@@ -1,4 +1,4 @@
-use crate::runtime::{expr::Expr, schema::Table};
+use crate::runtime::{clause::*, schema::Table};
 
 use super::*;
 
@@ -6,10 +6,10 @@ pub struct Node {
     table: &'static Table,
     star: bool,
     fields: &'static [Field],
-    filter: Option<Expr>,
+    r#where: Option<Where>,
     order_by: Option<OrderBy>,
-    limit: Option<Expr>,
-    offset: Option<Expr>,
+    limit: Option<Limit>,
+    offset: Option<Offset>,
 }
 
 impl Node {
@@ -17,16 +17,16 @@ impl Node {
         table: &'static Table,
         star: bool,
         fields: &'static [Field],
-        filter: Option<Expr>,
+        r#where: Option<Where>,
         order_by: Option<OrderBy>,
-        limit: Option<Expr>,
-        offset: Option<Expr>,
+        limit: Option<Limit>,
+        offset: Option<Offset>,
     ) -> Self {
         Self {
             table,
             star,
             fields,
-            filter,
+            r#where,
             order_by,
             limit,
             offset,
@@ -45,19 +45,19 @@ impl Node {
         self.fields
     }
 
-    pub const fn filter(&self) -> Option<&Expr> {
-        self.filter.as_ref()
+    pub const fn r#where(&self) -> Option<&Where> {
+        self.r#where.as_ref()
     }
 
     pub const fn order_by(&self) -> Option<&OrderBy> {
         self.order_by.as_ref()
     }
 
-    pub const fn limit(&self) -> Option<&Expr> {
+    pub const fn limit(&self) -> Option<&Limit> {
         self.limit.as_ref()
     }
 
-    pub const fn offset(&self) -> Option<&Expr> {
+    pub const fn offset(&self) -> Option<&Offset> {
         self.offset.as_ref()
     }
 }

@@ -1,20 +1,12 @@
 mod bind_params;
 mod field;
-mod filter;
-mod limit;
 mod node;
 mod node_path;
-mod offset;
-mod order_by;
 mod star;
 
 use field::Field;
-use filter::Filter;
-use limit::Limit;
 use node::Node;
 use node_path::QueryNodePath;
-use offset::Offset;
-use order_by::OrderBy;
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
 use syn::{

@@ -1,3 +1,5 @@
+use proc_macro2::TokenStream;
+use quote::{ToTokens, quote};
 use syn::parse::{Parse, ParseStream};
 
 use crate::dsl::expr::Expr;
@@ -5,15 +7,15 @@ use crate::dsl::expr::Expr;
 mod kw {
     use syn::custom_keyword;
 
-    custom_keyword!(offset);
+    custom_keyword!(limit);
 }
 
-pub struct Offset {
-    _offset: kw::offset,
+pub struct Limit {
+    _limit: kw::limit,
     expr: Expr,
 }
 
-impl Offset {
+impl Limit {
     pub fn expr(&self) -> &Expr {
         &self.expr
     }
@@ -23,15 +25,22 @@ impl Offset {
     }
 
     pub fn peek(input: ParseStream) -> bool {
-        input.peek(kw::offset)
+        input.peek(kw::limit)
     }
 }
 
-impl Parse for Offset {
+impl Parse for Limit {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            _offset: input.parse()?,
+            _limit: input.parse()?,
             expr: input.parse()?,
         })
+    }
+}
+
+impl ToTokens for Limit {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let expr = &self.expr;
+        quote! { ::kosame::clause::Limit::new(#expr) }.to_tokens(tokens);
     }
 }

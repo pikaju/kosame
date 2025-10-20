@@ -1,5 +1,6 @@
 mod alias;
 mod attribute;
+mod clause;
 mod docs;
 mod expr;
 mod path_ext;

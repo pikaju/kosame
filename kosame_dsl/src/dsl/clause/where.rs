@@ -1,3 +1,5 @@
+use proc_macro2::TokenStream;
+use quote::{ToTokens, quote};
 use syn::{
     Token,
     parse::{Parse, ParseStream},
@@ -5,12 +7,12 @@ use syn::{
 
 use crate::dsl::expr::Expr;
 
-pub struct Filter {
+pub struct Where {
     _where: Token![where],
     expr: Expr,
 }
 
-impl Filter {
+impl Where {
     pub fn expr(&self) -> &Expr {
         &self.expr
     }
@@ -24,11 +26,18 @@ impl Filter {
     }
 }
 
-impl Parse for Filter {
+impl Parse for Where {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             _where: input.parse()?,
             expr: input.parse()?,
         })
+    }
+}
+
+impl ToTokens for Where {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let expr = &self.expr;
+        quote! { ::kosame::clause::Where::new(#expr) }.to_tokens(tokens);
     }
 }
