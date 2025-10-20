@@ -11,7 +11,7 @@ use syn::{
     punctuated::Punctuated,
 };
 
-pub struct QueryNode {
+pub struct Node {
     _brace: syn::token::Brace,
     star: Option<Star>,
     fields: Punctuated<QueryField, Token![,]>,
@@ -21,7 +21,7 @@ pub struct QueryNode {
     offset: Option<Offset>,
 }
 
-impl QueryNode {
+impl Node {
     pub fn accept_expr<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
         for field in &self.fields {
             match field {
@@ -257,7 +257,7 @@ impl QueryNode {
         quote! {
             {
                 #scope_module
-                ::kosame::query::QueryNode::new(
+                ::kosame::query::Node::new(
                     &#table_path_call_site::TABLE,
                     #star,
                     &[#(#fields),*],
@@ -272,7 +272,7 @@ impl QueryNode {
     }
 }
 
-impl Parse for QueryNode {
+impl Parse for Node {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let content;
         let _brace = braced!(content in input);

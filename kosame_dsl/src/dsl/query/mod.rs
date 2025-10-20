@@ -11,7 +11,7 @@ mod star;
 use field::QueryField;
 use filter::Filter;
 use limit::Limit;
-use node::QueryNode;
+use node::Node;
 use node_path::QueryNodePath;
 use offset::Offset;
 use order_by::OrderBy;
@@ -27,7 +27,7 @@ use crate::dsl::{alias::Alias, path_ext::PathExt, query::bind_params::BindParams
 pub struct Query {
     attrs: Vec<Attribute>,
     table: syn::Path,
-    body: QueryNode,
+    body: Node,
     alias: Option<Alias>,
 }
 
@@ -93,7 +93,7 @@ impl ToTokens for Query {
                     type Params = Params #lifetime;
                     type Row = Row;
 
-                    const ROOT: ::kosame::query::QueryNode = #query_node;
+                    const ROOT: ::kosame::query::Node = #query_node;
 
                     fn params(&self) -> &Self::Params {
                         &self.params

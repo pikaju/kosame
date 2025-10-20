@@ -1,6 +1,6 @@
 use std::fmt::Write;
 
-use crate::{Error, driver::Connection, sql};
+use crate::{Error, driver::Connection, schema::Relation, sql};
 
 use super::*;
 
@@ -35,7 +35,7 @@ impl Runner for RecordArrayRunner {
 
 fn fmt_node_sql<D: sql::Dialect>(
     formatter: &mut sql::Formatter<D>,
-    node: &QueryNode,
+    node: &Node,
     relation: Option<&Relation>,
 ) -> std::fmt::Result {
     formatter.write_str("select ")?;

@@ -1,4 +1,4 @@
-use super::QueryNode;
+use super::Node;
 use crate::dsl::{
     alias::Alias, expr::Expr, path_ext::PathExt, query::node_path::QueryNodePath,
     row_struct::RowStructField, type_override::TypeOverride,
@@ -21,7 +21,7 @@ pub enum QueryField {
     Relation {
         attrs: Vec<Attribute>,
         name: Ident,
-        node: Box<QueryNode>,
+        node: Box<Node>,
         alias: Option<Alias>,
     },
     Expr {

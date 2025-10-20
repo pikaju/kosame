@@ -1,4 +1,4 @@
-use super::QueryNode;
+use super::Node;
 use crate::runtime::{
     expr::Expr,
     schema::{Column, Relation},
@@ -11,7 +11,7 @@ pub enum QueryField {
     },
     Relation {
         relation: &'static Relation,
-        node: QueryNode,
+        node: Node,
         alias: Option<&'static str>,
     },
     Expr {

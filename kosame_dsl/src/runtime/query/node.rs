@@ -2,7 +2,7 @@ use crate::runtime::{expr::Expr, schema::Table};
 
 use super::*;
 
-pub struct QueryNode {
+pub struct Node {
     table: &'static Table,
     star: bool,
     fields: &'static [QueryField],
@@ -12,7 +12,7 @@ pub struct QueryNode {
     offset: Option<Expr>,
 }
 
-impl QueryNode {
+impl Node {
     pub const fn new(
         table: &'static Table,
         star: bool,
