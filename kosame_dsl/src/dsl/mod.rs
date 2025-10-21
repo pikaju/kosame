@@ -1,5 +1,5 @@
 mod alias;
-mod attribute;
+pub mod attribute;
 mod clause;
 mod docs;
 mod expr;

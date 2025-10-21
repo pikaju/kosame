@@ -1,7 +1,8 @@
+use crate::dsl::attribute::{CustomMeta, MetaLocation};
+
 use super::{column::Column, relation::Relation};
-use crate::dsl::attribute::ParsedAttributes;
 use syn::{
-    Ident, Token,
+    Attribute, Ident, Token,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
 };
@@ -12,7 +13,7 @@ mod kw {
 }
 
 pub struct Table {
-    pub attrs: ParsedAttributes,
+    pub attrs: Vec<Attribute>,
 
     pub _create: kw::create,
     pub _table: kw::table,
@@ -30,7 +31,11 @@ impl Parse for Table {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let content;
         Ok(Self {
-            attrs: input.parse()?,
+            attrs: {
+                let attrs = Attribute::parse_outer(input)?;
+                CustomMeta::parse_attrs(&attrs, MetaLocation::Table)?;
+                attrs
+            },
             _create: input.parse()?,
             _table: input.parse()?,
             name: input.parse()?,

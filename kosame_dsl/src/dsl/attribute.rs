@@ -1,8 +1,7 @@
 use syn::{
-    Attribute, Ident, LitStr, Path, Token,
-    parse::{Parse, ParseStream, Parser},
+    Ident, Path, Token,
+    parse::{Parse, ParseStream},
     punctuated::Punctuated,
-    spanned::Spanned,
 };
 
 mod kw {
@@ -14,81 +13,94 @@ mod kw {
     custom_keyword!(ty);
 }
 
-pub struct ParsedAttributes {
-    attrs: Vec<Attribute>,
+#[derive(Default)]
+pub struct CustomMeta {
     rename: Option<Rename>,
     type_override: Option<TypeOverride>,
 }
 
-impl ParsedAttributes {
-    pub fn require_no_global(&self) -> Result<(), syn::Error> {
-        // currently no global attributes
-        // Err(syn::Error::new(
-        //     rename_all.path.span(),
-        //     "global attributes are not allowed in this position",
-        // ))
-        Ok(())
-    }
-
-    pub fn attrs(&self) -> &[Attribute] {
-        &self.attrs
-    }
-
-    pub fn rename(&self) -> Option<&Ident> {
-        self.rename.as_ref().map(|v| &v.value)
-    }
-
-    pub fn type_override(&self) -> Option<&Path> {
-        self.type_override.as_ref().map(|v| &v.value)
-    }
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum MetaLocation {
+    TableMacro,
+    Table,
+    Column,
+    QueryMacro,
 }
 
-impl Parse for ParsedAttributes {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let attrs = Attribute::parse_outer(input)?;
-        let mut rename = None;
-        let mut type_override = None;
+impl CustomMeta {
+    pub fn parse_attrs(attrs: &[syn::Attribute], location: MetaLocation) -> syn::Result<Self> {
+        let mut result = Self::default();
+
         for attr in attrs.iter() {
             if attr.path().is_ident("kosame") {
                 let list = attr.meta.require_list()?;
-                let items = Punctuated::<MetaItem, Token![,]>::parse_terminated
-                    .parse2(list.tokens.clone())?;
+                let items =
+                    list.parse_args_with(Punctuated::<MetaItem, Token![,]>::parse_terminated)?;
 
                 for item in items {
+                    macro_rules! fill_or_error {
+                        ($name:ident, $str:literal, $location_allowed:expr) => {{
+                            if result.$name.is_some() {
+                                return Err(syn::Error::new(
+                                    $name.path.span,
+                                    format!("duplicate use of meta argument `{}`", $str),
+                                ));
+                            }
+                            if !($location_allowed) {
+                                return Err(syn::Error::new(
+                                    $name.path.span,
+                                    format!(
+                                        "meta argument `{}` not allowed in this location",
+                                        $str
+                                    ),
+                                ));
+                            }
+                            result.$name = Some($name);
+                        }};
+                    }
+
                     match item {
-                        MetaItem::Rename(v) => {
-                            if rename.is_some() {
-                                return Err(syn::Error::new(
-                                    v.path.span(),
-                                    "duplicate meta field `rename`",
-                                ));
-                            }
-                            rename = Some(v);
+                        MetaItem::Rename(rename) => {
+                            fill_or_error!(rename, "rename", location == MetaLocation::Column);
                         }
-                        MetaItem::TypeOverride(v) => {
-                            if type_override.is_some() {
-                                return Err(syn::Error::new(
-                                    v.path.span(),
-                                    "duplicate meta field `type_override`",
-                                ));
-                            }
-                            type_override = Some(v);
+                        MetaItem::TypeOverride(type_override) => {
+                            fill_or_error!(type_override, "ty", location == MetaLocation::Column);
                         }
                     }
                 }
             }
         }
-        Ok(Self {
-            attrs,
-            rename,
-            type_override,
-        })
+
+        Ok(result)
+    }
+
+    pub fn rename(&self) -> Option<&Ident> {
+        self.rename.as_ref().map(|inner| &inner.value)
+    }
+
+    pub fn type_override(&self) -> Option<&Path> {
+        self.type_override.as_ref().map(|inner| &inner.value)
     }
 }
 
 enum MetaItem {
     Rename(Rename),
     TypeOverride(TypeOverride),
+}
+
+impl MetaItem {
+    fn allowed_in_location(&self, location: MetaLocation) -> bool {
+        match self {
+            Self::Rename(_) => match location {
+                MetaLocation::Table | MetaLocation::Column => true,
+                _ => false,
+            },
+            Self::TypeOverride(_) => match location {
+                MetaLocation::Table | MetaLocation::Column => true,
+                _ => false,
+            },
+        }
+    }
 }
 
 impl Parse for MetaItem {

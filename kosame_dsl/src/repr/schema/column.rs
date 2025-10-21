@@ -28,9 +28,15 @@ impl From<crate::dsl::schema::Column> for Column {
         use convert_case::{Case, Casing};
         use syn::parse_quote;
 
-        use crate::dsl::path_ext::PathExt;
+        use crate::dsl::{
+            attribute::{CustomMeta, MetaLocation},
+            path_ext::PathExt,
+        };
 
-        let rust_name = match value.attrs.rename() {
+        let meta = CustomMeta::parse_attrs(&value.attrs, MetaLocation::Column)
+            .expect("custom meta should be checked earlier");
+
+        let rust_name = match meta.rename() {
             Some(name) => name.clone(),
             None => Ident::new(
                 &value.name.to_string().to_case(Case::Snake),
@@ -39,7 +45,7 @@ impl From<crate::dsl::schema::Column> for Column {
         };
 
         let data_type = value.data_type;
-        let rust_type_not_null = match value.attrs.type_override() {
+        let rust_type_not_null = match meta.type_override() {
             Some(path) => path.to_call_site(3),
             None => parse_quote! { #data_type },
         };
