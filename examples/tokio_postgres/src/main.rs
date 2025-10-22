@@ -4,7 +4,7 @@ use kosame::query::{Query, RecordArrayRunner};
 
 // Declare your database schema.
 mod schema {
-    kosame::table! {
+    kosame::pg_table! {
         // Kosame uses the familiar SQL syntax to define tables.
         create table posts (
             id int primary key default uuidv7(),
@@ -16,7 +16,7 @@ mod schema {
         comments: (id) <= comments (post_id),
     }
 
-    kosame::table! {
+    kosame::pg_table! {
         create table comments (
             id int primary key,
             post_id int not null,
@@ -33,7 +33,7 @@ async fn fetch_post(
     client: &mut tokio_postgres::Client,
     id: i32,
 ) -> Result<Option<impl serde::Serialize + Debug>, Box<dyn Error>> {
-    let row = kosame::query! {
+    let row = kosame::pg_query! {
         schema::posts {
             *, // Select all columns from the posts table.
 
@@ -46,6 +46,7 @@ async fn fetch_post(
                 order by upvotes desc
                 limit 3
             },
+            comments {},
 
             // The function parameter `id: i32` is used as a query parameter here.
             where id = :id

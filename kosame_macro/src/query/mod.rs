@@ -22,7 +22,7 @@ use crate::{
 };
 
 pub struct Query {
-    inner_attrs: Vec<Attribute>,
+    _inner_attrs: Vec<Attribute>,
     outer_attrs: Vec<Attribute>,
     table: syn::Path,
     body: Node,
@@ -32,7 +32,7 @@ pub struct Query {
 impl Parse for Query {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            inner_attrs: {
+            _inner_attrs: {
                 let attrs = Attribute::parse_inner(input)?;
                 CustomMeta::parse_attrs(&attrs, MetaLocation::QueryInner)?;
                 attrs

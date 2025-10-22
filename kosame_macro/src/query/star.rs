@@ -1,7 +1,7 @@
 use proc_macro2::Span;
 use quote::{ToTokens, quote};
 use syn::{
-    Attribute, Ident,
+    Attribute, Ident, Token,
     parse::{Parse, ParseStream},
     parse_quote,
 };
@@ -10,7 +10,7 @@ use crate::{alias::Alias, row::RowField};
 
 pub struct Star {
     pub attrs: Vec<Attribute>,
-    pub star: syn::token::Star,
+    pub _star_token: Token![*],
     pub alias: Option<Alias>,
 }
 
@@ -41,7 +41,7 @@ impl Parse for Star {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             attrs: input.call(Attribute::parse_outer)?,
-            star: input.parse()?,
+            _star_token: input.parse()?,
             alias: input.call(Alias::parse_optional)?,
         })
     }

@@ -12,7 +12,7 @@ use crate::path_ext::PathExt;
 
 pub struct Relation {
     pub name: Ident,
-    pub colon: Token![:],
+    pub _colon: Token![:],
     pub source_paren: syn::token::Paren,
     pub source_columns: Punctuated<Ident, Token![,]>,
     pub arrow: Arrow,
@@ -27,7 +27,7 @@ impl Parse for Relation {
         let dest_content;
         let result = Self {
             name: input.parse()?,
-            colon: input.parse()?,
+            _colon: input.parse()?,
             source_paren: parenthesized!(source_content in input),
             source_columns: source_content.parse_terminated(Ident::parse, Token![,])?,
             arrow: input.parse()?,

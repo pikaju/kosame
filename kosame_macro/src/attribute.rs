@@ -121,16 +121,16 @@ impl Parse for MetaItem {
 
 pub struct MetaDriver {
     pub path: kw::driver,
-    pub eq_token: Token![=],
-    pub value: LitStr,
+    pub _eq_token: Token![=],
+    pub _value: LitStr,
 }
 
 impl Parse for MetaDriver {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             path: input.parse()?,
-            eq_token: input.parse()?,
-            value: {
+            _eq_token: input.parse()?,
+            _value: {
                 let value: LitStr = input.parse()?;
                 if Driver::try_from(value.value().as_ref()).is_err() {
                     return Err(syn::Error::new(value.span(), "unknown driver value"));
@@ -143,7 +143,7 @@ impl Parse for MetaDriver {
 
 pub struct MetaRename {
     pub path: kw::rename,
-    pub eq_token: Token![=],
+    pub _eq_token: Token![=],
     pub value: Ident,
 }
 
@@ -151,7 +151,7 @@ impl Parse for MetaRename {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             path: input.parse()?,
-            eq_token: input.parse()?,
+            _eq_token: input.parse()?,
             value: input.parse()?,
         })
     }
@@ -159,7 +159,7 @@ impl Parse for MetaRename {
 
 pub struct MetaTypeOverride {
     pub path: kw::ty,
-    pub eq_token: Token![=],
+    pub _eq_token: Token![=],
     pub value: Path,
 }
 
@@ -167,7 +167,7 @@ impl Parse for MetaTypeOverride {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             path: input.parse()?,
-            eq_token: input.parse()?,
+            _eq_token: input.parse()?,
             value: input.parse()?,
         })
     }

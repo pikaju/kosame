@@ -24,17 +24,17 @@ mod kw {
 }
 
 pub struct Table {
-    pub inner_attrs: Vec<Attribute>,
-    pub outer_attrs: Vec<Attribute>,
+    pub _inner_attrs: Vec<Attribute>,
+    pub _outer_attrs: Vec<Attribute>,
 
-    pub create: kw::create,
-    pub table: kw::table,
-    pub paren: syn::token::Paren,
+    pub _create: kw::create,
+    pub _table: kw::table,
+    pub _paren: syn::token::Paren,
 
     pub name: Ident,
     pub columns: Punctuated<Column, Token![,]>,
 
-    pub semi: Token![;],
+    pub _semi: Token![;],
 
     pub relations: Punctuated<Relation, Token![,]>,
 }
@@ -43,22 +43,22 @@ impl Parse for Table {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let content;
         Ok(Self {
-            inner_attrs: {
+            _inner_attrs: {
                 let attrs = Attribute::parse_inner(input)?;
                 CustomMeta::parse_attrs(&attrs, MetaLocation::TableInner)?;
                 attrs
             },
-            outer_attrs: {
+            _outer_attrs: {
                 let attrs = Attribute::parse_outer(input)?;
                 CustomMeta::parse_attrs(&attrs, MetaLocation::TableOuter)?;
                 attrs
             },
-            create: input.parse()?,
-            table: input.parse()?,
+            _create: input.parse()?,
+            _table: input.parse()?,
             name: input.parse()?,
-            paren: syn::parenthesized!(content in input),
+            _paren: syn::parenthesized!(content in input),
             columns: content.parse_terminated(Column::parse, Token![,])?,
-            semi: input.parse()?,
+            _semi: input.parse()?,
             relations: input.parse_terminated(Relation::parse, Token![,])?,
         })
     }
@@ -153,8 +153,8 @@ impl ToTokens for Table {
                 }
 
                 pub mod columns_and_relations {
-                    #(pub use super::columns::#column_names;)*
-                    #(pub use super::relations::#relation_names;)*
+                    pub use super::columns::*;
+                    pub use super::relations::*;
                 }
 
                 pub const NAME: &str = #name;
