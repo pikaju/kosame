@@ -1,21 +1,18 @@
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
-use syn::parse::{Parse, ParseStream};
+use syn::{
+    Token,
+    parse::{Parse, ParseStream},
+};
 
-use crate::lang::expr::Expr;
+use crate::expr::Expr;
 
-mod kw {
-    use syn::custom_keyword;
-
-    custom_keyword!(offset);
-}
-
-pub struct Offset {
-    _offset: kw::offset,
+pub struct Where {
+    _where: Token![where],
     expr: Expr,
 }
 
-impl Offset {
+impl Where {
     pub fn expr(&self) -> &Expr {
         &self.expr
     }
@@ -25,22 +22,22 @@ impl Offset {
     }
 
     pub fn peek(input: ParseStream) -> bool {
-        input.peek(kw::offset)
+        input.peek(Token![where])
     }
 }
 
-impl Parse for Offset {
+impl Parse for Where {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            _offset: input.parse()?,
+            _where: input.parse()?,
             expr: input.parse()?,
         })
     }
 }
 
-impl ToTokens for Offset {
+impl ToTokens for Where {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let expr = &self.expr;
-        quote! { ::kosame::repr::clause::Offset::new(#expr) }.to_tokens(tokens);
+        quote! { ::kosame::repr::clause::Where::new(#expr) }.to_tokens(tokens);
     }
 }

@@ -379,7 +379,6 @@ version = "0.1.0"
 dependencies = [
  "fallible-iterator",
  "futures-core",
- "kosame_dsl",
  "kosame_macro",
  "kosame_repr",
  "kosame_sql",
@@ -397,20 +396,7 @@ name = "kosame_cli"
 version = "0.1.0"
 dependencies = [
  "clap",
- "kosame_dsl",
  "tokio-postgres",
-]
-
-[[package]]
-name = "kosame_dsl"
-version = "0.1.0"
-dependencies = [
- "convert_case",
- "kosame_sql",
- "proc-macro-error",
- "proc-macro2",
- "quote",
- "syn 2.0.106",
 ]
 
 [[package]]
@@ -418,7 +404,6 @@ name = "kosame_macro"
 version = "0.1.0"
 dependencies = [
  "convert_case",
- "kosame_dsl",
  "proc-macro-error",
  "proc-macro2",
  "quote",

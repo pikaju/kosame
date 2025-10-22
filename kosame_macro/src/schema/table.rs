@@ -4,8 +4,8 @@ use std::{
 };
 
 use crate::{
-    lang::attribute::{CustomMeta, MetaLocation},
-    lang::row::{Row, RowField},
+    attribute::{CustomMeta, MetaLocation},
+    row::{Row, RowField},
 };
 
 use super::{column::Column, relation::Relation};

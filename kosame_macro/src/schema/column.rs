@@ -1,4 +1,4 @@
-use crate::lang::{
+use crate::{
     attribute::{CustomMeta, MetaLocation},
     path_ext::PathExt,
 };

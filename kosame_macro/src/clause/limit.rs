@@ -1,18 +1,21 @@
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
-use syn::{
-    Token,
-    parse::{Parse, ParseStream},
-};
+use syn::parse::{Parse, ParseStream};
 
-use crate::lang::expr::Expr;
+use crate::expr::Expr;
 
-pub struct Where {
-    _where: Token![where],
+mod kw {
+    use syn::custom_keyword;
+
+    custom_keyword!(limit);
+}
+
+pub struct Limit {
+    _limit: kw::limit,
     expr: Expr,
 }
 
-impl Where {
+impl Limit {
     pub fn expr(&self) -> &Expr {
         &self.expr
     }
@@ -22,22 +25,22 @@ impl Where {
     }
 
     pub fn peek(input: ParseStream) -> bool {
-        input.peek(Token![where])
+        input.peek(kw::limit)
     }
 }
 
-impl Parse for Where {
+impl Parse for Limit {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            _where: input.parse()?,
+            _limit: input.parse()?,
             expr: input.parse()?,
         })
     }
 }
 
-impl ToTokens for Where {
+impl ToTokens for Limit {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let expr = &self.expr;
-        quote! { ::kosame::repr::clause::Where::new(#expr) }.to_tokens(tokens);
+        quote! { ::kosame::repr::clause::Limit::new(#expr) }.to_tokens(tokens);
     }
 }

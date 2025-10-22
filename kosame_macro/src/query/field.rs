@@ -1,10 +1,7 @@
 use super::Node;
 use crate::{
-    lang::row::RowField,
-    lang::{
-        alias::Alias, expr::Expr, path_ext::PathExt, query::node_path::QueryNodePath,
-        type_override::TypeOverride,
-    },
+    alias::Alias, expr::Expr, path_ext::PathExt, query::node_path::QueryNodePath, row::RowField,
+    type_override::TypeOverride,
 };
 use proc_macro2::Span;
 use quote::{ToTokens, quote};

@@ -1,4 +1,15 @@
-use kosame_dsl::lang;
+mod alias;
+mod attribute;
+mod clause;
+mod docs;
+mod driver;
+mod expr;
+mod path_ext;
+mod query;
+mod row;
+mod schema;
+mod type_override;
+
 use proc_macro_error::proc_macro_error;
 use quote::{ToTokens, quote};
 use syn::{DeriveInput, parse_macro_input};
@@ -6,14 +17,14 @@ use syn::{DeriveInput, parse_macro_input};
 #[proc_macro_error]
 #[proc_macro]
 pub fn table(tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let input = parse_macro_input!(tokens as lang::schema::Table);
+    let input = parse_macro_input!(tokens as schema::Table);
     quote! { #input }.into()
 }
 
 #[proc_macro_error]
 #[proc_macro]
 pub fn query(tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    let input = parse_macro_input!(tokens as lang::query::Query);
+    let input = parse_macro_input!(tokens as query::Query);
     quote! { #input }.into()
 }
 

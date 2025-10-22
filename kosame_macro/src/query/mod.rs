@@ -14,7 +14,7 @@ use syn::{
     parse::{Parse, ParseStream},
 };
 
-use crate::lang::{
+use crate::{
     alias::Alias,
     attribute::{CustomMeta, MetaLocation},
     path_ext::PathExt,

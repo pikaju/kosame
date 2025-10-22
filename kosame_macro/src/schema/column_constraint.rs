@@ -5,7 +5,7 @@ use syn::{
     parse::{Parse, ParseStream},
 };
 
-use crate::lang::expr::Expr;
+use crate::expr::Expr;
 
 pub struct ColumnConstraints(pub Vec<ColumnConstraint>);
 

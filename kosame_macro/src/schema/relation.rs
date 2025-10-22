@@ -8,7 +8,7 @@ use syn::{
     spanned::Spanned,
 };
 
-use crate::lang::path_ext::PathExt;
+use crate::path_ext::PathExt;
 
 pub struct Relation {
     pub name: Ident,
