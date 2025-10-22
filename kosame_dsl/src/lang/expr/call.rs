@@ -41,7 +41,7 @@ impl ToTokens for Call {
         let function_name = &self.function.to_string();
         let params = self.params.iter();
         quote! {
-            ::kosame::expr::Call::new(
+            ::kosame::repr::expr::Call::new(
                 #function_name,
                 &[#(&#params),*]
             )

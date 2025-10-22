@@ -1,4 +1,4 @@
-use crate::runtime::{clause::*, schema::Table};
+use crate::{clause::*, schema::Table};
 
 use super::*;
 

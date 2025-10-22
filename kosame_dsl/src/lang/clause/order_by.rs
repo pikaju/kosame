@@ -74,7 +74,7 @@ impl Parse for OrderBy {
 impl ToTokens for OrderBy {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let entries = self.entries.iter().map(OrderByEntry::to_token_stream);
-        quote! { ::kosame::clause::OrderBy::new(&[#(#entries),*]) }.to_tokens(tokens)
+        quote! { ::kosame::repr::clause::OrderBy::new(&[#(#entries),*]) }.to_tokens(tokens)
     }
 }
 
@@ -98,17 +98,21 @@ impl ToTokens for OrderByEntry {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let expr = &self.expr;
         let dir = match self.dir {
-            Some(OrderByDir::Asc(_)) => quote! { Some(::kosame::clause::OrderByDir::Asc) },
-            Some(OrderByDir::Desc(_)) => quote! { Some(::kosame::clause::OrderByDir::Desc) },
+            Some(OrderByDir::Asc(_)) => quote! { Some(::kosame::repr::clause::OrderByDir::Asc) },
+            Some(OrderByDir::Desc(_)) => quote! { Some(::kosame::repr::clause::OrderByDir::Desc) },
             None => quote! { None },
         };
         let nulls = match self.nulls {
-            Some(OrderByNulls::First(..)) => quote! { Some(::kosame::clause::OrderByNulls::First) },
-            Some(OrderByNulls::Last(..)) => quote! { Some(::kosame::clause::OrderByNulls::Last) },
+            Some(OrderByNulls::First(..)) => {
+                quote! { Some(::kosame::repr::clause::OrderByNulls::First) }
+            }
+            Some(OrderByNulls::Last(..)) => {
+                quote! { Some(::kosame::repr::clause::OrderByNulls::Last) }
+            }
             None => quote! { None },
         };
 
-        quote! { ::kosame::clause::OrderByEntry::new(#expr, #dir, #nulls) }.to_tokens(tokens);
+        quote! { ::kosame::repr::clause::OrderByEntry::new(#expr, #dir, #nulls) }.to_tokens(tokens);
     }
 }
 

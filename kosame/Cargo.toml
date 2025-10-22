@@ -37,6 +37,7 @@ fallible-iterator = "0.2.0"
 futures-core = "0.3.31"
 kosame_dsl.workspace = true
 kosame_macro.workspace = true
+kosame_repr.workspace = true
 kosame_sql.workspace = true
 pollster = "0.4.0"
 postgres = { version = "0.19.12", optional = true }

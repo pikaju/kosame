@@ -27,7 +27,7 @@ impl ToTokens for Unary {
         let op = &self.op;
         let operand = &self.operand;
         quote! {
-            ::kosame::expr::Unary::new(#op, &#operand)
+            ::kosame::repr::expr::Unary::new(#op, &#operand)
         }
         .to_tokens(tokens);
     }
@@ -73,7 +73,7 @@ impl ToTokens for UnaryOp {
         macro_rules! branches {
             ($($variant:ident)*) => {
                 match self {
-                    $(Self::$variant(..) => quote! { ::kosame::expr::UnaryOp::$variant }.to_tokens(tokens)),*
+                    $(Self::$variant(..) => quote! { ::kosame::repr::expr::UnaryOp::$variant }.to_tokens(tokens)),*
                 }
             };
         }

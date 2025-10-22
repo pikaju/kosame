@@ -1,5 +1,5 @@
 use super::Node;
-use crate::runtime::{
+use crate::{
     expr::Expr,
     schema::{Column, Relation},
 };

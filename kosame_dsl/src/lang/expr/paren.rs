@@ -29,7 +29,7 @@ impl ToTokens for Paren {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let expr = &self.expr;
         quote! {
-            ::kosame::expr::Paren::new(&#expr)
+            ::kosame::repr::expr::Paren::new(&#expr)
         }
         .to_tokens(tokens);
     }

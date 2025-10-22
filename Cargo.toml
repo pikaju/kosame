@@ -5,6 +5,8 @@ members = [
     "kosame_cli",
     "kosame_dsl",
     "kosame_macro",
+    "kosame_repr",
+    "kosame_sql",
     "examples/postgres",
     "examples/tokio_postgres",
 ]
@@ -18,11 +20,19 @@ documentation = "https://docs.rs/kosame"
 readme = "README.md"
 license = "Apache-2.0"
 keywords = ["orm", "database", "query", "postgresql", "postgres"]
-publish = ["kosame", "kosame_macro"]
+publish = [
+    "kosame",
+    "kosame_cli",
+    "kosame_dsl",
+    "kosame_macro",
+    "kosame_repr",
+    "kosame_sql",
+]
 
 [workspace.dependencies]
 kosame = { path = "kosame", version = "0.1.0" }
 kosame_dsl = { path = "kosame_dsl", version = "0.1.0" }
-kosame_sql = { path = "kosame_sql", version = "0.1.0" }
 kosame_macro = { path = "kosame_macro", version = "0.1.0" }
+kosame_repr = { path = "kosame_repr", version = "0.1.0" }
+kosame_sql = { path = "kosame_sql", version = "0.1.0" }
 

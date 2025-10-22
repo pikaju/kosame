@@ -1,8 +1,9 @@
 use std::fmt::Write;
 
+use kosame_repr::schema::Relation;
 use kosame_sql::FmtSql;
 
-use crate::{driver::Connection, schema::Relation};
+use crate::driver::Connection;
 
 use super::*;
 

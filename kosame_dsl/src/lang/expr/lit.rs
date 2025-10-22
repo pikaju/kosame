@@ -46,11 +46,11 @@ impl Parse for Lit {
 impl ToTokens for Lit {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let token_stream = match self {
-            Self::Int(inner) => quote! { kosame::expr::Lit::Int(#inner as i64) },
-            Self::Float(inner) => quote! { kosame::expr::Lit::Float(#inner as f64) },
-            Self::Str(inner) => quote! { kosame::expr::Lit::Str(#inner) },
-            Self::Bool(inner) => quote! { kosame::expr::Lit::Bool(#inner) },
-            Self::Null(_) => quote! { kosame::expr::Lit::Null },
+            Self::Int(inner) => quote! { ::kosame::repr::expr::Lit::Int(#inner as i64) },
+            Self::Float(inner) => quote! { ::kosame::repr::expr::Lit::Float(#inner as f64) },
+            Self::Str(inner) => quote! { ::kosame::repr::expr::Lit::Str(#inner) },
+            Self::Bool(inner) => quote! { ::kosame::repr::expr::Lit::Bool(#inner) },
+            Self::Null(_) => quote! { ::kosame::repr::expr::Lit::Null },
         };
         token_stream.to_tokens(tokens);
     }

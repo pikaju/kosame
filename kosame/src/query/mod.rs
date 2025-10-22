@@ -1,6 +1,6 @@
 mod runner;
 
-pub use kosame_dsl::runtime::query::*;
+pub use kosame_repr::query::*;
 pub use runner::*;
 
 use crate::{Error, driver::Connection, params::Params};

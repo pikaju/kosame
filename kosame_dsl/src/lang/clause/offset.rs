@@ -41,6 +41,6 @@ impl Parse for Offset {
 impl ToTokens for Offset {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let expr = &self.expr;
-        quote! { ::kosame::clause::Offset::new(#expr) }.to_tokens(tokens);
+        quote! { ::kosame::repr::clause::Offset::new(#expr) }.to_tokens(tokens);
     }
 }

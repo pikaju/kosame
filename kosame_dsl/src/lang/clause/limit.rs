@@ -41,6 +41,6 @@ impl Parse for Limit {
 impl ToTokens for Limit {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let expr = &self.expr;
-        quote! { ::kosame::clause::Limit::new(#expr) }.to_tokens(tokens);
+        quote! { ::kosame::repr::clause::Limit::new(#expr) }.to_tokens(tokens);
     }
 }

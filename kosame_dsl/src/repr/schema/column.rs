@@ -92,7 +92,7 @@ impl ToTokens for Column {
 
         quote! {
             pub mod #rust_name {
-                pub const COLUMN: ::kosame::schema::Column<'_> = ::kosame::schema::Column {
+                pub const COLUMN: ::kosame::repr::schema::Column<'_> = ::kosame::repr::schema::Column {
                     name: #name,
                     data_type: #data_type,
                     not_null: #not_null,

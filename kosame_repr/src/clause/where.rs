@@ -1,25 +1,30 @@
 use std::fmt::Write;
 
-use crate::runtime::expr::Expr;
+use crate::expr::Expr;
 
-pub struct Offset<'a> {
+pub struct Where<'a> {
     expr: Expr<'a>,
 }
 
-impl<'a> Offset<'a> {
+impl<'a> Where<'a> {
     #[inline]
     pub const fn new(expr: Expr<'a>) -> Self {
         Self { expr }
     }
+
+    #[inline]
+    pub fn expr(&self) -> &Expr<'_> {
+        &self.expr
+    }
 }
 
-impl kosame_sql::FmtSql for Offset<'_> {
+impl kosame_sql::FmtSql for Where<'_> {
     #[inline]
     fn fmt_sql<D: kosame_sql::Dialect>(
         &self,
         formatter: &mut kosame_sql::Formatter<D>,
     ) -> kosame_sql::Result {
-        formatter.write_str(" offset ")?;
+        formatter.write_str(" where ")?;
         self.expr.fmt_sql(formatter)?;
         Ok(())
     }

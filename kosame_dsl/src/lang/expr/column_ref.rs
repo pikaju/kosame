@@ -26,7 +26,7 @@ impl ToTokens for ColumnRef {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let name = &self.name;
         quote! {
-            ::kosame::expr::ColumnRef::new(
+            ::kosame::repr::expr::ColumnRef::new(
                 &scope::columns::#name::COLUMN
             )
         }

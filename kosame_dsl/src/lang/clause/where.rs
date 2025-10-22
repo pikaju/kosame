@@ -38,6 +38,6 @@ impl Parse for Where {
 impl ToTokens for Where {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let expr = &self.expr;
-        quote! { ::kosame::clause::Where::new(#expr) }.to_tokens(tokens);
+        quote! { ::kosame::repr::clause::Where::new(#expr) }.to_tokens(tokens);
     }
 }

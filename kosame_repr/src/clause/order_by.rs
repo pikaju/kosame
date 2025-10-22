@@ -1,6 +1,6 @@
 use std::fmt::Write;
 
-use crate::runtime::expr::Expr;
+use crate::expr::Expr;
 
 pub struct OrderBy<'a> {
     entries: &'a [OrderByEntry<'a>],

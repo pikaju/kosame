@@ -123,7 +123,7 @@ impl ToTokens for Expr {
         macro_rules! branches {
             ($($variant:ident)*) => {
                 match self {
-                    $(Self::$variant(inner) => quote! { ::kosame::expr::Expr::$variant(#inner) }.to_tokens(tokens)),*
+                    $(Self::$variant(inner) => quote! { ::kosame::repr::expr::Expr::$variant(#inner) }.to_tokens(tokens)),*
                 }
             };
         }

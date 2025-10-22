@@ -165,7 +165,7 @@ impl Node {
                         None => quote! { None },
                     };
                     fields.push(quote! {
-                        ::kosame::query::Field::Column {
+                        ::kosame::repr::query::Field::Column {
                             column: &#table_path_call_site::columns::#name::COLUMN,
                             alias: #alias
                         }
@@ -196,7 +196,7 @@ impl Node {
                     let relation_path = relation_path.to_call_site(1);
 
                     fields.push(quote! {
-                        ::kosame::query::Field::Relation {
+                        ::kosame::repr::query::Field::Relation {
                             relation: &#relation_path::RELATION,
                             node: #tokens,
                             alias: #alias
@@ -209,7 +209,7 @@ impl Node {
                     fields.push(quote! {
                         {
                             #scope_module
-                            ::kosame::query::Field::Expr {
+                            ::kosame::repr::query::Field::Expr {
                                 expr: #expr,
                                 alias: #alias
                             }
@@ -244,7 +244,7 @@ impl Node {
         quote! {
             {
                 #scope_module
-                ::kosame::query::Node::new(
+                ::kosame::repr::query::Node::new(
                     &#table_path_call_site::TABLE,
                     #star,
                     &[#(#fields),*],

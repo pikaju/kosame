@@ -60,7 +60,7 @@ impl ToTokens for Relation {
                     #(pub use super::target_table::columns::#target_columns;)*
                 }
 
-                pub const RELATION: ::kosame::schema::Relation<'_> = ::kosame::schema::Relation::new(
+                pub const RELATION: ::kosame::repr::schema::Relation<'_> = ::kosame::repr::schema::Relation::new(
                     #name_string,
                     super::super::NAME,
                     &[#(&source_columns::#source_columns::COLUMN),*],

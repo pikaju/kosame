@@ -34,7 +34,7 @@ impl ToTokens for Binary {
         let op = &self.op;
         let rhs = &self.rhs;
         quote! {
-            ::kosame::expr::Binary::new(&#lhs, #op, &#rhs)
+            ::kosame::repr::expr::Binary::new(&#lhs, #op, &#rhs)
         }
         .to_tokens(tokens);
     }
@@ -174,7 +174,7 @@ impl ToTokens for BinOp {
         macro_rules! branches {
             ($($variant:ident)*) => {
                 match self {
-                    $(Self::$variant(..) => quote! { ::kosame::expr::BinOp::$variant }.to_tokens(tokens)),*
+                    $(Self::$variant(..) => quote! { ::kosame::repr::expr::BinOp::$variant }.to_tokens(tokens)),*
                 }
             };
         }

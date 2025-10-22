@@ -44,7 +44,7 @@ impl ToTokens for Cast {
         let value = &self.value;
         let data_type = &self.data_type.to_string();
         quote! {
-            ::kosame::expr::Cast::new(&#value, #data_type)
+            ::kosame::repr::expr::Cast::new(&#value, #data_type)
         }
         .to_tokens(tokens);
     }

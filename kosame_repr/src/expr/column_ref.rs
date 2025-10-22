@@ -1,4 +1,4 @@
-use crate::runtime::schema::Column;
+use crate::schema::Column;
 
 pub struct ColumnRef<'a> {
     column: &'a Column<'a>,
