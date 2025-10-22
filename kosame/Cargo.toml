@@ -40,4 +40,5 @@ postgres = { version = "0.19.12", optional = true }
 postgres-protocol = { version = "0.6.8", optional = true }
 postgres-types = { version = "0.2.9", optional = true }
 serde = { version = "1.0.226", optional = true }
+thiserror = "2.0.17"
 tokio-postgres = { version = "0.7.14", optional = true }

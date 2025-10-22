@@ -22,7 +22,7 @@ pub trait Query {
         &self,
         connection: &mut C,
         runner: &mut (impl Runner + ?Sized),
-    ) -> impl Future<Output = Result<Vec<Self::Row>, Error<C>>>
+    ) -> impl Future<Output = crate::Result<Vec<Self::Row>>>
     where
         C: Connection,
         Self::Params: Params<C::Params<'c>>,
@@ -35,7 +35,7 @@ pub trait Query {
         &self,
         connection: &mut C,
         runner: &mut (impl Runner + ?Sized),
-    ) -> impl Future<Output = Result<Self::Row, Error<C>>>
+    ) -> impl Future<Output = crate::Result<Self::Row>>
     where
         C: Connection,
         Self::Params: Params<C::Params<'c>>,
@@ -52,7 +52,7 @@ pub trait Query {
         &self,
         connection: &mut C,
         runner: &mut (impl Runner + ?Sized),
-    ) -> impl Future<Output = Result<Option<Self::Row>, Error<C>>>
+    ) -> impl Future<Output = crate::Result<Option<Self::Row>>>
     where
         C: Connection,
         Self::Params: Params<C::Params<'c>>,
@@ -74,7 +74,7 @@ pub trait Query {
         &self,
         connection: &mut C,
         runner: &mut (impl Runner + ?Sized),
-    ) -> Result<Vec<Self::Row>, Error<C>>
+    ) -> crate::Result<Vec<Self::Row>>
     where
         C: Connection,
         Self::Params: Params<C::Params<'c>>,
@@ -87,7 +87,7 @@ pub trait Query {
         &self,
         connection: &mut C,
         runner: &mut (impl Runner + ?Sized),
-    ) -> Result<Self::Row, Error<C>>
+    ) -> crate::Result<Self::Row>
     where
         C: Connection,
         Self::Params: Params<C::Params<'c>>,
@@ -100,7 +100,7 @@ pub trait Query {
         &self,
         connection: &mut C,
         runner: &mut (impl Runner + ?Sized),
-    ) -> Result<Option<Self::Row>, Error<C>>
+    ) -> crate::Result<Option<Self::Row>>
     where
         C: Connection,
         Self::Params: Params<C::Params<'c>>,

@@ -1,37 +1,13 @@
-use crate::driver::Connection;
-
-#[derive(Clone)]
-pub enum Error<C: Connection> {
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error("unexpected number of rows in result set")]
     RowCount,
-    Connection(C::Error),
+    #[error("{0}")]
+    Connection(
+        #[from]
+        #[source]
+        Box<dyn std::error::Error>,
+    ),
 }
 
-impl<C> std::fmt::Debug for Error<C>
-where
-    C: Connection,
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Error::RowCount => write!(f, "RowCount"),
-            Error::Connection(err) => write!(f, "Connection({:?})", err),
-        }
-    }
-}
-
-impl<C> std::fmt::Display for Error<C>
-where
-    C: Connection,
-{
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            Error::RowCount => {
-                write!(f, "unexpected number of rows in result set")
-            }
-            Error::Connection(err) => {
-                write!(f, "{}", err)
-            }
-        }
-    }
-}
-
-impl<C> std::error::Error for Error<C> where C: Connection {}
+pub type Result<T> = std::result::Result<T, Error>;

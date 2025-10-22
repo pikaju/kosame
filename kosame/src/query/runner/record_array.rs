@@ -1,6 +1,6 @@
 use std::fmt::Write;
 
-use crate::{Error, driver::Connection, schema::Relation, sql};
+use crate::{driver::Connection, schema::Relation, sql};
 
 use super::*;
 
@@ -17,7 +17,7 @@ impl RecordArrayRunner {
 }
 
 impl Runner for RecordArrayRunner {
-    async fn run<'a, C, Q>(&self, connection: &mut C, query: &Q) -> Result<Vec<Q::Row>, Error<C>>
+    async fn run<'a, C, Q>(&self, connection: &mut C, query: &Q) -> crate::Result<Vec<Q::Row>>
     where
         C: Connection,
         Q: Query + ?Sized,
@@ -25,10 +25,10 @@ impl Runner for RecordArrayRunner {
         for<'b> Q::Row: From<&'b C::Row>,
     {
         let sql = self.query_to_sql::<C::Dialect>(query);
-        let rows = match connection.query(&sql, &query.params().to_driver()).await {
-            Ok(rows) => rows,
-            Err(error) => return Err(Error::Connection(error)),
-        };
+        let rows = connection
+            .query(&sql, &query.params().to_driver())
+            .await
+            .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
         Ok(rows.iter().map(<Q as Query>::Row::from).collect())
     }
 }
