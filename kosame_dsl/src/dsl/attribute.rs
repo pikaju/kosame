@@ -1,22 +1,27 @@
+use proc_macro_error::emit_call_site_error;
 use syn::{
-    Ident, Path, Token,
+    Ident, LitStr, Path, Token,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
 };
+
+use crate::driver::Driver;
 
 mod kw {
     use syn::custom_keyword;
 
     custom_keyword!(kosame);
 
+    custom_keyword!(driver);
     custom_keyword!(rename);
     custom_keyword!(ty);
 }
 
 #[derive(Default)]
 pub struct CustomMeta {
-    rename: Option<Rename>,
-    type_override: Option<TypeOverride>,
+    pub driver: Option<MetaDriver>,
+    pub rename: Option<MetaRename>,
+    pub type_override: Option<MetaTypeOverride>,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -25,6 +30,7 @@ pub enum MetaLocation {
     Table,
     Column,
     QueryMacro,
+    Query,
 }
 
 impl CustomMeta {
@@ -60,6 +66,14 @@ impl CustomMeta {
                     }
 
                     match item {
+                        MetaItem::Driver(driver) => {
+                            fill_or_error!(
+                                driver,
+                                "driver",
+                                location == MetaLocation::TableMacro
+                                    || location == MetaLocation::QueryMacro
+                            );
+                        }
                         MetaItem::Rename(rename) => {
                             fill_or_error!(rename, "rename", location == MetaLocation::Column);
                         }
@@ -71,42 +85,31 @@ impl CustomMeta {
             }
         }
 
+        match location {
+            MetaLocation::TableMacro | MetaLocation::QueryMacro if result.driver.is_none() => {
+                emit_call_site_error!(
+                    "missing `driver` attribute, e.g. #[kosame(driver = \"tokio-postgres\")]"
+                );
+            }
+            _ => {}
+        }
+
         Ok(result)
-    }
-
-    pub fn rename(&self) -> Option<&Ident> {
-        self.rename.as_ref().map(|inner| &inner.value)
-    }
-
-    pub fn type_override(&self) -> Option<&Path> {
-        self.type_override.as_ref().map(|inner| &inner.value)
     }
 }
 
 enum MetaItem {
-    Rename(Rename),
-    TypeOverride(TypeOverride),
-}
-
-impl MetaItem {
-    fn allowed_in_location(&self, location: MetaLocation) -> bool {
-        match self {
-            Self::Rename(_) => match location {
-                MetaLocation::Table | MetaLocation::Column => true,
-                _ => false,
-            },
-            Self::TypeOverride(_) => match location {
-                MetaLocation::Table | MetaLocation::Column => true,
-                _ => false,
-            },
-        }
-    }
+    Driver(MetaDriver),
+    Rename(MetaRename),
+    TypeOverride(MetaTypeOverride),
 }
 
 impl Parse for MetaItem {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let lookahead = input.lookahead1();
-        if lookahead.peek(kw::rename) {
+        if lookahead.peek(kw::driver) {
+            Ok(Self::Driver(input.parse()?))
+        } else if lookahead.peek(kw::rename) {
             Ok(Self::Rename(input.parse()?))
         } else if lookahead.peek(kw::ty) {
             Ok(Self::TypeOverride(input.parse()?))
@@ -116,33 +119,55 @@ impl Parse for MetaItem {
     }
 }
 
-struct Rename {
-    path: kw::rename,
-    _eq_token: Token![=],
-    value: Ident,
+pub struct MetaDriver {
+    pub path: kw::driver,
+    pub eq_token: Token![=],
+    pub value: LitStr,
 }
 
-impl Parse for Rename {
+impl Parse for MetaDriver {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             path: input.parse()?,
-            _eq_token: input.parse()?,
+            eq_token: input.parse()?,
+            value: {
+                let value: LitStr = input.parse()?;
+                if Driver::try_from(value.value().as_ref()).is_err() {
+                    return Err(syn::Error::new(value.span(), "unknown driver value"));
+                }
+                value
+            },
+        })
+    }
+}
+
+pub struct MetaRename {
+    pub path: kw::rename,
+    pub eq_token: Token![=],
+    pub value: Ident,
+}
+
+impl Parse for MetaRename {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        Ok(Self {
+            path: input.parse()?,
+            eq_token: input.parse()?,
             value: input.parse()?,
         })
     }
 }
 
-struct TypeOverride {
-    path: kw::ty,
-    _eq_token: Token![=],
-    value: Path,
+pub struct MetaTypeOverride {
+    pub path: kw::ty,
+    pub eq_token: Token![=],
+    pub value: Path,
 }
 
-impl Parse for TypeOverride {
+impl Parse for MetaTypeOverride {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             path: input.parse()?,
-            _eq_token: input.parse()?,
+            eq_token: input.parse()?,
             value: input.parse()?,
         })
     }

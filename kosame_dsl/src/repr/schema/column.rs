@@ -36,8 +36,8 @@ impl From<crate::dsl::schema::Column> for Column {
         let meta = CustomMeta::parse_attrs(&value.attrs, MetaLocation::Column)
             .expect("custom meta should be checked earlier");
 
-        let rust_name = match meta.rename() {
-            Some(name) => name.clone(),
+        let rust_name = match meta.rename {
+            Some(rename) => rename.value,
             None => Ident::new(
                 &value.name.to_string().to_case(Case::Snake),
                 value.name.span(),
@@ -45,8 +45,8 @@ impl From<crate::dsl::schema::Column> for Column {
         };
 
         let data_type = value.data_type;
-        let rust_type_not_null = match meta.type_override() {
-            Some(path) => path.to_call_site(3),
+        let rust_type_not_null = match meta.type_override {
+            Some(type_override) => type_override.value.to_call_site(3),
             None => parse_quote! { #data_type },
         };
         let rust_type_nullable: Path = parse_quote! { Option<#data_type> };

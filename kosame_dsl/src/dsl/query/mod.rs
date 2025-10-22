@@ -14,9 +14,15 @@ use syn::{
     parse::{Parse, ParseStream},
 };
 
-use crate::dsl::{alias::Alias, path_ext::PathExt, query::bind_params::BindParamsBuilder};
+use crate::dsl::{
+    alias::Alias,
+    attribute::{CustomMeta, MetaLocation},
+    path_ext::PathExt,
+    query::bind_params::BindParamsBuilder,
+};
 
 pub struct Query {
+    macro_attrs: Vec<Attribute>,
     attrs: Vec<Attribute>,
     table: syn::Path,
     body: Node,
@@ -26,7 +32,16 @@ pub struct Query {
 impl Parse for Query {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            attrs: input.call(Attribute::parse_outer)?,
+            macro_attrs: {
+                let attrs = Attribute::parse_inner(input)?;
+                CustomMeta::parse_attrs(&attrs, MetaLocation::QueryMacro)?;
+                attrs
+            },
+            attrs: {
+                let attrs = Attribute::parse_outer(input)?;
+                CustomMeta::parse_attrs(&attrs, MetaLocation::Query)?;
+                attrs
+            },
             table: input.parse()?,
             body: input.parse()?,
             alias: input.call(Alias::parse_optional)?,

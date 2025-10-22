@@ -4,4 +4,6 @@ pub mod dsl;
 pub mod repr;
 #[cfg(feature = "runtime")]
 pub mod runtime;
+
+pub mod driver;
 pub mod sql;

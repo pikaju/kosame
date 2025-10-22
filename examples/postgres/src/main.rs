@@ -3,6 +3,7 @@ use kosame::query::{Query, RecordArrayRunner};
 // Declare your database schema.
 mod schema {
     kosame::table! {
+        #![kosame(driver = "tokio-postgres")]
         // Kosame uses the familiar SQL syntax to define tables.
         create table posts (
             id int primary key default uuidv7(),
@@ -16,6 +17,8 @@ mod schema {
     }
 
     kosame::table! {
+        #![kosame(driver = "tokio-postgres")]
+
         create table comments (
             id int primary key,
             post_id int not null,
@@ -37,6 +40,7 @@ fn main() {
 
     let id = 5;
     let query = kosame::query! {
+        #![kosame(driver = "tokio-postgres")]
         schema::posts {
             *,
             comments {
