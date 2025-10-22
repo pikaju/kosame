@@ -1,5 +1,5 @@
 use crate::lang::expr::Visitor;
-use crate::{lang::clause::*, repr::row::Row};
+use crate::{lang::clause::*, lang::row::Row};
 
 use super::star::Star;
 use super::*;

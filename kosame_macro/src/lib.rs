@@ -1,4 +1,4 @@
-use kosame_dsl::{lang, repr};
+use kosame_dsl::lang;
 use proc_macro_error::proc_macro_error;
 use quote::{ToTokens, quote};
 use syn::{DeriveInput, parse_macro_input};
@@ -7,8 +7,7 @@ use syn::{DeriveInput, parse_macro_input};
 #[proc_macro]
 pub fn table(tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(tokens as lang::schema::Table);
-    let repr = repr::schema::Table::from(input);
-    quote! { #repr }.into()
+    quote! { #input }.into()
 }
 
 #[proc_macro_error]
