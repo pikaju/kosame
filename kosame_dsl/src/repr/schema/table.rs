@@ -19,9 +19,9 @@ pub struct Table {
     relations: Vec<Relation>,
 }
 
-#[cfg(feature = "dsl")]
-impl From<crate::dsl::schema::Table> for Table {
-    fn from(value: crate::dsl::schema::Table) -> Self {
+#[cfg(feature = "lang")]
+impl From<crate::lang::schema::Table> for Table {
+    fn from(value: crate::lang::schema::Table) -> Self {
         use convert_case::{Case, Casing};
 
         let rust_name = Ident::new(

@@ -22,13 +22,13 @@ impl Column {
     }
 }
 
-#[cfg(feature = "dsl")]
-impl From<crate::dsl::schema::Column> for Column {
-    fn from(value: crate::dsl::schema::Column) -> Self {
+#[cfg(feature = "lang")]
+impl From<crate::lang::schema::Column> for Column {
+    fn from(value: crate::lang::schema::Column) -> Self {
         use convert_case::{Case, Casing};
         use syn::parse_quote;
 
-        use crate::dsl::{
+        use crate::lang::{
             attribute::{CustomMeta, MetaLocation},
             path_ext::PathExt,
         };

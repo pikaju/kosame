@@ -1,6 +1,6 @@
 use super::Node;
 use crate::{
-    dsl::{
+    lang::{
         alias::Alias, expr::Expr, path_ext::PathExt, query::node_path::QueryNodePath,
         type_override::TypeOverride,
     },

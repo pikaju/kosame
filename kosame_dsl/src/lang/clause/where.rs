@@ -5,7 +5,7 @@ use syn::{
     parse::{Parse, ParseStream},
 };
 
-use crate::dsl::expr::Expr;
+use crate::lang::expr::Expr;
 
 pub struct Where {
     _where: Token![where],

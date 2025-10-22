@@ -1,4 +1,4 @@
-use crate::dsl::expr;
+use crate::lang::expr;
 use proc_macro2::TokenStream;
 use quote::{ToTokens, format_ident, quote};
 use syn::Ident;

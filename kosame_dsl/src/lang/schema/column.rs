@@ -1,4 +1,4 @@
-use crate::dsl::attribute::{CustomMeta, MetaLocation};
+use crate::lang::attribute::{CustomMeta, MetaLocation};
 
 use super::{column_constraint::ColumnConstraints, data_type::DataType};
 use syn::{

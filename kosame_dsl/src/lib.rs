@@ -1,5 +1,5 @@
-#[cfg(feature = "dsl")]
-pub mod dsl;
+#[cfg(feature = "lang")]
+pub mod lang;
 #[cfg(feature = "repr")]
 pub mod repr;
 #[cfg(feature = "runtime")]

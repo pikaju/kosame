@@ -2,7 +2,7 @@ use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::parse::{Parse, ParseStream};
 
-use crate::dsl::expr::Expr;
+use crate::lang::expr::Expr;
 
 mod kw {
     use syn::custom_keyword;

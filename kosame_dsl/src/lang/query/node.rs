@@ -1,5 +1,5 @@
-use crate::dsl::expr::Visitor;
-use crate::{dsl::clause::*, repr::row::Row};
+use crate::lang::expr::Visitor;
+use crate::{lang::clause::*, repr::row::Row};
 
 use super::star::Star;
 use super::*;

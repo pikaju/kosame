@@ -16,10 +16,10 @@ impl Relation {
     }
 }
 
-#[cfg(feature = "dsl")]
-impl From<crate::dsl::schema::Relation> for Relation {
-    fn from(value: crate::dsl::schema::Relation) -> Self {
-        use crate::dsl::{path_ext::PathExt, schema::Arrow};
+#[cfg(feature = "lang")]
+impl From<crate::lang::schema::Relation> for Relation {
+    fn from(value: crate::lang::schema::Relation) -> Self {
+        use crate::lang::{path_ext::PathExt, schema::Arrow};
 
         Self {
             name: value.name,

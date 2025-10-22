@@ -7,7 +7,7 @@ use syn::{
 };
 
 use super::Limit;
-use crate::dsl::expr::{Expr, Visitor};
+use crate::lang::expr::{Expr, Visitor};
 
 mod kw {
     use syn::custom_keyword;

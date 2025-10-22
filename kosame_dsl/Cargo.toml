@@ -13,7 +13,7 @@ keywords.workspace = true
 [features]
 default = []
 
-dsl = [
+lang = [
 	"dep:proc-macro-error",
 	"dep:proc-macro2",
 	"dep:quote",
