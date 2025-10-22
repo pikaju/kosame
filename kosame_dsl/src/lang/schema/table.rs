@@ -13,8 +13,8 @@ mod kw {
 }
 
 pub struct Table {
-    pub macro_attrs: Vec<Attribute>,
-    pub attrs: Vec<Attribute>,
+    pub inner_attrs: Vec<Attribute>,
+    pub outer_attrs: Vec<Attribute>,
 
     pub _create: kw::create,
     pub _table: kw::table,
@@ -32,14 +32,14 @@ impl Parse for Table {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let content;
         Ok(Self {
-            macro_attrs: {
+            inner_attrs: {
                 let attrs = Attribute::parse_inner(input)?;
-                CustomMeta::parse_attrs(&attrs, MetaLocation::TableMacro)?;
+                CustomMeta::parse_attrs(&attrs, MetaLocation::TableInner)?;
                 attrs
             },
-            attrs: {
+            outer_attrs: {
                 let attrs = Attribute::parse_outer(input)?;
-                CustomMeta::parse_attrs(&attrs, MetaLocation::Table)?;
+                CustomMeta::parse_attrs(&attrs, MetaLocation::TableOuter)?;
                 attrs
             },
             _create: input.parse()?,

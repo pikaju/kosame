@@ -70,7 +70,7 @@ impl Node {
             });
 
             Row::new(
-                query.attrs.clone(),
+                query.outer_attrs.clone(),
                 node_path.to_struct_name("Row"),
                 star_field
                     .into_iter()

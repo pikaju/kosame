@@ -22,8 +22,8 @@ use crate::lang::{
 };
 
 pub struct Query {
-    macro_attrs: Vec<Attribute>,
-    attrs: Vec<Attribute>,
+    inner_attrs: Vec<Attribute>,
+    outer_attrs: Vec<Attribute>,
     table: syn::Path,
     body: Node,
     alias: Option<Alias>,
@@ -32,14 +32,14 @@ pub struct Query {
 impl Parse for Query {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            macro_attrs: {
+            inner_attrs: {
                 let attrs = Attribute::parse_inner(input)?;
-                CustomMeta::parse_attrs(&attrs, MetaLocation::QueryMacro)?;
+                CustomMeta::parse_attrs(&attrs, MetaLocation::QueryInner)?;
                 attrs
             },
-            attrs: {
+            outer_attrs: {
                 let attrs = Attribute::parse_outer(input)?;
-                CustomMeta::parse_attrs(&attrs, MetaLocation::Query)?;
+                CustomMeta::parse_attrs(&attrs, MetaLocation::QueryOuter)?;
                 attrs
             },
             table: input.parse()?,

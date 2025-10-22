@@ -26,11 +26,11 @@ pub struct CustomMeta {
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum MetaLocation {
-    TableMacro,
-    Table,
+    TableInner,
+    TableOuter,
     Column,
-    QueryMacro,
-    Query,
+    QueryInner,
+    QueryOuter,
 }
 
 impl CustomMeta {
@@ -70,8 +70,8 @@ impl CustomMeta {
                             fill_or_error!(
                                 driver,
                                 "driver",
-                                location == MetaLocation::TableMacro
-                                    || location == MetaLocation::QueryMacro
+                                location == MetaLocation::TableInner
+                                    || location == MetaLocation::QueryInner
                             );
                         }
                         MetaItem::Rename(rename) => {
@@ -86,7 +86,7 @@ impl CustomMeta {
         }
 
         match location {
-            MetaLocation::TableMacro | MetaLocation::QueryMacro if result.driver.is_none() => {
+            MetaLocation::TableInner | MetaLocation::QueryInner if result.driver.is_none() => {
                 emit_call_site_error!(
                     "missing `driver` attribute, e.g. #[kosame(driver = \"tokio-postgres\")]"
                 );
