@@ -54,7 +54,9 @@ fn main() {
 
     println!(
         "=== Query ===\n{}\n=========",
-        RecordArrayRunner {}.query_to_sql::<kosame::sql::postgres::Dialect>(&query)
+        RecordArrayRunner {}
+            .query_to_sql::<kosame::sql::postgres::Dialect>(&query)
+            .unwrap()
     );
 
     let rows = query

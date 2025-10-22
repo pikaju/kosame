@@ -2,8 +2,14 @@
 pub enum Error {
     #[error("unexpected number of rows in result set")]
     RowCount,
-    #[error("{0}")]
-    Connection(
+    #[error("SQL formatting failed")]
+    FmtSql(
+        #[from]
+        #[source]
+        kosame_sql::Error,
+    ),
+    #[error("driver error: {0}")]
+    Driver(
         #[from]
         #[source]
         Box<dyn std::error::Error>,

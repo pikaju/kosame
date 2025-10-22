@@ -9,12 +9,14 @@ use super::*;
 pub struct RecordArrayRunner {}
 
 impl RecordArrayRunner {
-    pub fn query_to_sql<D: kosame_sql::Dialect>(&self, query: &(impl Query + ?Sized)) -> String {
+    pub fn query_to_sql<D: kosame_sql::Dialect>(
+        &self,
+        query: &(impl Query + ?Sized),
+    ) -> Result<String, kosame_sql::Error> {
         let mut sql = String::new();
         let mut formatter = kosame_sql::Formatter::<D>::new(&mut sql);
-        fmt_node_sql(&mut formatter, query.root(), None)
-            .expect("string formatting should never fail");
-        sql
+        fmt_node_sql(&mut formatter, query.root(), None)?;
+        Ok(sql)
     }
 }
 
@@ -26,7 +28,7 @@ impl Runner for RecordArrayRunner {
         Q::Params: Params<C::Params<'a>>,
         for<'b> Q::Row: From<&'b C::Row>,
     {
-        let sql = self.query_to_sql::<C::Dialect>(query);
+        let sql = self.query_to_sql::<C::Dialect>(query)?;
         let rows = connection
             .query(&sql, &query.params().to_driver())
             .await

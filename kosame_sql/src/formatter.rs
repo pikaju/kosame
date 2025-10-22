@@ -18,12 +18,12 @@ where
         }
     }
 
-    pub fn write_ident(&mut self, ident: &str) -> std::fmt::Result {
+    pub fn write_ident(&mut self, ident: &str) -> crate::Result {
         let (prefix, suffix) = D::ident_esc();
         write!(self, "{prefix}{ident}{suffix}")
     }
 
-    pub fn write_bind_param(&mut self, name: &str, ordinal: u32) -> Result<(), std::fmt::Error> {
+    pub fn write_bind_param(&mut self, name: &str, ordinal: u32) -> crate::Result {
         D::fmt_bind_param(self, name, ordinal)
     }
 }
