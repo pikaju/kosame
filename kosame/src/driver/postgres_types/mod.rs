@@ -3,6 +3,16 @@ pub use postgres_protocol::types::int4_from_sql;
 pub use postgres_types::{FromSql, ToSql, Type};
 pub use tokio_postgres::Row;
 
+#[macro_export]
+macro_rules! pg_table {
+    ($($tokens:tt)*) => {
+        ::kosame::table! {
+            #![kosame(driver = "tokio-postgres")]
+            $($tokens)*
+        }
+    };
+}
+
 impl<'a, T> FromSql<'a> for crate::relation::OneToMany<T>
 where
     T: FromSql<'a>,

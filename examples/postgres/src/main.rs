@@ -2,8 +2,7 @@ use kosame::query::{Query, RecordArrayRunner};
 
 // Declare your database schema.
 mod schema {
-    kosame::table! {
-        #![kosame(driver = "tokio-postgres")]
+    kosame::pg_table! {
         // Kosame uses the familiar SQL syntax to define tables.
         create table posts (
             id int primary key default uuidv7(),
@@ -16,9 +15,7 @@ mod schema {
         comments: (id) <= comments (post_id),
     }
 
-    kosame::table! {
-        #![kosame(driver = "tokio-postgres")]
-
+    kosame::pg_table! {
         create table comments (
             id int primary key,
             post_id int not null,
