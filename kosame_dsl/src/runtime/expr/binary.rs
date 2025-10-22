@@ -1,7 +1,5 @@
 use std::fmt::Write;
 
-use crate::sql;
-
 use super::Expr;
 
 pub struct Binary<'a> {
@@ -15,9 +13,14 @@ impl<'a> Binary<'a> {
     pub const fn new(left: &'a Expr<'a>, op: BinOp, right: &'a Expr<'a>) -> Self {
         Self { left, op, right }
     }
+}
 
+impl kosame_sql::FmtSql for Binary<'_> {
     #[inline]
-    pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
+    fn fmt_sql<D: kosame_sql::Dialect>(
+        &self,
+        formatter: &mut kosame_sql::Formatter<D>,
+    ) -> std::fmt::Result {
         self.left.fmt_sql(formatter)?;
         self.op.fmt_sql(formatter)?;
         self.right.fmt_sql(formatter)?;
@@ -49,8 +52,12 @@ pub enum BinOp {
     Or,
 }
 
-impl BinOp {
-    pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
+impl kosame_sql::FmtSql for BinOp {
+    #[inline]
+    fn fmt_sql<D: kosame_sql::Dialect>(
+        &self,
+        formatter: &mut kosame_sql::Formatter<D>,
+    ) -> kosame_sql::Result {
         match self {
             Self::Multiply => formatter.write_str(" * "),
             Self::Divide => formatter.write_str(" / "),

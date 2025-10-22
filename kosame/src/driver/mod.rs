@@ -8,10 +8,8 @@ pub mod tokio_postgres;
 #[doc(hidden)]
 pub mod postgres_types;
 
-use crate::sql;
-
 pub trait Connection {
-    type Dialect: sql::Dialect;
+    type Dialect: kosame_sql::Dialect;
     type Params<'a>;
     type Row;
     type Error: std::error::Error + 'static;

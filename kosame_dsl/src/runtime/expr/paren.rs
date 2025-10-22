@@ -1,7 +1,5 @@
 use std::fmt::Write;
 
-use crate::sql;
-
 use super::Expr;
 
 pub struct Paren<'a> {
@@ -13,9 +11,14 @@ impl<'a> Paren<'a> {
     pub const fn new(expr: &'a Expr) -> Self {
         Self { expr }
     }
+}
 
+impl kosame_sql::FmtSql for Paren<'_> {
     #[inline]
-    pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
+    fn fmt_sql<D: kosame_sql::Dialect>(
+        &self,
+        formatter: &mut kosame_sql::Formatter<D>,
+    ) -> kosame_sql::Result {
         formatter.write_str("(")?;
         self.expr.fmt_sql(formatter)?;
         formatter.write_str(")")?;

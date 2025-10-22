@@ -1,7 +1,5 @@
 use std::fmt::Write;
 
-use crate::sql;
-
 pub enum Lit {
     Int(i64),
     Float(f64),
@@ -10,9 +8,12 @@ pub enum Lit {
     Null,
 }
 
-impl Lit {
+impl kosame_sql::FmtSql for Lit {
     #[inline]
-    pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
+    fn fmt_sql<D: kosame_sql::Dialect>(
+        &self,
+        formatter: &mut kosame_sql::Formatter<D>,
+    ) -> kosame_sql::Result {
         match self {
             Self::Int(inner) => write!(formatter, "{}", inner),
             Self::Float(inner) => write!(formatter, "{}", inner),

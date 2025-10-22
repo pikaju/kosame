@@ -1,7 +1,6 @@
 use std::fmt::Write;
 
 use super::Expr;
-use crate::sql;
 
 pub struct Call<'a> {
     function: &'a str,
@@ -13,9 +12,14 @@ impl<'a> Call<'a> {
     pub const fn new(function: &'a str, params: &'a [&'a Expr]) -> Self {
         Self { function, params }
     }
+}
 
+impl kosame_sql::FmtSql for Call<'_> {
     #[inline]
-    pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
+    fn fmt_sql<D: kosame_sql::Dialect>(
+        &self,
+        formatter: &mut kosame_sql::Formatter<D>,
+    ) -> kosame_sql::Result {
         formatter.write_ident(self.function)?;
         formatter.write_str("(")?;
         for (index, param) in self.params.iter().enumerate() {

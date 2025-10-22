@@ -1,6 +1,6 @@
 use std::fmt::Write;
 
-use crate::{runtime::expr::Expr, sql};
+use crate::runtime::expr::Expr;
 
 pub struct Where<'a> {
     expr: Expr<'a>,
@@ -13,14 +13,19 @@ impl<'a> Where<'a> {
     }
 
     #[inline]
-    pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
+    pub fn expr(&self) -> &Expr<'_> {
+        &self.expr
+    }
+}
+
+impl kosame_sql::FmtSql for Where<'_> {
+    #[inline]
+    fn fmt_sql<D: kosame_sql::Dialect>(
+        &self,
+        formatter: &mut kosame_sql::Formatter<D>,
+    ) -> kosame_sql::Result {
         formatter.write_str(" where ")?;
         self.expr.fmt_sql(formatter)?;
         Ok(())
-    }
-
-    #[inline]
-    pub fn expr(&self) -> &Expr<'_> {
-        &self.expr
     }
 }

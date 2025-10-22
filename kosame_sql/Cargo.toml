@@ -1,5 +1,5 @@
 [package]
-name = "kosame_dsl"
+name = "kosame_sql"
 
 version.workspace = true
 edition.workspace = true
@@ -13,16 +13,9 @@ keywords.workspace = true
 [features]
 default = []
 
+mssql = []
+mysql = []
 postgres = []
-tokio-postgres = []
-
-serde = []
-serde-full = []
+sqlite = []
 
 [dependencies]
-convert_case = "0.8.0"
-kosame_sql.workspace = true
-proc-macro-error = "1.0.4"
-proc-macro2 = {version = "1.0.101", features = ["span-locations"] }
-quote = "1.0.40"
-syn = "2.0.106"

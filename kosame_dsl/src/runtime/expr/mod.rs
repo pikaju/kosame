@@ -16,8 +16,6 @@ pub use lit::*;
 pub use paren::*;
 pub use unary::*;
 
-use crate::sql;
-
 pub enum Expr<'a> {
     Binary(Binary<'a>),
     BindParam(BindParam<'a>),
@@ -44,8 +42,12 @@ macro_rules! variants {
     };
 }
 
-impl<'a> Expr<'a> {
-    pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
+impl kosame_sql::FmtSql for Expr<'_> {
+    #[inline]
+    fn fmt_sql<D: kosame_sql::Dialect>(
+        &self,
+        formatter: &mut kosame_sql::Formatter<D>,
+    ) -> kosame_sql::Result {
         macro_rules! branches {
             ($($variant:ident)*) => {
                 match self {

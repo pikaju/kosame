@@ -15,6 +15,7 @@ default = []
 
 postgres = [
 	"kosame_macro/postgres",
+	"kosame_sql/postgres",
 	"dep:postgres",
 	"dep:tokio-postgres",
 	"dep:postgres-types",
@@ -22,6 +23,7 @@ postgres = [
 ]
 tokio-postgres = [
 	"kosame_macro/tokio-postgres",
+	"kosame_sql/postgres",
 	"dep:tokio-postgres",
 	"dep:postgres-types",
 	"dep:postgres-protocol",
@@ -35,6 +37,7 @@ fallible-iterator = "0.2.0"
 futures-core = "0.3.31"
 kosame_dsl.workspace = true
 kosame_macro.workspace = true
+kosame_sql.workspace = true
 pollster = "0.4.0"
 postgres = { version = "0.19.12", optional = true }
 postgres-protocol = { version = "0.6.8", optional = true }

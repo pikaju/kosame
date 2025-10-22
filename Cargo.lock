@@ -381,6 +381,7 @@ dependencies = [
  "futures-core",
  "kosame_dsl",
  "kosame_macro",
+ "kosame_sql",
  "pollster",
  "postgres",
  "postgres-protocol",
@@ -396,6 +397,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "kosame_dsl",
+ "kosame_sql",
  "tokio-postgres",
 ]
 
@@ -404,6 +406,7 @@ name = "kosame_dsl"
 version = "0.1.0"
 dependencies = [
  "convert_case",
+ "kosame_sql",
  "proc-macro-error",
  "proc-macro2",
  "quote",
@@ -421,6 +424,10 @@ dependencies = [
  "quote",
  "syn 2.0.106",
 ]
+
+[[package]]
+name = "kosame_sql"
+version = "0.1.0"
 
 [[package]]
 name = "libc"

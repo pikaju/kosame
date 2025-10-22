@@ -1,4 +1,4 @@
-use crate::{runtime::schema::Column, sql};
+use crate::runtime::schema::Column;
 
 pub struct ColumnRef<'a> {
     column: &'a Column<'a>,
@@ -9,9 +9,14 @@ impl<'a> ColumnRef<'a> {
     pub const fn new(column: &'a Column) -> Self {
         Self { column }
     }
+}
 
+impl kosame_sql::FmtSql for ColumnRef<'_> {
     #[inline]
-    pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
+    fn fmt_sql<D: kosame_sql::Dialect>(
+        &self,
+        formatter: &mut kosame_sql::Formatter<D>,
+    ) -> kosame_sql::Result {
         formatter.write_ident(self.column.name())
     }
 }

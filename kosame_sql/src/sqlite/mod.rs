@@ -1,6 +1,6 @@
 pub enum Dialect {}
 
-impl crate::sql::Dialect for Dialect {
+impl crate::Dialect for Dialect {
     fn ident_esc() -> (&'static str, &'static str) {
         ("\"", "\"")
     }

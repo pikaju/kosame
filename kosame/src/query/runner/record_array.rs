@@ -1,15 +1,17 @@
 use std::fmt::Write;
 
-use crate::{driver::Connection, schema::Relation, sql};
+use kosame_sql::FmtSql;
+
+use crate::{driver::Connection, schema::Relation};
 
 use super::*;
 
 pub struct RecordArrayRunner {}
 
 impl RecordArrayRunner {
-    pub fn query_to_sql<D: sql::Dialect>(&self, query: &(impl Query + ?Sized)) -> String {
+    pub fn query_to_sql<D: kosame_sql::Dialect>(&self, query: &(impl Query + ?Sized)) -> String {
         let mut sql = String::new();
-        let mut formatter = sql::Formatter::<D>::new(&mut sql);
+        let mut formatter = kosame_sql::Formatter::<D>::new(&mut sql);
         fmt_node_sql(&mut formatter, query.root(), None)
             .expect("string formatting should never fail");
         sql
@@ -33,8 +35,8 @@ impl Runner for RecordArrayRunner {
     }
 }
 
-fn fmt_node_sql<D: sql::Dialect>(
-    formatter: &mut sql::Formatter<D>,
+fn fmt_node_sql<D: kosame_sql::Dialect>(
+    formatter: &mut kosame_sql::Formatter<D>,
     node: &Node,
     relation: Option<&Relation>,
 ) -> std::fmt::Result {

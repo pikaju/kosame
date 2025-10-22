@@ -1,7 +1,5 @@
 use std::fmt::Write;
 
-use crate::sql;
-
 use super::Expr;
 
 pub struct Cast<'a> {
@@ -14,9 +12,14 @@ impl<'a> Cast<'a> {
     pub const fn new(value: &'a Expr, data_type: &'a str) -> Self {
         Self { value, data_type }
     }
+}
 
+impl kosame_sql::FmtSql for Cast<'_> {
     #[inline]
-    pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
+    fn fmt_sql<D: kosame_sql::Dialect>(
+        &self,
+        formatter: &mut kosame_sql::Formatter<D>,
+    ) -> kosame_sql::Result {
         formatter.write_str("cast(")?;
         self.value.fmt_sql(formatter)?;
         formatter.write_str(" as ")?;

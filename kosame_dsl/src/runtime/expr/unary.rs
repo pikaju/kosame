@@ -1,7 +1,5 @@
 use std::fmt::Write;
 
-use crate::sql;
-
 use super::Expr;
 
 pub struct Unary<'a> {
@@ -14,9 +12,14 @@ impl<'a> Unary<'a> {
     pub const fn new(op: UnaryOp, operand: &'a Expr<'a>) -> Self {
         Self { op, operand }
     }
+}
 
+impl kosame_sql::FmtSql for Unary<'_> {
     #[inline]
-    pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
+    fn fmt_sql<D: kosame_sql::Dialect>(
+        &self,
+        formatter: &mut kosame_sql::Formatter<D>,
+    ) -> kosame_sql::Result {
         match self.op.position() {
             Position::Prefix => {
                 self.op.fmt_sql(formatter)?;
@@ -47,9 +50,14 @@ impl UnaryOp {
             Self::Not => Position::Prefix,
         }
     }
+}
 
+impl kosame_sql::FmtSql for UnaryOp {
     #[inline]
-    pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
+    fn fmt_sql<D: kosame_sql::Dialect>(
+        &self,
+        formatter: &mut kosame_sql::Formatter<D>,
+    ) -> kosame_sql::Result {
         match self {
             Self::Not => formatter.write_str("not "),
         }

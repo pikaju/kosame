@@ -23,5 +23,6 @@ publish = ["kosame", "kosame_macro"]
 [workspace.dependencies]
 kosame = { path = "kosame", version = "0.1.0" }
 kosame_dsl = { path = "kosame_dsl", version = "0.1.0" }
+kosame_sql = { path = "kosame_sql", version = "0.1.0" }
 kosame_macro = { path = "kosame_macro", version = "0.1.0" }
 

@@ -1,7 +1,7 @@
 use crate::driver::Connection;
 
 impl Connection for postgres::Client {
-    type Dialect = crate::dbms::postgres::Dialect;
+    type Dialect = kosame_sql::postgres::Dialect;
     type Params<'a> = Vec<&'a (dyn postgres_types::ToSql + std::marker::Sync + 'a)>;
     type Row = postgres::Row;
     type Error = postgres::Error;
@@ -16,7 +16,7 @@ impl Connection for postgres::Client {
 }
 
 impl Connection for postgres::Transaction<'_> {
-    type Dialect = crate::dbms::postgres::Dialect;
+    type Dialect = kosame_sql::postgres::Dialect;
     type Params<'a> = Vec<&'a (dyn postgres_types::ToSql + std::marker::Sync + 'a)>;
     type Row = postgres::Row;
     type Error = postgres::Error;
