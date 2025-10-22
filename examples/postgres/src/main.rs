@@ -36,9 +36,7 @@ fn main() {
     .unwrap();
 
     let id = 5;
-    let query = kosame::query! {
-        #![kosame(driver = "tokio-postgres")]
-
+    let query = kosame::pg_query! {
         schema::posts {
             *,
             comments {

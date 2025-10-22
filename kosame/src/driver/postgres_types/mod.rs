@@ -13,6 +13,16 @@ macro_rules! pg_table {
     };
 }
 
+#[macro_export]
+macro_rules! pg_query {
+    ($($tokens:tt)*) => {
+        ::kosame::query! {
+            #![kosame(driver = "tokio-postgres")]
+            $($tokens)*
+        }
+    };
+}
+
 impl<'a, T> FromSql<'a> for crate::relation::OneToMany<T>
 where
     T: FromSql<'a>,
