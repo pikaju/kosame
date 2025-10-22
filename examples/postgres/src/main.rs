@@ -41,6 +41,7 @@ fn main() {
     let id = 5;
     let query = kosame::query! {
         #![kosame(driver = "tokio-postgres")]
+
         schema::posts {
             *,
             comments {
