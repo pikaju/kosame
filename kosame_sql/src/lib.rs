@@ -1,7 +1,9 @@
+mod dialect;
 mod fmt_sql;
 mod formatter;
 mod result;
 
+pub use dialect::*;
 pub use fmt_sql::*;
 pub use formatter::*;
 pub use result::*;
