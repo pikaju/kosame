@@ -23,7 +23,7 @@ macro_rules! pg_query {
     };
 }
 
-impl<'a, T> FromSql<'a> for crate::relation::OneToMany<T>
+impl<'a, T> FromSql<'a> for crate::relation::Many<T>
 where
     T: FromSql<'a>,
 {
@@ -60,7 +60,7 @@ where
     }
 }
 
-impl<'a, T> FromSql<'a> for crate::relation::ManyToOne<T>
+impl<'a, T> FromSql<'a> for crate::relation::ZeroOrOne<T>
 where
     T: FromSql<'a>,
 {

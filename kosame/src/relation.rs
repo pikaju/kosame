@@ -1,11 +1,11 @@
 use std::ops::{Deref, DerefMut};
 
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
 #[cfg_attr(feature = "serde-full", derive(serde::Deserialize))]
-pub struct ManyToOne<T>(Option<T>);
+pub struct ZeroOrOne<T>(Option<T>);
 
-impl<T> ManyToOne<T> {
+impl<T> ZeroOrOne<T> {
     pub(crate) fn new(inner: Option<T>) -> Self {
         Self(inner)
     }
@@ -15,7 +15,7 @@ impl<T> ManyToOne<T> {
     }
 }
 
-impl<T> Deref for ManyToOne<T> {
+impl<T> Deref for ZeroOrOne<T> {
     type Target = Option<T>;
 
     fn deref(&self) -> &Self::Target {
@@ -23,18 +23,18 @@ impl<T> Deref for ManyToOne<T> {
     }
 }
 
-impl<T> DerefMut for ManyToOne<T> {
+impl<T> DerefMut for ZeroOrOne<T> {
     fn deref_mut(&mut self) -> &mut <Self as Deref>::Target {
         &mut self.0
     }
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
 #[cfg_attr(feature = "serde-full", derive(serde::Deserialize))]
-pub struct OneToMany<T>(Vec<T>);
+pub struct Many<T>(Vec<T>);
 
-impl<T> Deref for OneToMany<T> {
+impl<T> Deref for Many<T> {
     type Target = Vec<T>;
 
     fn deref(&self) -> &Self::Target {
@@ -42,13 +42,13 @@ impl<T> Deref for OneToMany<T> {
     }
 }
 
-impl<T> DerefMut for OneToMany<T> {
+impl<T> DerefMut for Many<T> {
     fn deref_mut(&mut self) -> &mut <Self as Deref>::Target {
         &mut self.0
     }
 }
 
-impl<T> OneToMany<T> {
+impl<T> Many<T> {
     pub(crate) fn new(inner: Vec<T>) -> Self {
         Self(inner)
     }

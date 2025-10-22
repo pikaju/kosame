@@ -44,8 +44,8 @@ impl ToTokens for Relation {
         let target_columns = &self.target_columns;
 
         let relation_type = match self.relation_type {
-            RelationType::ManyToOne => quote! { ::kosame::relation::ManyToOne<T> },
-            RelationType::OneToMany => quote! { ::kosame::relation::OneToMany<T> },
+            RelationType::ManyToOne => quote! { ::kosame::relation::ZeroOrOne<T> },
+            RelationType::OneToMany => quote! { ::kosame::relation::Many<T> },
         };
 
         quote! {
