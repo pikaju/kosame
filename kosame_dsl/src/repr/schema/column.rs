@@ -1,6 +1,13 @@
+use convert_case::{Case, Casing};
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
-use syn::{Ident, Path};
+use syn::{Ident, Path, parse_quote};
+
+use crate::lang::{
+    self,
+    attribute::{CustomMeta, MetaLocation},
+    path_ext::PathExt,
+};
 
 pub struct Column {
     name: String,
@@ -22,17 +29,8 @@ impl Column {
     }
 }
 
-#[cfg(feature = "lang")]
-impl From<crate::lang::schema::Column> for Column {
-    fn from(value: crate::lang::schema::Column) -> Self {
-        use convert_case::{Case, Casing};
-        use syn::parse_quote;
-
-        use crate::lang::{
-            attribute::{CustomMeta, MetaLocation},
-            path_ext::PathExt,
-        };
-
+impl From<lang::schema::Column> for Column {
+    fn from(value: lang::schema::Column) -> Self {
         let meta = CustomMeta::parse_attrs(&value.attrs, MetaLocation::Column)
             .expect("custom meta should be checked earlier");
 

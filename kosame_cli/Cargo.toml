@@ -15,5 +15,5 @@ default = []
 
 [dependencies]
 clap = { version = "4.5.50", features = ["derive"] }
-kosame_dsl = { workspace = true, features = ["lang", "repr"] }
+kosame_dsl.workspace = true
 tokio-postgres = "0.7.14"

@@ -3,11 +3,15 @@ use std::{
     sync::atomic::Ordering,
 };
 
+use convert_case::{Case, Casing};
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, format_ident, quote};
 use syn::{Ident, spanned::Spanned};
 
-use crate::repr::row::{Row, RowField};
+use crate::{
+    lang,
+    repr::row::{Row, RowField},
+};
 
 use super::*;
 
@@ -19,11 +23,8 @@ pub struct Table {
     relations: Vec<Relation>,
 }
 
-#[cfg(feature = "lang")]
-impl From<crate::lang::schema::Table> for Table {
-    fn from(value: crate::lang::schema::Table) -> Self {
-        use convert_case::{Case, Casing};
-
+impl From<lang::schema::Table> for Table {
+    fn from(value: lang::schema::Table) -> Self {
         let rust_name = Ident::new(
             &value.name.to_string().to_case(Case::Snake),
             value.name.span(),

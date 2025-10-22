@@ -24,7 +24,7 @@ serde-full = ["kosame_dsl/serde-full"]
 
 [dependencies]
 convert_case = "0.8.0"
-kosame_dsl = { workspace = true, features = ["lang", "repr"] }
+kosame_dsl.workspace = true
 proc-macro-error = "1.0.4"
 proc-macro2 = "1.0.101"
 quote = "1.0.40"

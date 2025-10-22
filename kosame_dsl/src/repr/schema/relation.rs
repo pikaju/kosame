@@ -2,6 +2,8 @@ use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::{Ident, Path};
 
+use crate::lang::{self, path_ext::PathExt, schema::Arrow};
+
 pub struct Relation {
     name: Ident,
     source_columns: Vec<Ident>,
@@ -16,11 +18,8 @@ impl Relation {
     }
 }
 
-#[cfg(feature = "lang")]
-impl From<crate::lang::schema::Relation> for Relation {
-    fn from(value: crate::lang::schema::Relation) -> Self {
-        use crate::lang::{path_ext::PathExt, schema::Arrow};
-
+impl From<lang::schema::Relation> for Relation {
+    fn from(value: lang::schema::Relation) -> Self {
         Self {
             name: value.name,
             source_columns: value.source_columns.into_iter().collect(),
