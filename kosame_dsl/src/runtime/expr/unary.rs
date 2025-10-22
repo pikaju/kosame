@@ -4,14 +4,14 @@ use crate::sql;
 
 use super::Expr;
 
-pub struct Unary {
+pub struct Unary<'a> {
     op: UnaryOp,
-    operand: &'static Expr,
+    operand: &'a Expr<'a>,
 }
 
-impl Unary {
+impl<'a> Unary<'a> {
     #[inline]
-    pub const fn new(op: UnaryOp, operand: &'static Expr) -> Self {
+    pub const fn new(op: UnaryOp, operand: &'a Expr<'a>) -> Self {
         Self { op, operand }
     }
 

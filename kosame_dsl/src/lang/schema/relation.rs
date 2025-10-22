@@ -8,12 +8,12 @@ use syn::{
 
 pub struct Relation {
     pub name: Ident,
-    pub _colon: Token![:],
-    pub _source_paren: syn::token::Paren,
+    pub colon: Token![:],
+    pub source_paren: syn::token::Paren,
     pub source_columns: Punctuated<Ident, Token![,]>,
     pub arrow: Arrow,
     pub target_table: syn::Path,
-    pub _target_paren: syn::token::Paren,
+    pub target_paren: syn::token::Paren,
     pub target_columns: Punctuated<Ident, Token![,]>,
 }
 
@@ -29,25 +29,25 @@ impl Parse for Relation {
         let dest_content;
         let result = Self {
             name: input.parse()?,
-            _colon: input.parse()?,
-            _source_paren: parenthesized!(source_content in input),
+            colon: input.parse()?,
+            source_paren: parenthesized!(source_content in input),
             source_columns: source_content.parse_terminated(Ident::parse, Token![,])?,
             arrow: input.parse()?,
             target_table: input.parse()?,
-            _target_paren: parenthesized!(dest_content in input),
+            target_paren: parenthesized!(dest_content in input),
             target_columns: dest_content.parse_terminated(Ident::parse, Token![,])?,
         };
 
         if result.source_columns.is_empty() {
             emit_error!(
-                result._source_paren.span.span(),
+                result.source_paren.span.span(),
                 "at least one column must be specified for relation `{}`",
                 result.name
             );
         }
         if result.source_columns.len() != result.target_columns.len() {
             emit_error!(
-                result._target_paren.span.span(),
+                result.target_paren.span.span(),
                 "number of columns must match on both side of the relation `{}`",
                 result.name
             );

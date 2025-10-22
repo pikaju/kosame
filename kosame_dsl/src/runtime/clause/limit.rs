@@ -2,13 +2,13 @@ use std::fmt::Write;
 
 use crate::{runtime::expr::Expr, sql};
 
-pub struct Limit {
-    expr: Expr,
+pub struct Limit<'a> {
+    expr: Expr<'a>,
 }
 
-impl Limit {
+impl<'a> Limit<'a> {
     #[inline]
-    pub const fn new(expr: Expr) -> Self {
+    pub const fn new(expr: Expr<'a>) -> Self {
         Self { expr }
     }
 

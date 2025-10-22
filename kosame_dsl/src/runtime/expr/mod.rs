@@ -18,15 +18,15 @@ pub use unary::*;
 
 use crate::sql;
 
-pub enum Expr {
-    Binary(Binary),
-    BindParam(BindParam),
-    Call(Call),
-    Cast(Cast),
-    ColumnRef(ColumnRef),
+pub enum Expr<'a> {
+    Binary(Binary<'a>),
+    BindParam(BindParam<'a>),
+    Call(Call<'a>),
+    Cast(Cast<'a>),
+    ColumnRef(ColumnRef<'a>),
     Lit(Lit),
-    Paren(Paren),
-    Unary(Unary),
+    Paren(Paren<'a>),
+    Unary(Unary<'a>),
 }
 
 macro_rules! variants {
@@ -44,7 +44,7 @@ macro_rules! variants {
     };
 }
 
-impl Expr {
+impl<'a> Expr<'a> {
     pub fn fmt_sql<D: sql::Dialect>(&self, formatter: &mut sql::Formatter<D>) -> std::fmt::Result {
         macro_rules! branches {
             ($($variant:ident)*) => {

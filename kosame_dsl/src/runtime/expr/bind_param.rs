@@ -1,13 +1,13 @@
 use crate::sql;
 
-pub struct BindParam {
-    name: &'static str,
+pub struct BindParam<'a> {
+    name: &'a str,
     ordinal: u32,
 }
 
-impl BindParam {
+impl<'a> BindParam<'a> {
     #[inline]
-    pub const fn new(name: &'static str, ordinal: u32) -> Self {
+    pub const fn new(name: &'a str, ordinal: u32) -> Self {
         Self { name, ordinal }
     }
 

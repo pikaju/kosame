@@ -2,13 +2,13 @@ use std::fmt::Write;
 
 use crate::{runtime::expr::Expr, sql};
 
-pub struct Where {
-    expr: Expr,
+pub struct Where<'a> {
+    expr: Expr<'a>,
 }
 
-impl Where {
+impl<'a> Where<'a> {
     #[inline]
-    pub const fn new(expr: Expr) -> Self {
+    pub const fn new(expr: Expr<'a>) -> Self {
         Self { expr }
     }
 
@@ -20,7 +20,7 @@ impl Where {
     }
 
     #[inline]
-    pub fn expr(&self) -> &Expr {
+    pub fn expr(&self) -> &Expr<'_> {
         &self.expr
     }
 }

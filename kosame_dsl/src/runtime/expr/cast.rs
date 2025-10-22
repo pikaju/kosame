@@ -4,14 +4,14 @@ use crate::sql;
 
 use super::Expr;
 
-pub struct Cast {
-    value: &'static Expr,
-    data_type: &'static str,
+pub struct Cast<'a> {
+    value: &'a Expr<'a>,
+    data_type: &'a str,
 }
 
-impl Cast {
+impl<'a> Cast<'a> {
     #[inline]
-    pub const fn new(value: &'static Expr, data_type: &'static str) -> Self {
+    pub const fn new(value: &'a Expr, data_type: &'a str) -> Self {
         Self { value, data_type }
     }
 

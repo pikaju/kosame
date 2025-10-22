@@ -4,13 +4,13 @@ use crate::sql;
 
 use super::Expr;
 
-pub struct Paren {
-    expr: &'static Expr,
+pub struct Paren<'a> {
+    expr: &'a Expr<'a>,
 }
 
-impl Paren {
+impl<'a> Paren<'a> {
     #[inline]
-    pub const fn new(expr: &'static Expr) -> Self {
+    pub const fn new(expr: &'a Expr) -> Self {
         Self { expr }
     }
 

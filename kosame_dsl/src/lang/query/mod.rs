@@ -100,7 +100,7 @@ impl ToTokens for Query {
                     type Params = Params #lifetime;
                     type Row = Row;
 
-                    const ROOT: ::kosame::query::Node = #query_node;
+                    const ROOT: ::kosame::query::Node<'static> = #query_node;
 
                     fn params(&self) -> &Self::Params {
                         &self.params

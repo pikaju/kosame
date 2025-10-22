@@ -63,11 +63,10 @@ impl Node {
         let row = {
             let table_path = table_path.to_call_site(1);
 
-            let star_field = self.star.as_ref().and_then(|star| {
-                star.alias()
-                    .is_some()
-                    .then(|| star.to_row_field(&table_path))
-            });
+            let star_field = self
+                .star
+                .as_ref()
+                .and_then(|star| star.alias.is_some().then(|| star.to_row_field(&table_path)));
 
             Row::new(
                 query.outer_attrs.clone(),
@@ -84,7 +83,7 @@ impl Node {
         };
 
         if let Some(star) = &self.star
-            && star.alias().is_none()
+            && star.alias.is_none()
         {
             let table_path = table_path.to_call_site(1);
             quote! {

@@ -1,21 +1,21 @@
 use crate::runtime::expr::Expr;
 
-pub struct Column {
-    pub name: &'static str,
-    pub data_type: &'static str,
+pub struct Column<'a> {
+    pub name: &'a str,
+    pub data_type: &'a str,
     pub primary_key: bool,
     pub not_null: bool,
-    pub default: Option<&'static Expr>,
+    pub default: Option<&'a Expr<'a>>,
 }
 
-impl Column {
+impl<'a> Column<'a> {
     #[inline]
-    pub const fn name(&self) -> &'static str {
+    pub const fn name(&self) -> &str {
         self.name
     }
 
     #[inline]
-    pub const fn data_type(&self) -> &'static str {
+    pub const fn data_type(&self) -> &str {
         self.data_type
     }
 
@@ -30,7 +30,7 @@ impl Column {
     }
 
     #[inline]
-    pub const fn default(&self) -> Option<&'static Expr> {
+    pub const fn default(&self) -> Option<&Expr<'_>> {
         self.default
     }
 }

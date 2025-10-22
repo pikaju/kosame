@@ -1,12 +1,12 @@
 use crate::{runtime::schema::Column, sql};
 
-pub struct ColumnRef {
-    column: &'static Column,
+pub struct ColumnRef<'a> {
+    column: &'a Column<'a>,
 }
 
-impl ColumnRef {
+impl<'a> ColumnRef<'a> {
     #[inline]
-    pub const fn new(column: &'static Column) -> Self {
+    pub const fn new(column: &'a Column) -> Self {
         Self { column }
     }
 

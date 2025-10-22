@@ -2,13 +2,13 @@ use std::fmt::Write;
 
 use crate::{runtime::expr::Expr, sql};
 
-pub struct Offset {
-    expr: Expr,
+pub struct Offset<'a> {
+    expr: Expr<'a>,
 }
 
-impl Offset {
+impl<'a> Offset<'a> {
     #[inline]
-    pub const fn new(expr: Expr) -> Self {
+    pub const fn new(expr: Expr<'a>) -> Self {
         Self { expr }
     }
 

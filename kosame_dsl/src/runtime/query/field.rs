@@ -4,18 +4,18 @@ use crate::runtime::{
     schema::{Column, Relation},
 };
 
-pub enum Field {
+pub enum Field<'a> {
     Column {
-        column: &'static Column,
-        alias: Option<&'static str>,
+        column: &'a Column<'a>,
+        alias: Option<&'a str>,
     },
     Relation {
-        relation: &'static Relation,
-        node: Node,
-        alias: Option<&'static str>,
+        relation: &'a Relation<'a>,
+        node: Node<'a>,
+        alias: Option<&'a str>,
     },
     Expr {
-        expr: Expr,
-        alias: &'static str,
+        expr: Expr<'a>,
+        alias: &'a str,
     },
 }

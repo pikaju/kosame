@@ -10,9 +10,9 @@ pub trait Query {
     type Params: std::fmt::Debug;
     type Row;
 
-    const ROOT: Node;
+    const ROOT: Node<'static>;
 
-    fn root(&self) -> &'static Node {
+    fn root(&self) -> &'static Node<'static> {
         &Self::ROOT
     }
 

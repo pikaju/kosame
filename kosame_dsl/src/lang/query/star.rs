@@ -9,9 +9,9 @@ use syn::{
 use crate::{lang::alias::Alias, repr::row::RowField};
 
 pub struct Star {
-    attrs: Vec<Attribute>,
-    _star: syn::token::Star,
-    alias: Option<Alias>,
+    pub attrs: Vec<Attribute>,
+    pub star: syn::token::Star,
+    pub alias: Option<Alias>,
 }
 
 impl Star {
@@ -35,17 +35,13 @@ impl Star {
             quote! { #table_path::Select },
         )
     }
-
-    pub fn alias(&self) -> Option<&Alias> {
-        self.alias.as_ref()
-    }
 }
 
 impl Parse for Star {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             attrs: input.call(Attribute::parse_outer)?,
-            _star: input.parse()?,
+            star: input.parse()?,
             alias: input.call(Alias::parse_optional)?,
         })
     }

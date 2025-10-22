@@ -16,14 +16,14 @@ pub struct Table {
     pub inner_attrs: Vec<Attribute>,
     pub outer_attrs: Vec<Attribute>,
 
-    pub _create: kw::create,
-    pub _table: kw::table,
-    pub _paren: syn::token::Paren,
+    pub create: kw::create,
+    pub table: kw::table,
+    pub paren: syn::token::Paren,
 
     pub name: Ident,
     pub columns: Punctuated<Column, Token![,]>,
 
-    pub _semi: Token![;],
+    pub semi: Token![;],
 
     pub relations: Punctuated<Relation, Token![,]>,
 }
@@ -42,12 +42,12 @@ impl Parse for Table {
                 CustomMeta::parse_attrs(&attrs, MetaLocation::TableOuter)?;
                 attrs
             },
-            _create: input.parse()?,
-            _table: input.parse()?,
+            create: input.parse()?,
+            table: input.parse()?,
             name: input.parse()?,
-            _paren: syn::parenthesized!(content in input),
+            paren: syn::parenthesized!(content in input),
             columns: content.parse_terminated(Column::parse, Token![,])?,
-            _semi: input.parse()?,
+            semi: input.parse()?,
             relations: input.parse_terminated(Relation::parse, Token![,])?,
         })
     }

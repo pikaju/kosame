@@ -2,13 +2,13 @@ use std::fmt::Write;
 
 use crate::{runtime::expr::Expr, sql};
 
-pub struct OrderBy {
-    entries: &'static [OrderByEntry],
+pub struct OrderBy<'a> {
+    entries: &'a [OrderByEntry<'a>],
 }
 
-impl OrderBy {
+impl<'a> OrderBy<'a> {
     #[inline]
-    pub const fn new(entries: &'static [OrderByEntry]) -> Self {
+    pub const fn new(entries: &'a [OrderByEntry]) -> Self {
         Self { entries }
     }
 
@@ -25,15 +25,15 @@ impl OrderBy {
     }
 }
 
-pub struct OrderByEntry {
-    expr: Expr,
+pub struct OrderByEntry<'a> {
+    expr: Expr<'a>,
     dir: Option<OrderByDir>,
     nulls: Option<OrderByNulls>,
 }
 
-impl OrderByEntry {
+impl<'a> OrderByEntry<'a> {
     #[inline]
-    pub const fn new(expr: Expr, dir: Option<OrderByDir>, nulls: Option<OrderByNulls>) -> Self {
+    pub const fn new(expr: Expr<'a>, dir: Option<OrderByDir>, nulls: Option<OrderByNulls>) -> Self {
         Self { expr, dir, nulls }
     }
 

@@ -1,16 +1,16 @@
 use super::*;
 
-pub struct Table {
-    name: &'static str,
-    columns: &'static [&'static Column],
-    relations: &'static [&'static Relation],
+pub struct Table<'a> {
+    name: &'a str,
+    columns: &'a [&'a Column<'a>],
+    relations: &'a [&'a Relation<'a>],
 }
 
-impl Table {
+impl<'a> Table<'a> {
     pub const fn new(
-        name: &'static str,
-        columns: &'static [&'static Column],
-        relations: &'static [&'static Relation],
+        name: &'a str,
+        columns: &'a [&'a Column],
+        relations: &'a [&'a Relation],
     ) -> Self {
         Self {
             name,
@@ -20,17 +20,17 @@ impl Table {
     }
 
     #[inline]
-    pub const fn name(&self) -> &'static str {
+    pub const fn name(&self) -> &str {
         self.name
     }
 
     #[inline]
-    pub const fn columns(&self) -> &'static [&'static Column] {
+    pub const fn columns(&self) -> &[&Column<'_>] {
         self.columns
     }
 
     #[inline]
-    pub const fn relations(&self) -> &'static [&'static Relation] {
+    pub const fn relations(&self) -> &[&Relation<'_>] {
         self.relations
     }
 }

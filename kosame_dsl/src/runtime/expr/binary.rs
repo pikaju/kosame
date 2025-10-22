@@ -4,15 +4,15 @@ use crate::sql;
 
 use super::Expr;
 
-pub struct Binary {
-    left: &'static Expr,
+pub struct Binary<'a> {
+    left: &'a Expr<'a>,
     op: BinOp,
-    right: &'static Expr,
+    right: &'a Expr<'a>,
 }
 
-impl Binary {
+impl<'a> Binary<'a> {
     #[inline]
-    pub const fn new(left: &'static Expr, op: BinOp, right: &'static Expr) -> Self {
+    pub const fn new(left: &'a Expr<'a>, op: BinOp, right: &'a Expr<'a>) -> Self {
         Self { left, op, right }
     }
 

@@ -3,14 +3,14 @@ use std::fmt::Write;
 use super::Expr;
 use crate::sql;
 
-pub struct Call {
-    function: &'static str,
-    params: &'static [&'static Expr],
+pub struct Call<'a> {
+    function: &'a str,
+    params: &'a [&'a Expr<'a>],
 }
 
-impl Call {
+impl<'a> Call<'a> {
     #[inline]
-    pub const fn new(function: &'static str, params: &'static [&'static Expr]) -> Self {
+    pub const fn new(function: &'a str, params: &'a [&'a Expr]) -> Self {
         Self { function, params }
     }
 

@@ -1,20 +1,20 @@
 use super::*;
 
-pub struct Relation {
-    name: &'static str,
-    source_table: &'static str,
-    source_columns: &'static [&'static Column],
-    target_table: &'static str,
-    target_columns: &'static [&'static Column],
+pub struct Relation<'a> {
+    name: &'a str,
+    source_table: &'a str,
+    source_columns: &'a [&'a Column<'a>],
+    target_table: &'a str,
+    target_columns: &'a [&'a Column<'a>],
 }
 
-impl Relation {
+impl<'a> Relation<'a> {
     pub const fn new(
-        name: &'static str,
-        source_table: &'static str,
-        source_columns: &'static [&'static Column],
-        target_table: &'static str,
-        target_columns: &'static [&'static Column],
+        name: &'a str,
+        source_table: &'a str,
+        source_columns: &'a [&'a Column],
+        target_table: &'a str,
+        target_columns: &'a [&'a Column],
     ) -> Self {
         Self {
             name,
@@ -26,32 +26,32 @@ impl Relation {
     }
 
     #[inline]
-    pub const fn name(&self) -> &'static str {
+    pub const fn name(&self) -> &str {
         self.name
     }
 
     #[inline]
-    pub const fn source_table(&self) -> &'static str {
+    pub const fn source_table(&self) -> &str {
         self.source_table
     }
 
     #[inline]
-    pub const fn source_columns(&self) -> &'static [&'static Column] {
+    pub const fn source_columns(&self) -> &[&Column<'_>] {
         self.source_columns
     }
 
     #[inline]
-    pub const fn target_table(&self) -> &'static str {
+    pub const fn target_table(&self) -> &str {
         self.target_table
     }
 
     #[inline]
-    pub const fn target_columns(&self) -> &'static [&'static Column] {
+    pub const fn target_columns(&self) -> &[&Column<'_>] {
         self.target_columns
     }
 
     #[inline]
-    pub fn column_pairs(&self) -> impl Iterator<Item = (&Column, &Column)> {
+    pub fn column_pairs(&self) -> impl Iterator<Item = (&Column<'_>, &Column<'_>)> {
         self.source_columns
             .iter()
             .zip(self.target_columns)

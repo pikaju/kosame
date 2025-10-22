@@ -7,7 +7,7 @@ use syn::{
 
 use crate::lang::expr::Expr;
 
-pub struct ColumnConstraints(Vec<ColumnConstraint>);
+pub struct ColumnConstraints(pub Vec<ColumnConstraint>);
 
 impl ColumnConstraints {
     pub fn not_null(&self) -> Option<&NotNull> {
