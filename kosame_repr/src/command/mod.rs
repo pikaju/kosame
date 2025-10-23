@@ -1,5 +1,7 @@
-mod field;
 mod select;
 
-pub use field::*;
 pub use select::*;
+
+pub enum Command<'a> {
+    Select(Select<'a>),
+}

@@ -7,7 +7,10 @@ use syn::{
 };
 
 use super::Limit;
-use crate::expr::{Expr, Visitor};
+use crate::{
+    clause::Offset,
+    expr::{Expr, Visitor},
+};
 
 mod kw {
     use syn::custom_keyword;
@@ -52,9 +55,12 @@ impl Parse for OrderBy {
             _by: input.parse()?,
             entries: {
                 let mut punctuated = Punctuated::new();
-                while !input.is_empty() && !Limit::peek(input) {
+                let quit_cond = |input: ParseStream| {
+                    input.is_empty() || Limit::peek(input) || Offset::peek(input)
+                };
+                while !quit_cond(input) {
                     punctuated.push(input.parse()?);
-                    if input.is_empty() || Limit::peek(input) {
+                    if quit_cond(input) {
                         break;
                     }
                     punctuated.push_punct(input.parse()?);

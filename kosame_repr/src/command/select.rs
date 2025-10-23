@@ -1,7 +1,7 @@
-use crate::{clause::*, command::Fields};
+use crate::{clause, clause::*};
 
 pub struct Select<'a> {
-    fields: Fields<'a>,
+    select: clause::Select<'a>,
     r#where: Option<Where<'a>>,
     group_by: Option<GroupBy<'a>>,
     having: Option<Having<'a>>,
@@ -12,8 +12,29 @@ pub struct Select<'a> {
 
 impl<'a> Select<'a> {
     #[inline]
-    pub const fn fields(&self) -> &Fields<'_> {
-        &self.fields
+    pub const fn new(
+        select: clause::Select<'a>,
+        r#where: Option<Where<'a>>,
+        group_by: Option<GroupBy<'a>>,
+        having: Option<Having<'a>>,
+        order_by: Option<OrderBy<'a>>,
+        limit: Option<Limit<'a>>,
+        offset: Option<Offset<'a>>,
+    ) -> Self {
+        Self {
+            select,
+            r#where,
+            group_by,
+            having,
+            order_by,
+            limit,
+            offset,
+        }
+    }
+
+    #[inline]
+    pub const fn select(&self) -> &clause::Select<'_> {
+        &self.select
     }
 
     #[inline]

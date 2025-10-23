@@ -1,6 +1,6 @@
 use crate::{clause::*, schema::Table};
 
-use super::*;
+use super::Field;
 
 pub struct Node<'a> {
     table: &'a Table<'a>,

@@ -1,13 +1,16 @@
 mod alias;
 mod attribute;
 mod clause;
+mod command;
 mod docs;
 mod driver;
 mod expr;
 mod path_ext;
 mod query;
+mod quote_option;
 mod row;
 mod schema;
+mod statement;
 mod type_override;
 
 use proc_macro_error::proc_macro_error;
@@ -18,6 +21,13 @@ use syn::{DeriveInput, parse_macro_input};
 #[proc_macro]
 pub fn table(tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(tokens as schema::Table);
+    quote! { #input }.into()
+}
+
+#[proc_macro_error]
+#[proc_macro]
+pub fn statement(tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let input = parse_macro_input!(tokens as statement::Statement);
     quote! { #input }.into()
 }
 

@@ -35,33 +35,10 @@ fn main() {
     )
     .unwrap();
 
-    let id = 5;
-    let query = kosame::pg_query! {
-        schema::posts {
-            *,
-            comments {
-                id,
-                content,
-                cast(now() as text) as current_time: ::std::string::String,
-
-                order by upvotes desc
-                limit 5 offset 1
-            }
-
-            where id = :id
-        }
+    kosame::pg_statement! {
+        select 5 + 5
+        where 5 = 5
+        order by pip
+        limit 5
     };
-
-    println!(
-        "=== Query ===\n{}\n=========",
-        RecordArrayRunner {}
-            .query_to_sql::<kosame::sql::postgres::Dialect>(&query)
-            .unwrap()
-    );
-
-    let rows = query
-        .exec_sync(&mut client, &mut RecordArrayRunner {})
-        .unwrap();
-
-    println!("{:#?}", rows);
 }

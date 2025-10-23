@@ -1,5 +1,8 @@
 use crate::expr::Visitor;
-use crate::{clause::*, row::Row};
+use crate::{
+    clause::{Limit, Offset, OrderBy, Where},
+    row::Row,
+};
 
 use super::star::Star;
 use super::*;
