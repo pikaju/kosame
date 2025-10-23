@@ -16,7 +16,7 @@ impl RecordArrayRunner {
     ) -> Result<String, kosame_sql::Error> {
         let mut sql = String::new();
         let mut formatter = kosame_sql::Formatter::<D>::new(&mut sql);
-        fmt_node_sql(&mut formatter, query.root(), None)?;
+        fmt_node_sql(&mut formatter, query.repr(), None)?;
         Ok(sql)
     }
 }
@@ -34,7 +34,7 @@ impl Runner for RecordArrayRunner {
             .query(&sql, &query.params().to_driver())
             .await
             .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
-        Ok(rows.iter().map(<Q as Query>::Row::from).collect())
+        Ok(rows.iter().map(Q::Row::from).collect())
     }
 }
 

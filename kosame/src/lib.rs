@@ -7,5 +7,6 @@ mod error;
 pub mod params;
 pub mod query;
 pub mod relation;
+pub mod statement;
 
 pub use error::*;

@@ -1,4 +1,4 @@
-use std::ops::Deref;
+use std::{fmt::Write, ops::Deref};
 
 use crate::expr::Expr;
 
@@ -24,6 +24,16 @@ impl<'a> Field<'a> {
     }
 }
 
+impl kosame_sql::FmtSql for Field<'_> {
+    fn fmt_sql<D>(&self, formatter: &mut kosame_sql::Formatter<D>) -> kosame_sql::Result
+    where
+        D: kosame_sql::Dialect,
+    {
+        self.expr.fmt_sql(formatter)?;
+        Ok(())
+    }
+}
+
 pub struct Fields<'a>(&'a [Field<'a>]);
 
 impl<'a> Fields<'a> {
@@ -38,5 +48,20 @@ impl<'a> Deref for Fields<'a> {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl kosame_sql::FmtSql for Fields<'_> {
+    fn fmt_sql<D>(&self, formatter: &mut kosame_sql::Formatter<D>) -> kosame_sql::Result
+    where
+        D: kosame_sql::Dialect,
+    {
+        for (index, field) in self.0.iter().enumerate() {
+            field.fmt_sql(formatter)?;
+            if index != self.0.len() - 1 {
+                formatter.write_str(", ")?;
+            }
+        }
+        Ok(())
     }
 }

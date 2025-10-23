@@ -1,5 +1,6 @@
 mod alias;
 mod attribute;
+mod bind_params;
 mod clause;
 mod command;
 mod docs;

@@ -10,10 +10,10 @@ pub trait Query {
     type Params: std::fmt::Debug;
     type Row;
 
-    const ROOT: Node<'static>;
+    const REPR: Node<'static>;
 
-    fn root(&self) -> &'static Node<'static> {
-        &Self::ROOT
+    fn repr(&self) -> &'static Node<'static> {
+        &Self::REPR
     }
 
     fn params(&self) -> &Self::Params;

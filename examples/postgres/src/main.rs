@@ -1,4 +1,5 @@
 use kosame::query::{Query, RecordArrayRunner};
+use kosame::statement::Statement;
 
 // Declare your database schema.
 mod schema {
@@ -35,10 +36,11 @@ fn main() {
     )
     .unwrap();
 
-    kosame::pg_statement! {
+    let rows = kosame::pg_statement! {
         select 5 + 5 as kek: i32
-        where 5 = 5
-        order by pip
-        limit 5
-    };
+    }
+    .exec_sync(&mut client)
+    .unwrap();
+
+    println!("{:#?}", rows);
 }

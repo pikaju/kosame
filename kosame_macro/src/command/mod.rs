@@ -42,7 +42,9 @@ impl Parse for Command {
 impl ToTokens for Command {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match self {
-            Self::Select(inner) => quote! { #inner },
+            Self::Select(inner) => quote! {
+                ::kosame::repr::command::Command::Select(#inner)
+            },
         }
         .to_tokens(tokens)
     }

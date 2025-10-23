@@ -67,3 +67,32 @@ impl<'a> Select<'a> {
         self.offset.as_ref()
     }
 }
+
+impl kosame_sql::FmtSql for Select<'_> {
+    fn fmt_sql<D>(&self, formatter: &mut kosame_sql::Formatter<D>) -> kosame_sql::Result
+    where
+        D: kosame_sql::Dialect,
+    {
+        self.select.fmt_sql(formatter)?;
+        if let Some(inner) = self.r#where.as_ref() {
+            inner.fmt_sql(formatter)?;
+        }
+        if let Some(inner) = self.group_by.as_ref() {
+            inner.fmt_sql(formatter)?;
+        }
+        if let Some(inner) = self.having.as_ref() {
+            inner.fmt_sql(formatter)?;
+        }
+        if let Some(inner) = self.order_by.as_ref() {
+            inner.fmt_sql(formatter)?;
+        }
+        if let Some(inner) = self.limit.as_ref() {
+            inner.fmt_sql(formatter)?;
+        }
+        if let Some(inner) = self.offset.as_ref() {
+            inner.fmt_sql(formatter)?;
+        }
+
+        Ok(())
+    }
+}

@@ -1,4 +1,3 @@
-mod bind_params;
 mod field;
 mod node;
 mod node_path;
@@ -17,8 +16,8 @@ use syn::{
 use crate::{
     alias::Alias,
     attribute::{CustomMeta, MetaLocation},
+    bind_params::BindParamsBuilder,
     path_ext::PathExt,
-    query::bind_params::BindParamsBuilder,
 };
 
 pub struct Query {
@@ -100,7 +99,7 @@ impl ToTokens for Query {
                     type Params = Params #lifetime;
                     type Row = Row;
 
-                    const ROOT: ::kosame::query::Node<'static> = #query_node;
+                    const REPR: ::kosame::query::Node<'static> = #query_node;
 
                     fn params(&self) -> &Self::Params {
                         &self.params
