@@ -5,12 +5,11 @@ use syn::{
     Attribute, Token,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
-    spanned::Spanned,
 };
 
 use crate::{
     alias::Alias,
-    clause::{Limit, Offset, OrderBy, Where},
+    clause::{From, GroupBy, Having, Limit, Offset, OrderBy, Where, peek_clause},
     expr::Expr,
     path_ext::PathExt,
     row::RowField,
@@ -77,11 +76,7 @@ impl Parse for Fields {
         let mut fields = Punctuated::<Field, _>::new();
 
         while !input.is_empty() {
-            if Where::peek(input)
-                || OrderBy::peek(input)
-                || Limit::peek(input)
-                || Offset::peek(input)
-            {
+            if peek_clause(input) {
                 break;
             }
 

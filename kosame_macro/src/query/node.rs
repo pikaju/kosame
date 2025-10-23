@@ -1,3 +1,4 @@
+use crate::clause::peek_clause;
 use crate::expr::Visitor;
 use crate::{
     clause::{Limit, Offset, OrderBy, Where},
@@ -279,11 +280,7 @@ impl Parse for Node {
 
         let mut fields = Punctuated::<Field, _>::new();
         while !content.is_empty() {
-            if Where::peek(&content)
-                || OrderBy::peek(&content)
-                || Limit::peek(&content)
-                || Offset::peek(&content)
-            {
+            if peek_clause(input) {
                 break;
             }
 

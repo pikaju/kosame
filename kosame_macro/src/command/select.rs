@@ -6,13 +6,14 @@ use syn::{
 };
 
 use crate::{
-    clause::{self, Fields, GroupBy, Having, Limit, Offset, OrderBy, Where},
+    clause::{self, Fields, From, GroupBy, Having, Limit, Offset, OrderBy, Where},
     quote_option::QuoteOption,
 };
 
 pub struct Select {
     attrs: Vec<Attribute>,
     select: clause::Select,
+    from: Option<From>,
     r#where: Option<Where>,
     group_by: Option<GroupBy>,
     having: Option<Having>,
@@ -45,6 +46,7 @@ impl Parse for Select {
         Ok(Self {
             attrs: input.call(Attribute::parse_outer)?,
             select: input.parse()?,
+            from: input.call(From::parse_optional)?,
             r#where: input.call(Where::parse_optional)?,
             group_by: input.call(GroupBy::parse_optional)?,
             having: input.call(Having::parse_optional)?,
@@ -58,6 +60,7 @@ impl Parse for Select {
 impl ToTokens for Select {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let select = &self.select;
+        let from = QuoteOption(self.from.as_ref());
         let r#where = QuoteOption(self.r#where.as_ref());
         let group_by = QuoteOption(self.group_by.as_ref());
         let having = QuoteOption(self.having.as_ref());
@@ -67,6 +70,7 @@ impl ToTokens for Select {
         quote! {
             ::kosame::repr::command::Select::new(
                 #select,
+                #from,
                 #r#where,
                 #group_by,
                 #having,

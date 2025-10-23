@@ -6,9 +6,8 @@ use syn::{
     punctuated::Punctuated,
 };
 
-use super::Limit;
 use crate::{
-    clause::{Having, Offset, OrderBy},
+    clause::peek_clause,
     expr::{Expr, Visitor},
 };
 
@@ -48,16 +47,12 @@ impl Parse for GroupBy {
             _by: input.parse()?,
             entries: {
                 let mut punctuated = Punctuated::new();
-                let quit_cond = |input: ParseStream| {
-                    input.is_empty()
-                        || Having::peek(input)
-                        || OrderBy::peek(input)
-                        || Limit::peek(input)
-                        || Offset::peek(input)
-                };
-                while !quit_cond(input) {
+                while !input.is_empty() {
+                    if peek_clause(input) {
+                        break;
+                    }
                     punctuated.push(input.parse()?);
-                    if quit_cond(input) {
+                    if !input.peek(Token![,]) {
                         break;
                     }
                     punctuated.push_punct(input.parse()?);

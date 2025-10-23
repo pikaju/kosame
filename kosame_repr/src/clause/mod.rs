@@ -1,4 +1,5 @@
 mod field;
+mod from;
 mod group_by;
 mod having;
 mod limit;
@@ -8,6 +9,7 @@ mod select;
 mod r#where;
 
 pub use field::*;
+pub use from::*;
 pub use group_by::*;
 pub use having::*;
 pub use limit::*;

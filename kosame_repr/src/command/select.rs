@@ -2,6 +2,7 @@ use crate::{clause, clause::*};
 
 pub struct Select<'a> {
     select: clause::Select<'a>,
+    from: Option<From<'a>>,
     r#where: Option<Where<'a>>,
     group_by: Option<GroupBy<'a>>,
     having: Option<Having<'a>>,
@@ -12,8 +13,10 @@ pub struct Select<'a> {
 
 impl<'a> Select<'a> {
     #[inline]
+    #[allow(clippy::too_many_arguments)]
     pub const fn new(
         select: clause::Select<'a>,
+        from: Option<From<'a>>,
         r#where: Option<Where<'a>>,
         group_by: Option<GroupBy<'a>>,
         having: Option<Having<'a>>,
@@ -23,6 +26,7 @@ impl<'a> Select<'a> {
     ) -> Self {
         Self {
             select,
+            from,
             r#where,
             group_by,
             having,
@@ -35,6 +39,11 @@ impl<'a> Select<'a> {
     #[inline]
     pub const fn select(&self) -> &clause::Select<'_> {
         &self.select
+    }
+
+    #[inline]
+    pub const fn from(&self) -> Option<&From<'_>> {
+        self.from.as_ref()
     }
 
     #[inline]
@@ -74,6 +83,9 @@ impl kosame_sql::FmtSql for Select<'_> {
         D: kosame_sql::Dialect,
     {
         self.select.fmt_sql(formatter)?;
+        if let Some(inner) = self.from.as_ref() {
+            inner.fmt_sql(formatter)?;
+        }
         if let Some(inner) = self.r#where.as_ref() {
             inner.fmt_sql(formatter)?;
         }
