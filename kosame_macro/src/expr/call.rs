@@ -1,5 +1,5 @@
 use super::{Expr, Visitor};
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
 use syn::{
     Ident, Token, parenthesized,
@@ -24,11 +24,12 @@ impl Call {
             param.accept(visitor);
         }
     }
-}
 
-impl Spanned for Call {
-    fn span(&self) -> Span {
-        self.function.span().join(self.paren.span)
+    pub fn span(&self) -> Span {
+        self.function
+            .span()
+            .join(self.paren.span.span())
+            .expect("same file")
     }
 }
 

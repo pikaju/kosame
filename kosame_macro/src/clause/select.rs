@@ -19,6 +19,10 @@ impl Select {
     pub fn peek(input: ParseStream) -> bool {
         input.peek(kw::select)
     }
+
+    pub fn fields(&self) -> &Fields {
+        &self.fields
+    }
 }
 
 impl Parse for Select {

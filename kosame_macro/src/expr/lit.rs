@@ -23,10 +23,8 @@ pub enum Lit {
 
 impl Lit {
     pub fn accept<'a>(&'a self, _visitor: &mut impl Visitor<'a>) {}
-}
 
-impl Spanned for Lit {
-    fn span(&self) -> Span {
+    pub fn span(&self) -> Span {
         match self {
             Self::Int(inner) => inner.span(),
             Self::Float(inner) => inner.span(),

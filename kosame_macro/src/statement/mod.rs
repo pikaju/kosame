@@ -1,11 +1,11 @@
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
 use syn::{
-    Attribute,
+    Attribute, Ident,
     parse::{Parse, ParseStream},
 };
 
-use crate::command::Command;
+use crate::{command::Command, row::Row};
 
 mod kw {
     use syn::custom_keyword;
@@ -30,7 +30,14 @@ impl Parse for Statement {
 impl ToTokens for Statement {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let command = &self.command;
+        let fields = command.fields();
+        let row = Row::new(
+            command.attrs().to_owned(),
+            Ident::new("Row", Span::call_site()),
+            fields.iter().map(|field| field.to_row_field()).collect(),
+        );
         quote! {
+            #row
             #command
         }
         .to_tokens(tokens);

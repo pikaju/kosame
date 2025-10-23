@@ -1,10 +1,9 @@
 use super::Visitor;
 use proc_macro2::{Span, TokenStream};
-use quote::{IdentFragment, ToTokens, quote};
+use quote::{ToTokens, quote};
 use syn::{
     Ident, Token,
     parse::{Parse, ParseStream},
-    spanned::Spanned,
 };
 
 pub struct BindParam {
@@ -24,11 +23,9 @@ impl BindParam {
     pub fn peek(input: ParseStream) -> bool {
         input.peek(Token![:])
     }
-}
 
-impl Spanned for BindParam {
-    fn span(&self) -> Span {
-        self.colon.span.join(self.name.span())
+    pub fn span(&self) -> Span {
+        self.colon.span.join(self.name.span()).expect("same file")
     }
 }
 

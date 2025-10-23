@@ -15,11 +15,9 @@ pub struct Paren {
 
 impl Paren {
     pub fn accept<'a>(&'a self, _visitor: &mut impl Visitor<'a>) {}
-}
 
-impl Spanned for Paren {
-    fn span(&self) -> Span {
-        self.paren.span()
+    pub fn span(&self) -> Span {
+        self.paren.span.span()
     }
 }
 

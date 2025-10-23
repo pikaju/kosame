@@ -2,12 +2,31 @@ mod select;
 
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
-use syn::parse::{Parse, ParseStream};
+use syn::{
+    Attribute,
+    parse::{Parse, ParseStream},
+};
 
 pub use select::*;
 
+use crate::clause::Fields;
+
 pub enum Command {
     Select(Select),
+}
+
+impl Command {
+    pub fn attrs(&self) -> &[Attribute] {
+        match self {
+            Self::Select(inner) => inner.attrs(),
+        }
+    }
+
+    pub fn fields(&self) -> &Fields {
+        match self {
+            Self::Select(inner) => inner.fields(),
+        }
+    }
 }
 
 impl Parse for Command {

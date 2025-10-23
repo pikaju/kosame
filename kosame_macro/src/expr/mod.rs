@@ -113,10 +113,8 @@ impl Expr {
 
         Ok(lhs)
     }
-}
 
-impl Spanned for Expr {
-    fn span(&self) -> Span {
+    pub fn span(&self) -> Span {
         macro_rules! branches {
             ($($variant:ident)*) => {
                 match self {
@@ -125,7 +123,7 @@ impl Spanned for Expr {
             };
         }
 
-        variants!(branches!());
+        variants!(branches!())
     }
 }
 

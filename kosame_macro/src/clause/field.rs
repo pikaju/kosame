@@ -5,12 +5,14 @@ use syn::{
     Attribute, Token,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
+    spanned::Spanned,
 };
 
 use crate::{
     alias::Alias,
     clause::{Limit, Offset, OrderBy, Where},
     expr::Expr,
+    path_ext::PathExt,
     row::RowField,
     type_override::TypeOverride,
 };
@@ -23,13 +25,19 @@ pub struct Field {
 }
 
 impl Field {
-    fn to_row_field(&self) -> RowField {
+    pub fn to_row_field(&self) -> RowField {
         let Some(alias) = self.alias.as_ref() else {
-            abort!();
+            abort!(self.expr.span(), "field requires alias using `as my_alias`");
+        };
+        let Some(type_override) = self.type_override.as_ref() else {
+            abort!(
+                self.expr.span(),
+                "field requires type override using `: RustType`"
+            );
         };
         RowField::new(
             self.attrs.clone(),
-            self.alias.ident().clone(),
+            alias.ident().clone(),
             type_override.type_path().to_call_site(1).to_token_stream(),
         )
     }
@@ -57,6 +65,12 @@ impl ToTokens for Field {
 }
 
 pub struct Fields(Punctuated<Field, Token![,]>);
+
+impl Fields {
+    pub fn iter(&self) -> impl Iterator<Item = &Field> {
+        self.0.iter()
+    }
+}
 
 impl Parse for Fields {
     fn parse(input: ParseStream) -> syn::Result<Self> {

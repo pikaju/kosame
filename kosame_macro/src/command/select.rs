@@ -6,12 +6,12 @@ use syn::{
 };
 
 use crate::{
-    clause::{self, GroupBy, Having, Limit, Offset, OrderBy, Where},
+    clause::{self, Fields, GroupBy, Having, Limit, Offset, OrderBy, Where},
     quote_option::QuoteOption,
 };
 
 pub struct Select {
-    _attrs: Vec<Attribute>,
+    attrs: Vec<Attribute>,
     select: clause::Select,
     r#where: Option<Where>,
     group_by: Option<GroupBy>,
@@ -30,12 +30,20 @@ impl Select {
         }
         clause::Select::peek(&input)
     }
+
+    pub fn attrs(&self) -> &[Attribute] {
+        &self.attrs
+    }
+
+    pub fn fields(&self) -> &Fields {
+        self.select.fields()
+    }
 }
 
 impl Parse for Select {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            _attrs: input.call(Attribute::parse_outer)?,
+            attrs: input.call(Attribute::parse_outer)?,
             select: input.parse()?,
             r#where: input.call(Where::parse_optional)?,
             group_by: input.call(GroupBy::parse_optional)?,

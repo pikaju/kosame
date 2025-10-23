@@ -58,9 +58,7 @@ impl UnaryOp {
             Self::Not(_) => 3,
         }
     }
-}
 
-impl Spanned for UnaryOp {
     fn span(&self) -> Span {
         match self {
             Self::Not(inner) => inner.span,
