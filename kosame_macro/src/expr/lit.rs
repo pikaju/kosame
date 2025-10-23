@@ -1,7 +1,10 @@
 use super::Visitor;
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
-use syn::parse::{Parse, ParseStream};
+use syn::{
+    parse::{Parse, ParseStream},
+    spanned::Spanned,
+};
 
 mod kw {
     use syn::custom_keyword;
@@ -20,6 +23,18 @@ pub enum Lit {
 
 impl Lit {
     pub fn accept<'a>(&'a self, _visitor: &mut impl Visitor<'a>) {}
+}
+
+impl Spanned for Lit {
+    fn span(&self) -> Span {
+        match self {
+            Self::Int(inner) => inner.span(),
+            Self::Float(inner) => inner.span(),
+            Self::Str(inner) => inner.span(),
+            Self::Bool(inner) => inner.span(),
+            Self::Null(inner) => inner.span(),
+        }
+    }
 }
 
 impl Parse for Lit {

@@ -1,6 +1,9 @@
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
-use syn::parse::{Parse, ParseStream};
+use syn::{
+    parse::{Parse, ParseStream},
+    spanned::Spanned,
+};
 
 use super::{Expr, Visitor};
 
@@ -53,6 +56,14 @@ impl UnaryOp {
         // Taken from https://www.postgresql.org/docs/18/sql-syntax-lexical.html#SQL-PRECEDENCE
         match self {
             Self::Not(_) => 3,
+        }
+    }
+}
+
+impl Spanned for UnaryOp {
+    fn span(&self) -> Span {
+        match self {
+            Self::Not(inner) => inner.span,
         }
     }
 }

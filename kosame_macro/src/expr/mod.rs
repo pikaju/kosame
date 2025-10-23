@@ -19,9 +19,12 @@ pub use paren::*;
 pub use unary::*;
 pub use visitor::*;
 
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
-use syn::parse::{Parse, ParseStream};
+use syn::{
+    parse::{Parse, ParseStream},
+    spanned::Spanned,
+};
 
 pub enum Expr {
     Binary(Binary),
@@ -109,6 +112,20 @@ impl Expr {
         }
 
         Ok(lhs)
+    }
+}
+
+impl Spanned for Expr {
+    fn span(&self) -> Span {
+        macro_rules! branches {
+            ($($variant:ident)*) => {
+                match self {
+                    $(Self::$variant(inner) => inner.span()),*
+                }
+            };
+        }
+
+        variants!(branches!());
     }
 }
 

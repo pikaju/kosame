@@ -1,13 +1,14 @@
 use super::Visitor;
-use proc_macro2::TokenStream;
-use quote::{ToTokens, quote};
+use proc_macro2::{Span, TokenStream};
+use quote::{IdentFragment, ToTokens, quote};
 use syn::{
     Ident, Token,
     parse::{Parse, ParseStream},
+    spanned::Spanned,
 };
 
 pub struct BindParam {
-    _colon: Token![:],
+    colon: Token![:],
     name: Ident,
 }
 
@@ -25,10 +26,16 @@ impl BindParam {
     }
 }
 
+impl Spanned for BindParam {
+    fn span(&self) -> Span {
+        self.colon.span.join(self.name.span())
+    }
+}
+
 impl Parse for BindParam {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            _colon: input.parse()?,
+            colon: input.parse()?,
             name: input.parse()?,
         })
     }

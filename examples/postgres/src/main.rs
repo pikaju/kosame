@@ -36,7 +36,7 @@ fn main() {
     .unwrap();
 
     kosame::pg_statement! {
-        select 5 + 5
+        select 5 + 5 as kek: i32
         where 5 = 5
         order by pip
         limit 5

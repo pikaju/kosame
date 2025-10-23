@@ -3,14 +3,15 @@ use quote::{ToTokens, quote};
 use syn::{
     Ident, Token, parenthesized,
     parse::{Parse, ParseStream},
+    spanned::Spanned,
     token::Paren,
 };
 
 use super::{Expr, Visitor};
 
 pub struct Cast {
-    _cast: kw::cast,
-    _paren: Paren,
+    cast: kw::cast,
+    paren: Paren,
     value: Box<Expr>,
     _as: Token![as],
     data_type: Ident,
@@ -26,12 +27,18 @@ impl Cast {
     }
 }
 
+impl Spanned for Cast {
+    fn span(&self) -> Span {
+        self.cast.span.join(self.paren.span)
+    }
+}
+
 impl Parse for Cast {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let content;
         Ok(Self {
-            _cast: input.parse()?,
-            _paren: parenthesized!(content in input),
+            cast: input.parse()?,
+            paren: parenthesized!(content in input),
             value: content.parse()?,
             _as: content.parse()?,
             data_type: content.parse()?,

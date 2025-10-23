@@ -1,7 +1,9 @@
 use super::Expr;
 use super::Visitor;
+use proc_macro2::Span;
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
+use syn::spanned::Spanned;
 use syn::{
     Token,
     parse::{Parse, ParseStream},
@@ -110,6 +112,29 @@ impl BinOp {
             Self::IsDistinctFrom(..) => 4,
             Self::And(_) => 2,
             Self::Or(_) => 1,
+        }
+    }
+}
+
+impl Spanned for BinOp {
+    fn span(&self) -> Span {
+        match self {
+            Self::Multiply(inner) => inner.span,
+            Self::Divide(inner) => inner.span,
+            Self::Modulo(inner) => inner.span,
+            Self::Add(inner) => inner.span,
+            Self::Subtract(inner) => inner.span,
+            Self::Eq(inner) => inner.span,
+            Self::Uneq(lt, gt) => lt.span.join(gt.span),
+            Self::LessThan(inner) => inner.span,
+            Self::GreaterThan(inner) => inner.span,
+            Self::LessThanOrEq(lt, eq) => lt.span.join(eq.span),
+            Self::GreaterThanOrEq(gt, eq) => gt.span.join(eq.span),
+            Self::Is(inner) => inner.span,
+            Self::IsNot(is, not) => is.span.join(not.span),
+            Self::IsDistinctFrom(is, .., from) => is.span.join(from.span),
+            Self::And(inner) => inner.span,
+            Self::Or(inner) => inner.span,
         }
     }
 }

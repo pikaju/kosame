@@ -5,11 +5,12 @@ use syn::{
     Ident, Token, parenthesized,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
+    spanned::Spanned,
 };
 
 pub struct Call {
     function: Ident,
-    _paren: syn::token::Paren,
+    paren: syn::token::Paren,
     params: Punctuated<Expr, Token![,]>,
 }
 
@@ -25,12 +26,18 @@ impl Call {
     }
 }
 
+impl Spanned for Call {
+    fn span(&self) -> Span {
+        self.function.span().join(self.paren.span)
+    }
+}
+
 impl Parse for Call {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let content;
         Ok(Self {
             function: input.parse()?,
-            _paren: parenthesized!(content in input),
+            paren: parenthesized!(content in input),
             params: content.parse_terminated(Expr::parse, Token![,])?,
         })
     }

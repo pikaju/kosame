@@ -1,9 +1,10 @@
 use super::Visitor;
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
 use syn::{
     Ident,
     parse::{Parse, ParseStream},
+    spanned::Spanned,
 };
 
 pub struct ColumnRef {
@@ -12,6 +13,12 @@ pub struct ColumnRef {
 
 impl ColumnRef {
     pub fn accept<'a>(&'a self, _visitor: &mut impl Visitor<'a>) {}
+}
+
+impl Spanned for ColumnRef {
+    fn span(&self) -> Span {
+        self.name.span()
+    }
 }
 
 impl Parse for ColumnRef {

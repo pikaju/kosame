@@ -1,3 +1,4 @@
+use proc_macro_error::abort;
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::{
@@ -10,6 +11,7 @@ use crate::{
     alias::Alias,
     clause::{Limit, Offset, OrderBy, Where},
     expr::Expr,
+    row::RowField,
     type_override::TypeOverride,
 };
 
@@ -18,6 +20,19 @@ pub struct Field {
     expr: Expr,
     alias: Option<Alias>,
     type_override: Option<TypeOverride>,
+}
+
+impl Field {
+    fn to_row_field(&self) -> RowField {
+        let Some(alias) = self.alias.as_ref() else {
+            abort!();
+        };
+        RowField::new(
+            self.attrs.clone(),
+            self.alias.ident().clone(),
+            type_override.type_path().to_call_site(1).to_token_stream(),
+        )
+    }
 }
 
 impl Parse for Field {
