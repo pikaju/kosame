@@ -5,6 +5,7 @@ mod having;
 mod limit;
 mod offset;
 mod order_by;
+mod returning;
 mod select;
 mod r#where;
 
@@ -15,5 +16,6 @@ pub use having::*;
 pub use limit::*;
 pub use offset::*;
 pub use order_by::*;
+pub use returning::*;
 pub use select::*;
 pub use r#where::*;
