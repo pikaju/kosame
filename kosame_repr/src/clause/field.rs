@@ -25,6 +25,7 @@ impl<'a> Field<'a> {
 }
 
 impl kosame_sql::FmtSql for Field<'_> {
+    #[inline]
     fn fmt_sql<D>(&self, formatter: &mut kosame_sql::Formatter<D>) -> kosame_sql::Result
     where
         D: kosame_sql::Dialect,

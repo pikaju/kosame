@@ -29,9 +29,10 @@ pub struct Table {
 
     pub _create: kw::create,
     pub _table: kw::table,
+    pub name: Ident,
+
     pub _paren: syn::token::Paren,
 
-    pub name: Ident,
     pub columns: Punctuated<Column, Token![,]>,
 
     pub _semi: Token![;],

@@ -9,8 +9,8 @@ where
 {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match &self.0 {
-            Some(inner) => quote! { ::std::option::Option::Some(#inner) },
-            None => quote! { ::std::option::Option::None },
+            Some(inner) => quote! { ::core::option::Option::Some(#inner) },
+            None => quote! { ::core::option::Option::None },
         }
         .to_tokens(tokens);
     }

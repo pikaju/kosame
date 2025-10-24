@@ -13,7 +13,7 @@ impl<'a> Where<'a> {
     }
 
     #[inline]
-    pub fn expr(&self) -> &Expr<'_> {
+    pub const fn expr(&self) -> &Expr<'_> {
         &self.expr
     }
 }

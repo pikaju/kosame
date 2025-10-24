@@ -1,6 +1,7 @@
 use crate::{
     attribute::{CustomMeta, MetaLocation},
     path_ext::PathExt,
+    quote_option::QuoteOption,
 };
 
 use super::{column_constraint::ColumnConstraints, data_type::DataType};
@@ -73,13 +74,7 @@ impl ToTokens for Column {
 
         let not_null = self.constraints.not_null().is_some();
         let primary_key = self.constraints.primary_key().is_some();
-        let default = match &self.constraints.default() {
-            Some(default) => {
-                let expr = default.expr();
-                quote! { Some(&#expr) }
-            }
-            None => quote! { None },
-        };
+        let default = QuoteOption(self.constraints.default().map(|default| default.expr()));
 
         quote! {
             pub mod #rust_name {

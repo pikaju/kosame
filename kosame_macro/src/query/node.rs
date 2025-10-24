@@ -1,5 +1,6 @@
 use crate::clause::peek_clause;
 use crate::expr::Visitor;
+use crate::quote_option::QuoteOption;
 use crate::{
     clause::{Limit, Offset, OrderBy, Where},
     row::Row,
@@ -161,13 +162,7 @@ impl Node {
         for field in &self.fields {
             match field {
                 Field::Column { name, alias, .. } => {
-                    let alias = match alias {
-                        Some(alias) => {
-                            let alias = alias.ident().to_string();
-                            quote! { Some(#alias) }
-                        }
-                        None => quote! { None },
-                    };
+                    let alias = QuoteOption(alias.as_ref().map(|alias| alias.ident().to_string()));
                     fields.push(quote! {
                         ::kosame::repr::query::Field::Column {
                             column: &#table_path_call_site::columns::#name::COLUMN,
@@ -178,13 +173,7 @@ impl Node {
                 Field::Relation {
                     name, node, alias, ..
                 } => {
-                    let alias = match alias {
-                        Some(alias) => {
-                            let alias = alias.ident().to_string();
-                            quote! { Some(#alias) }
-                        }
-                        None => quote! { None },
-                    };
+                    let alias = QuoteOption(alias.as_ref().map(|alias| alias.ident().to_string()));
 
                     let node_path = node_path.clone().appended(name.clone());
 
@@ -225,25 +214,10 @@ impl Node {
 
         let star = self.star.is_some();
 
-        let filter = match &self.r#where {
-            Some(r#where) => quote! { Some(#r#where) },
-            None => quote! { None },
-        };
-
-        let order_by = match &self.order_by {
-            Some(order_by) => quote! { Some(#order_by) },
-            None => quote! { None },
-        };
-
-        let limit = match &self.limit {
-            Some(limit) => quote! { Some(#limit) },
-            None => quote! { None },
-        };
-
-        let offset = match &self.offset {
-            Some(offset) => quote! { Some(#offset) },
-            None => quote! { None },
-        };
+        let r#where = QuoteOption(self.r#where.as_ref());
+        let order_by = QuoteOption(self.order_by.as_ref());
+        let limit = QuoteOption(self.limit.as_ref());
+        let offset = QuoteOption(self.offset.as_ref());
 
         quote! {
             {
@@ -252,7 +226,7 @@ impl Node {
                     &#table_path_call_site::TABLE,
                     #star,
                     &[#(#fields),*],
-                    #filter,
+                    #r#where,
                     #order_by,
                     #limit,
                     #offset,

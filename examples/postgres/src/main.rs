@@ -37,13 +37,12 @@ fn main() {
     .unwrap();
 
     let rows = kosame::pg_statement! {
-        select
-            5 + 15 as pip: i32,
-            5 + 5 as kek: i32,
-        from schema::posts
+        // select
+        //     id as pip: i32,
+        // from schema::posts
     }
     .exec_sync(&mut client)
     .unwrap();
 
-    println!("{:#?}", rows);
+    println!("{:#?}", rows[0].pip);
 }

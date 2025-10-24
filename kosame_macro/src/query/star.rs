@@ -29,7 +29,7 @@ impl Star {
                 .cloned()
                 .collect(),
             match &self.alias {
-                Some(as_name) => as_name.ident().clone(),
+                Some(alias) => alias.ident().clone(),
                 None => Ident::new("_star", Span::call_site()),
             },
             quote! { #table_path::Select },
