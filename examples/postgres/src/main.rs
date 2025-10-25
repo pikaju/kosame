@@ -47,16 +47,22 @@ fn main() {
     // .exec_sync(&mut client, &mut RecordArrayRunner {})
     // .unwrap();
 
-    let rows = kosame::pg_statement! {
+    let statement = kosame::pg_statement! {
         select
-            content as pip: ::std::option::Option<::std::string::String>,
-            posts.posts as lel: ::std::string::String,
+            comments.upvotes as pip: i32,
+            comments.post_id as lel: i32,
         from schema::posts
-        left join schema::comments on posts.id = comments.post_id
-        where posts.id > 4
-    }
-    .exec_sync(&mut client)
-    .unwrap();
+        left join schema::comments on true
+        where post_id > 4
+    };
+    use kosame::sql::FmtSql;
+    let sql = statement
+        .repr()
+        .to_sql_string::<kosame::sql::postgres::Dialect>()
+        .unwrap();
+    println!("{}", sql);
+
+    let rows = statement.exec_sync(&mut client).unwrap();
 
     println!("{:#?}", rows);
 }

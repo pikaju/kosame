@@ -3,18 +3,18 @@ use std::fmt::Write;
 use crate::{expr::Expr, schema::Table};
 
 pub struct From<'a> {
-    table: &'a Table<'a>,
+    item: FromItem<'a>,
 }
 
 impl<'a> From<'a> {
     #[inline]
-    pub const fn new(table: &'a Table<'a>) -> Self {
-        Self { table }
+    pub const fn new(item: FromItem<'a>) -> Self {
+        Self { item }
     }
 
     #[inline]
-    pub const fn table(&self) -> &'a Table<'a> {
-        self.table
+    pub const fn item(&self) -> &FromItem<'a> {
+        &self.item
     }
 }
 
@@ -24,7 +24,7 @@ impl kosame_sql::FmtSql for From<'_> {
         D: kosame_sql::Dialect,
     {
         formatter.write_str(" from ")?;
-        formatter.write_ident(self.table.name())?;
+        self.item.fmt_sql(formatter)?;
 
         Ok(())
     }
@@ -131,7 +131,7 @@ impl kosame_sql::FmtSql for FromItem<'_> {
                 left.fmt_sql(formatter)?;
                 join_type.fmt_sql(formatter)?;
                 right.fmt_sql(formatter)?;
-                formatter.write_str(" ")?;
+                formatter.write_str(" on ")?;
                 on.fmt_sql(formatter)?;
             }
         }

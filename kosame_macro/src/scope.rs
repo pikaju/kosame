@@ -2,7 +2,10 @@ use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::Path;
 
-use crate::{clause, path_ext::PathExt};
+use crate::{
+    clause::{self, FromItem},
+    path_ext::PathExt,
+};
 
 #[derive(Default, Clone)]
 pub struct Scope {
@@ -38,7 +41,20 @@ impl Scope {
 
 impl From<&clause::From> for Scope {
     fn from(value: &clause::From) -> Self {
-        Self { tables: vec![] }
+        let mut tables = vec![];
+        fn collect(tables: &mut Vec<Path>, item: &FromItem) {
+            match item {
+                FromItem::Table { table, .. } => {
+                    tables.push(table.clone());
+                }
+                FromItem::Join { left, right, .. } => {
+                    collect(tables, left);
+                    collect(tables, right);
+                }
+            }
+        }
+        collect(&mut tables, &value.item);
+        Self { tables }
     }
 }
 
