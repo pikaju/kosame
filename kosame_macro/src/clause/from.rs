@@ -6,7 +6,7 @@ use syn::{
     punctuated::Punctuated,
 };
 
-use crate::path_ext::PathExt;
+use crate::{clause::peek_clause, expr::Expr, path_ext::PathExt, quote_option::QuoteOption};
 
 mod kw {
     use syn::custom_keyword;
@@ -18,13 +18,15 @@ mod kw {
     custom_keyword!(left);
     custom_keyword!(right);
     custom_keyword!(full);
+    custom_keyword!(on);
+
     custom_keyword!(natural);
     custom_keyword!(cross);
 }
 
 pub struct From {
     pub _from: kw::from,
-    pub table: Path,
+    pub item: FromItem,
 }
 
 impl From {
@@ -41,15 +43,15 @@ impl Parse for From {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             _from: input.parse()?,
-            table: input.parse()?,
+            item: input.parse()?,
         })
     }
 }
 
 impl ToTokens for From {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let table = self.table.to_call_site(1);
-        quote! { ::kosame::repr::clause::From::new(&#table::TABLE) }.to_tokens(tokens);
+        let item = &self.item;
+        quote! { ::kosame::repr::clause::From::new(#item) }.to_tokens(tokens);
     }
 }
 
@@ -57,6 +59,31 @@ pub struct TableAlias {
     pub _as_token: Option<Token![as]>,
     pub name: Ident,
     pub columns: Option<TableAliasColumns>,
+}
+
+impl TableAlias {
+    fn parse_optional(input: ParseStream) -> syn::Result<Option<Self>> {
+        if peek_clause(input) {
+            return Ok(None);
+        }
+        macro_rules! check {
+            ($kw:expr) => {
+                if input.peek($kw) {
+                    return Ok(None);
+                }
+            };
+        }
+        check!(kw::inner);
+        check!(kw::left);
+        check!(kw::right);
+        check!(kw::full);
+        check!(kw::on);
+
+        check!(kw::natural);
+        check!(kw::cross);
+
+        Ok(Some(input.parse()?))
+    }
 }
 
 impl Parse for TableAlias {
@@ -72,6 +99,17 @@ impl Parse for TableAlias {
     }
 }
 
+impl ToTokens for TableAlias {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let name = &self.name;
+        let columns = QuoteOption(self.columns.as_ref());
+        quote! {
+            ::kosame::repr::clause::TableAlias::new(#name, #columns)
+        }
+        .to_tokens(tokens);
+    }
+}
+
 pub struct TableAliasColumns {
     pub _paren_token: syn::token::Paren,
     pub columns: Punctuated<Ident, Token![,]>,
@@ -82,16 +120,44 @@ impl Parse for TableAliasColumns {
         let content;
         Ok(Self {
             _paren_token: parenthesized!(content in input),
-            columns: input.parse_terminated(Ident::parse, Token![,])?,
+            columns: content.parse_terminated(Ident::parse, Token![,])?,
         })
     }
 }
 
+impl ToTokens for TableAliasColumns {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let columns = self.columns.iter().map(|column| column.to_string());
+        quote! {
+            &[#(#columns),*]
+        }
+        .to_tokens(tokens);
+    }
+}
+
+#[allow(unused)]
 pub enum JoinType {
     Inner(kw::inner, kw::join),
     Left(kw::left, kw::join),
     Right(kw::right, kw::join),
     Full(kw::full, kw::join),
+}
+
+impl JoinType {
+    fn peek(input: ParseStream) -> bool {
+        macro_rules! check {
+            ($kw:expr) => {
+                if input.peek($kw) {
+                    return true;
+                }
+            };
+        }
+        check!(kw::inner);
+        check!(kw::left);
+        check!(kw::right);
+        check!(kw::full);
+        false
+    }
 }
 
 impl Parse for JoinType {
@@ -111,9 +177,100 @@ impl Parse for JoinType {
     }
 }
 
+impl ToTokens for JoinType {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        match self {
+            Self::Inner(..) => quote! { ::kosame::repr::clause::JoinType::Inner },
+            Self::Left(..) => quote! { ::kosame::repr::clause::JoinType::Left },
+            Self::Right(..) => quote! { ::kosame::repr::clause::JoinType::Right },
+            Self::Full(..) => quote! { ::kosame::repr::clause::JoinType::Full },
+        }
+        .to_tokens(tokens);
+    }
+}
+
+pub struct On {
+    pub _on_token: kw::on,
+    pub expr: Expr,
+}
+
+impl Parse for On {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        Ok(Self {
+            _on_token: input.parse()?,
+            expr: input.parse()?,
+        })
+    }
+}
+
 pub enum FromItem {
     Table {
         table: Path,
         alias: Option<TableAlias>,
     },
+    Join {
+        left: Box<FromItem>,
+        join_type: JoinType,
+        right: Box<FromItem>,
+        on: On,
+    },
+}
+
+impl FromItem {
+    fn parse_prefix(input: ParseStream) -> syn::Result<Self> {
+        Ok(Self::Table {
+            table: input.parse()?,
+            alias: input.call(TableAlias::parse_optional)?,
+        })
+    }
+}
+
+impl Parse for FromItem {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let mut item = Self::parse_prefix(input)?;
+        while JoinType::peek(input) {
+            item = FromItem::Join {
+                left: Box::new(item),
+                join_type: input.parse()?,
+                right: Box::new(Self::parse_prefix(input)?),
+                on: input.parse()?,
+            }
+        }
+        Ok(item)
+    }
+}
+
+impl ToTokens for FromItem {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        match self {
+            Self::Table { table, alias } => {
+                let table = table.to_call_site(1);
+                let alias = QuoteOption(alias.as_ref());
+                quote! {
+                    ::kosame::repr::clause::FromItem::Table {
+                        table: &#table::TABLE,
+                        alias: #alias,
+                    }
+                }
+                .to_tokens(tokens);
+            }
+            Self::Join {
+                left,
+                join_type,
+                right,
+                on,
+            } => {
+                let on = &on.expr;
+                quote! {
+                    ::kosame::repr::clause::FromItem::Join {
+                        left: &#left,
+                        join_type: #join_type,
+                        right: &#right,
+                        on: #on,
+                    }
+                }
+                .to_tokens(tokens);
+            }
+        }
+    }
 }

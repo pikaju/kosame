@@ -56,6 +56,12 @@ pub struct TableAlias<'a> {
     columns: Option<&'a [&'a str]>,
 }
 
+impl<'a> TableAlias<'a> {
+    pub fn new(alias: &'a str, columns: Option<&'a [&'a str]>) -> Self {
+        Self { alias, columns }
+    }
+}
+
 impl kosame_sql::FmtSql for TableAlias<'_> {
     fn fmt_sql<D>(&self, formatter: &mut kosame_sql::Formatter<D>) -> kosame_sql::Result
     where

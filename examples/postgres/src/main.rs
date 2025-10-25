@@ -52,6 +52,7 @@ fn main() {
             content as pip: ::std::option::Option<::std::string::String>,
             posts.posts as lel: ::std::string::String,
         from schema::posts
+        left join schema::comments on posts.id = comments.post_id
         where posts.id > 4
     }
     .exec_sync(&mut client)

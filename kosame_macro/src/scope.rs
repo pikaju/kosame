@@ -38,9 +38,7 @@ impl Scope {
 
 impl From<&clause::From> for Scope {
     fn from(value: &clause::From) -> Self {
-        Self {
-            tables: vec![value.table.clone()],
-        }
+        Self { tables: vec![] }
     }
 }
 
