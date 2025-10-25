@@ -69,10 +69,7 @@ impl ToTokens for Select {
         let limit = QuoteOption(self.limit.as_ref());
         let offset = QuoteOption(self.offset.as_ref());
 
-        let scope = match &self.from {
-            Some(from) => Scope::from(from),
-            None => Scope::empty(),
-        };
+        let scope = Scope::new(self.from.as_ref());
 
         quote! {
             {

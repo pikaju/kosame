@@ -49,11 +49,10 @@ fn main() {
 
     let statement = kosame::pg_statement! {
         select
-            post_id as post_id: i32,
-            comments.id as comment_id: i32,
+            posts.posts as smep: ::std::string::String,
         from schema::posts
-        left join schema::comments on posts.id = comments.post_id
-        where post_id > 4
+        inner join schema::comments as kek on posts.id = kek.post_id
+        where posts.id > 4
     };
     use kosame::sql::FmtSql;
     let sql = statement

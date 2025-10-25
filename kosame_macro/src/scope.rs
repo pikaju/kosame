@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
-use syn::Path;
+use syn::{Ident, Path};
 
 use crate::{
     clause::{self, FromItem},
@@ -9,66 +9,121 @@ use crate::{
 
 #[derive(Default, Clone)]
 pub struct Scope {
-    tables: Vec<Path>,
+    items: Vec<ScopeItem>,
 }
 
 impl Scope {
-    pub fn empty() -> Self {
-        Self::default()
-    }
-
-    pub fn shadow(&mut self, scope: &Scope) {
-        for table in &scope.tables {
-            if !self.tables.iter().any(|existing_table| {
-                existing_table
-                    .segments
-                    .last()
-                    .expect("paths cannot be empty")
-                    .ident
-                    == table.segments.last().expect("paths cannot be empty").ident
-            }) {
-                self.tables.push(table.clone());
-            }
-        }
-    }
-
-    pub fn shadowed(&self, scope: &Scope) -> Self {
-        let mut result = self.clone();
-        result.shadow(scope);
-        result
-    }
-}
-
-impl From<&clause::From> for Scope {
-    fn from(value: &clause::From) -> Self {
-        let mut tables = vec![];
-        fn collect(tables: &mut Vec<Path>, item: &FromItem) {
-            match item {
-                FromItem::Table { table, .. } => {
-                    tables.push(table.clone());
+    pub fn new(from: Option<&clause::From>) -> Self {
+        let mut items = vec![];
+        if let Some(from) = from {
+            fn collect(items: &mut Vec<ScopeItem>, item: &FromItem) {
+                match item {
+                    FromItem::Table { table, alias } => {
+                        if let Some(alias) = alias
+                            && let Some(columns) = &alias.columns
+                        {
+                            items.push(ScopeItem::CustomTable {
+                                correlation: alias.name.clone(),
+                                columns: columns.columns.iter().cloned().collect(),
+                            });
+                            items.push(ScopeItem::SpreadColumns(alias.name.clone()));
+                        } else {
+                            items.push(ScopeItem::Table {
+                                table: table.clone(),
+                                alias: alias.as_ref().map(|alias| alias.name.clone()),
+                            });
+                            let name = alias
+                                .as_ref()
+                                .map(|alias| alias.name.clone())
+                                .unwrap_or_else(|| {
+                                    table
+                                        .segments
+                                        .last()
+                                        .expect("path cannot be empty")
+                                        .ident
+                                        .clone()
+                                });
+                            items.push(ScopeItem::SpreadColumns(name));
+                        }
+                    }
+                    FromItem::Join { left, right, .. } => {
+                        collect(items, left);
+                        collect(items, right);
+                    }
                 }
-                FromItem::Join { left, right, .. } => {
-                    collect(tables, left);
-                    collect(tables, right);
-                }
             }
+            collect(&mut items, &from.item);
         }
-        collect(&mut tables, &value.item);
-        Self { tables }
+        Self { items }
     }
 }
 
 impl ToTokens for Scope {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let items = self
-            .tables
-            .iter()
-            .map(|path| path.to_call_site(2))
-            .collect::<Vec<_>>();
+        let items = &self.items;
         quote! {
             mod scope {
-                #(pub(super) use #items;)*
-                #(pub(super) use #items::columns::*;)*
+                #(#items)*
+            }
+        }
+        .to_tokens(tokens);
+    }
+}
+
+#[derive(Clone)]
+enum ScopeItem {
+    Table {
+        table: Path,
+        alias: Option<Ident>,
+    },
+    CustomTable {
+        correlation: Ident,
+        columns: Vec<Ident>,
+    },
+    SpreadColumns(Ident),
+}
+
+impl ToTokens for ScopeItem {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        match self {
+            ScopeItem::Table { table, alias } => {
+                if let Some(alias) = alias {
+                    let table = table.to_call_site(4);
+                    let table_name = alias.to_string();
+                    quote! {
+                        pub(super) mod #alias {
+                            pub const TABLE_NAME: &str = #table_name;
+                            pub mod columns {
+                                pub use #table::columns::*;
+                            }
+                        }
+                    }
+                } else {
+                    let table = table.to_call_site(2);
+                    quote! { pub(super) use #table; }
+                }
+            }
+            ScopeItem::CustomTable {
+                correlation,
+                columns,
+            } => {
+                let table_name = correlation.to_string();
+                let column_strings = columns.iter().map(|column| column.to_string());
+                quote! {
+                    pub(super) mod #correlation {
+                        pub const TABLE_NAME: &str = #table_name;
+                        pub mod columns {
+                            #(
+                                pub mod #columns {
+                                    pub const COLUMN_NAME: &str = #column_strings;
+                                }
+                            )*
+                        }
+                    }
+                }
+            }
+            ScopeItem::SpreadColumns(table) => {
+                quote! { pub(super) use #table::columns::*; }
             }
         }
         .to_tokens(tokens);
