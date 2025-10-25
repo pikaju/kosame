@@ -36,24 +36,24 @@ fn main() {
     )
     .unwrap();
 
-    let rows = kosame::pg_query! {
-        schema::posts {
-            *,
-            comments {
-                *
-            }
-        }
-    }
-    .exec_sync(&mut client, &mut RecordArrayRunner {})
-    .unwrap();
-
-    // let rows = kosame::pg_statement! {
-    //     // select
-    //     //     id as pip: i32,
-    //     // from schema::posts
+    // let rows = kosame::pg_query! {
+    //     schema::posts {
+    //         *,
+    //         comments {
+    //             *
+    //         }
+    //     }
     // }
-    // .exec_sync(&mut client)
+    // .exec_sync(&mut client, &mut RecordArrayRunner {})
     // .unwrap();
+
+    let rows = kosame::pg_statement! {
+        select
+            id as pip: i32,
+        from schema::posts
+    }
+    .exec_sync(&mut client)
+    .unwrap();
 
     println!("{:#?}", rows);
 }

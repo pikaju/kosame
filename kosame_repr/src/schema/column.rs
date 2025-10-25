@@ -34,3 +34,12 @@ impl<'a> Column<'a> {
         self.default
     }
 }
+
+impl kosame_sql::FmtSql for Column<'_> {
+    fn fmt_sql<D>(&self, formatter: &mut kosame_sql::Formatter<D>) -> kosame_sql::Result
+    where
+        D: kosame_sql::Dialect,
+    {
+        formatter.write_ident(self.name)
+    }
+}
