@@ -8,6 +8,7 @@ use syn::{
 use crate::{
     clause::{self, Fields, From, GroupBy, Having, Limit, Offset, OrderBy, Where},
     quote_option::QuoteOption,
+    scope::Scope,
 };
 
 pub struct Select {
@@ -67,17 +68,27 @@ impl ToTokens for Select {
         let order_by = QuoteOption(self.order_by.as_ref());
         let limit = QuoteOption(self.limit.as_ref());
         let offset = QuoteOption(self.offset.as_ref());
+
+        let scope = match &self.from {
+            Some(from) => Scope::from(from),
+            None => Scope::empty(),
+        };
+
         quote! {
-            ::kosame::repr::command::Select::new(
-                #select,
-                #from,
-                #r#where,
-                #group_by,
-                #having,
-                #order_by,
-                #limit,
-                #offset,
-            )
+            {
+                #scope
+
+                ::kosame::repr::command::Select::new(
+                    #select,
+                    #from,
+                    #r#where,
+                    #group_by,
+                    #having,
+                    #order_by,
+                    #limit,
+                    #offset,
+                )
+            }
         }
         .to_tokens(tokens);
     }

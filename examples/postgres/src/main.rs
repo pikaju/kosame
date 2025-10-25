@@ -49,7 +49,8 @@ fn main() {
 
     let rows = kosame::pg_statement! {
         select
-            id as pip: i32,
+            posts.content as pip: ::std::option::Option<::std::string::String>,
+            posts.tiitle as lel: ::std::string::String,
         from schema::posts
     }
     .exec_sync(&mut client)

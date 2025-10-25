@@ -14,8 +14,8 @@ mod kw {
 }
 
 pub struct From {
-    _from: kw::from,
-    table: Path,
+    pub _from: kw::from,
+    pub table: Path,
 }
 
 impl From {
