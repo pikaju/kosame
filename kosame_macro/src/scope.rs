@@ -46,10 +46,15 @@ impl From<&clause::From> for Scope {
 
 impl ToTokens for Scope {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let items = self.tables.iter().map(|path| path.to_call_site(2));
+        let items = self
+            .tables
+            .iter()
+            .map(|path| path.to_call_site(2))
+            .collect::<Vec<_>>();
         quote! {
             mod scope {
                 #(pub(super) use #items;)*
+                #(pub(super) use #items::columns::*;)*
             }
         }
         .to_tokens(tokens);
