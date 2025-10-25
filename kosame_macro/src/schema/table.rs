@@ -158,7 +158,7 @@ impl ToTokens for Table {
                     pub use super::relations::*;
                 }
 
-                pub const NAME: &str = #name;
+                pub const TABLE_NAME: &str = #name;
                 pub const TABLE: ::kosame::repr::schema::Table<'_> = ::kosame::repr::schema::Table::new(
                     #name,
                     &[#(&columns::#column_names::COLUMN),*],

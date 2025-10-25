@@ -15,7 +15,15 @@ impl ColumnRef {
     pub fn accept<'a>(&'a self, _visitor: &mut impl Visitor<'a>) {}
 
     pub fn span(&self) -> Span {
-        self.name.span()
+        if let Some(correlation) = &self.correlation {
+            correlation
+                .name
+                .span()
+                .join(self.name.span())
+                .expect("same file")
+        } else {
+            self.name.span()
+        }
     }
 }
 
@@ -48,14 +56,16 @@ impl ToTokens for ColumnRef {
                 let correlation = &correlation.name;
                 quote! {
                     ::kosame::repr::expr::ColumnRef::new(
-                        &scope::#correlation::columns::#name::COLUMN
+                        Some(scope::#correlation::TABLE_NAME),
+                        scope::#correlation::columns::#name::COLUMN_NAME
                     )
                 }
                 .to_tokens(tokens)
             }
             None => quote! {
                 ::kosame::repr::expr::ColumnRef::new(
-                    &scope::#name::COLUMN
+                    ::core::option::Option::None,
+                    scope::#name::COLUMN_NAME
                 )
             }
             .to_tokens(tokens),

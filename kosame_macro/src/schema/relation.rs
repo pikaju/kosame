@@ -81,9 +81,9 @@ impl ToTokens for Relation {
 
                 pub const RELATION: ::kosame::repr::schema::Relation<'_> = ::kosame::repr::schema::Relation::new(
                     #name_string,
-                    super::super::NAME,
+                    super::super::TABLE_NAME,
                     &[#(&source_columns::#source_columns::COLUMN),*],
-                    target_table::NAME,
+                    target_table::TABLE_NAME,
                     &[#(&target_columns::#target_columns::COLUMN),*],
                 );
 

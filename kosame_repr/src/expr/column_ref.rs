@@ -1,13 +1,17 @@
-use crate::schema::Column;
+use std::fmt::Write;
 
 pub struct ColumnRef<'a> {
-    column: &'a Column<'a>,
+    correlation: Option<&'a str>,
+    column: &'a str,
 }
 
 impl<'a> ColumnRef<'a> {
     #[inline]
-    pub const fn new(column: &'a Column) -> Self {
-        Self { column }
+    pub const fn new(correlation: Option<&'a str>, column: &'a str) -> Self {
+        Self {
+            correlation,
+            column,
+        }
     }
 }
 
@@ -17,6 +21,11 @@ impl kosame_sql::FmtSql for ColumnRef<'_> {
         &self,
         formatter: &mut kosame_sql::Formatter<D>,
     ) -> kosame_sql::Result {
-        formatter.write_ident(self.column.name())
+        if let Some(correlation) = &self.correlation {
+            formatter.write_ident(correlation)?;
+            formatter.write_str(".")?;
+        }
+        formatter.write_ident(self.column)?;
+        Ok(())
     }
 }

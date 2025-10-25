@@ -101,7 +101,7 @@ impl Parse for TableAlias {
 
 impl ToTokens for TableAlias {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let name = &self.name;
+        let name = &self.name.to_string();
         let columns = QuoteOption(self.columns.as_ref());
         quote! {
             ::kosame::repr::clause::TableAlias::new(#name, #columns)

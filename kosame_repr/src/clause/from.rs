@@ -57,7 +57,8 @@ pub struct TableAlias<'a> {
 }
 
 impl<'a> TableAlias<'a> {
-    pub fn new(alias: &'a str, columns: Option<&'a [&'a str]>) -> Self {
+    #[inline]
+    pub const fn new(alias: &'a str, columns: Option<&'a [&'a str]>) -> Self {
         Self { alias, columns }
     }
 }

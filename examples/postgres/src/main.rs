@@ -49,10 +49,10 @@ fn main() {
 
     let statement = kosame::pg_statement! {
         select
-            comments.upvotes as pip: i32,
-            comments.post_id as lel: i32,
+            post_id as post_id: i32,
+            comments.id as comment_id: i32,
         from schema::posts
-        left join schema::comments on true
+        left join schema::comments on posts.id = comments.post_id
         where post_id > 4
     };
     use kosame::sql::FmtSql;
