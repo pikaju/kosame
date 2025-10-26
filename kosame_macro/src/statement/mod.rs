@@ -8,7 +8,7 @@ use syn::{
 use crate::{
     alias::Alias,
     attribute::{CustomMeta, MetaLocation},
-    bind_params::BindParamsBuilder,
+    bind_params::{BindParamsBuilder, BindParamsClosure},
     command::Command,
     row::Row,
     table_refs::TableRefs,
@@ -57,6 +57,7 @@ impl Parse for Statement {
 
 impl ToTokens for Statement {
     fn to_tokens(&self, tokens: &mut TokenStream) {
+        // Prepass to get table schemas
         let custom_meta = self.custom_meta();
         if custom_meta.pass == 0 {
             let mut table_refs = TableRefs::new();
@@ -104,10 +105,6 @@ impl ToTokens for Statement {
             self.command.accept(&mut builder);
             builder.build()
         };
-        let closure_tokens = self
-            .alias
-            .is_none()
-            .then(|| bind_params.to_closure_token_stream(module_name));
 
         let command = &self.command;
         let fields = command.fields();
@@ -149,12 +146,11 @@ impl ToTokens for Statement {
         if self.alias.is_some() {
             module_tokens.to_tokens(tokens);
         } else {
+            let bind_params_closure = BindParamsClosure::new(&module_name, &bind_params);
             quote! {
                 {
-                    #closure_tokens
-
+                    #bind_params_closure
                     #module_tokens
-
                     #module_name::Statement::new(closure)
                 }
             }

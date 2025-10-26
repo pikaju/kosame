@@ -39,24 +39,6 @@ impl<'a> BindParams<'a> {
     pub fn is_empty(&self) -> bool {
         self.params.is_empty()
     }
-
-    pub fn to_closure_token_stream(&self, module_name: &Ident) -> TokenStream {
-        let mut rename_vars = vec![];
-        let mut struct_fields = vec![];
-        for (ordinal, name) in self.params.iter().enumerate() {
-            let renamed = format_ident!("bind_param_{}", ordinal);
-            rename_vars.push(quote! { let #renamed = &#name; });
-            struct_fields.push(quote! { #name: #renamed });
-        }
-
-        quote! {
-            #(#rename_vars)*
-
-            let closure = #module_name::Params {
-                #(#struct_fields,)*
-            };
-        }
-    }
 }
 
 impl ToTokens for BindParams<'_> {
@@ -103,5 +85,42 @@ impl ToTokens for BindParams<'_> {
                 }
             }
         }.to_tokens(tokens);
+    }
+}
+
+pub struct BindParamsClosure<'a> {
+    module_name: &'a Ident,
+    bind_params: &'a BindParams<'a>,
+}
+
+impl<'a> BindParamsClosure<'a> {
+    pub fn new(module_name: &'a Ident, bind_params: &'a BindParams<'a>) -> Self {
+        Self {
+            module_name,
+            bind_params,
+        }
+    }
+}
+
+impl ToTokens for BindParamsClosure<'_> {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let module_name = self.module_name;
+
+        let mut rename_vars = vec![];
+        let mut struct_fields = vec![];
+        for (ordinal, name) in self.bind_params.params.iter().enumerate() {
+            let renamed = format_ident!("bind_param_{}", ordinal);
+            rename_vars.push(quote! { let #renamed = &#name; });
+            struct_fields.push(quote! { #name: #renamed });
+        }
+
+        quote! {
+            #(#rename_vars)*
+
+            let closure = #module_name::Params {
+                #(#struct_fields,)*
+            };
+        }
+        .to_tokens(tokens);
     }
 }

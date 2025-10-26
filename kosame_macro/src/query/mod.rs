@@ -16,7 +16,7 @@ use syn::{
 use crate::{
     alias::Alias,
     attribute::{CustomMeta, MetaLocation},
-    bind_params::BindParamsBuilder,
+    bind_params::{BindParamsBuilder, BindParamsClosure},
     path_ext::PathExt,
 };
 
@@ -60,10 +60,6 @@ impl ToTokens for Query {
             self.body.accept(&mut builder);
             builder.build()
         };
-        let closure_tokens = self
-            .alias
-            .is_none()
-            .then(|| bind_params.to_closure_token_stream(module_name));
 
         let node_tokens = {
             let mut tokens = proc_macro2::TokenStream::new();
@@ -111,12 +107,11 @@ impl ToTokens for Query {
         if self.alias.is_some() {
             module_tokens.to_tokens(tokens);
         } else {
+            let bind_params_closure = BindParamsClosure::new(&module_name, &bind_params);
             quote! {
                 {
-                    #closure_tokens
-
+                    #bind_params_closure
                     #module_tokens
-
                     #module_name::Query::new(closure)
                 }
             }
