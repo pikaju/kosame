@@ -62,13 +62,19 @@ impl<'a> Scope<'a> {
 impl ToTokens for Scope<'_> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let tables = &self.tables;
+        let columns = self.tables.iter().map(|table| {
+            let name = table.name();
+            quote! {
+                pub use super::tables::#name::columns::*;
+            }
+        });
         quote! {
             mod scope {
                 pub mod tables {
                     #(#tables)*
                 }
                 pub mod columns {
-
+                    #(#columns)*
                 }
             }
         }
