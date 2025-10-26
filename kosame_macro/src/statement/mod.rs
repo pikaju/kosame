@@ -11,6 +11,8 @@ use crate::{
     bind_params::BindParamsBuilder,
     command::Command,
     row::Row,
+    table_refs::TableRefs,
+    visitor::Visitor,
 };
 
 mod kw {
@@ -20,15 +22,29 @@ mod kw {
 }
 
 pub struct Statement {
-    pub _inner_attrs: Vec<Attribute>,
+    token_stream: TokenStream,
+
+    pub inner_attrs: Vec<Attribute>,
     pub command: Command,
     pub alias: Option<Alias>,
+}
+
+impl Statement {
+    pub fn custom_meta(&self) -> CustomMeta {
+        CustomMeta::parse_attrs(&self.inner_attrs, MetaLocation::StatementInner)
+            .expect("custom meta should be checked during parsing")
+    }
+
+    pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
+        self.command.accept(visitor);
+    }
 }
 
 impl Parse for Statement {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            _inner_attrs: {
+            token_stream: input.fork().parse()?,
+            inner_attrs: {
                 let attrs = input.call(Attribute::parse_inner)?;
                 CustomMeta::parse_attrs(&attrs, MetaLocation::StatementInner)?;
                 attrs
@@ -41,6 +57,43 @@ impl Parse for Statement {
 
 impl ToTokens for Statement {
     fn to_tokens(&self, tokens: &mut TokenStream) {
+        let custom_meta = self.custom_meta();
+        if custom_meta.pass == 0 {
+            let mut table_refs = TableRefs::new();
+            self.accept(&mut table_refs);
+            let table_refs = table_refs.build();
+            if !table_refs.is_empty() {
+                let token_stream = self.token_stream.clone();
+                let mut result = quote! {
+                    (::kosame::statement!) {
+                        #![kosame(__pass = 1)]
+                        #token_stream
+                    }
+                };
+
+                for (index, table_ref) in table_refs.iter().enumerate() {
+                    if index == table_refs.len() - 1 {
+                        result = quote! {
+                            #table_ref::inject! {
+                                #result
+                                (#table_ref)
+                            }
+                        }
+                    } else {
+                        result = quote! {
+                            (#table_ref::inject!) {
+                                #result
+                                (#table_ref)
+                            }
+                        }
+                    }
+                }
+
+                result.to_tokens(tokens);
+                return;
+            }
+        }
+
         let module_name = match &self.alias {
             Some(alias) => &alias.ident,
             None => &Ident::new("internal", Span::call_site()),

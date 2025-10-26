@@ -13,6 +13,7 @@ mod row;
 mod schema;
 mod scope;
 mod statement;
+mod table_refs;
 mod type_override;
 mod visitor;
 

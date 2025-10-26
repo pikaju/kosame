@@ -44,11 +44,9 @@ pub struct Table {
 
 impl Parse for Table {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let token_stream = input.fork().parse()?;
         let content;
         Ok(Self {
-            _token_stream: token_stream,
-
+            _token_stream: input.fork().parse()?,
             _inner_attrs: {
                 let attrs = Attribute::parse_inner(input)?;
                 CustomMeta::parse_attrs(&attrs, MetaLocation::TableInner)?;
@@ -127,14 +125,16 @@ impl ToTokens for Table {
                 macro_rules! #unique_macro_name {
                     (
                         $(#![$acc:meta])*
-                        $child:path {
+                        ($($child:tt)*) {
                             $($content:tt)*
                         }
                         ($($table_path:tt)*)
                     ) => {
-                        $child {
-                            #![kosame(table($($table_path)* = #token_stream))]
-                            $(#![$acc:meta])*
+                        $($child)* {
+                            #![kosame(__table($($table_path)* = #token_stream))]
+                            $(#![$acc])*
+
+                            $($content)*
                         }
                     }
                 }

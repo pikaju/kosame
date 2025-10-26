@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use proc_macro_error::emit_call_site_error;
 use syn::{
-    Ident, LitInt, LitStr, Path, Token,
+    Ident, LitInt, LitStr, Path, Token, parenthesized,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
 };
@@ -202,7 +202,7 @@ impl Parse for MetaTypeOverride {
 }
 
 pub struct MetaPass {
-    pub path: kw::__pass,
+    pub _pass_kw: kw::__pass,
     pub _eq_token: Token![=],
     pub value: LitInt,
 }
@@ -210,7 +210,7 @@ pub struct MetaPass {
 impl Parse for MetaPass {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            path: input.parse()?,
+            _pass_kw: input.parse()?,
             _eq_token: input.parse()?,
             value: input.parse()?,
         })
@@ -218,6 +218,8 @@ impl Parse for MetaPass {
 }
 
 pub struct MetaTable {
+    pub _table_kw: kw::__table,
+    pub _paren_token: syn::token::Paren,
     pub path: Path,
     pub _eq_token: Token![=],
     pub value: Box<Table>,
@@ -225,10 +227,13 @@ pub struct MetaTable {
 
 impl Parse for MetaTable {
     fn parse(input: ParseStream) -> syn::Result<Self> {
+        let content;
         Ok(Self {
-            path: input.parse()?,
-            _eq_token: input.parse()?,
-            value: Box::new(input.parse()?),
+            _table_kw: input.parse()?,
+            _paren_token: parenthesized!(content in input),
+            path: content.parse()?,
+            _eq_token: content.parse()?,
+            value: Box::new(content.parse()?),
         })
     }
 }
