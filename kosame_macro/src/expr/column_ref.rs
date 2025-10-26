@@ -56,8 +56,8 @@ impl ToTokens for ColumnRef {
                 let correlation = &correlation.name;
                 quote! {
                     ::kosame::repr::expr::ColumnRef::new(
-                        Some(scope::#correlation::TABLE_NAME),
-                        scope::#correlation::columns::#name::COLUMN_NAME
+                        Some(scope::tables::#correlation::TABLE_NAME),
+                        scope::tables::#correlation::columns::#name::COLUMN_NAME
                     )
                 }
                 .to_tokens(tokens)
@@ -65,7 +65,7 @@ impl ToTokens for ColumnRef {
             None => quote! {
                 ::kosame::repr::expr::ColumnRef::new(
                     ::core::option::Option::None,
-                    scope::#name::COLUMN_NAME
+                    scope::columns::#name::COLUMN_NAME
                 )
             }
             .to_tokens(tokens),

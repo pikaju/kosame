@@ -1,6 +1,23 @@
 use kosame::query::{Query, RecordArrayRunner};
 use kosame::statement::Statement;
 
+mod kek {
+    pub mod pip {
+        pub mod lel {
+            pub const KEK: i32 = 5;
+        }
+    }
+
+    pub mod smep {
+        pub mod lel {}
+    }
+
+    pub use pip::*;
+    pub use smep::lel;
+}
+
+use kek::lel;
+
 // Declare your database schema.
 mod schema {
     kosame::pg_table! {
