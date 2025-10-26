@@ -16,9 +16,9 @@ mod kw {
 }
 
 pub struct GroupBy {
-    _group: kw::group,
-    _by: kw::by,
-    entries: Punctuated<GroupByEntry, Token![,]>,
+    pub _group: kw::group,
+    pub _by: kw::by,
+    pub entries: Punctuated<GroupByEntry, Token![,]>,
 }
 
 impl GroupBy {
@@ -74,7 +74,7 @@ impl ToTokens for GroupBy {
 }
 
 pub struct GroupByEntry {
-    expr: Expr,
+    pub expr: Expr,
 }
 
 impl Parse for GroupByEntry {

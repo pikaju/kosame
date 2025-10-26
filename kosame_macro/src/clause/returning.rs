@@ -11,17 +11,13 @@ mod kw {
 }
 
 pub struct Returning {
-    _returning: kw::returning,
-    fields: Fields,
+    pub _returning: kw::returning,
+    pub fields: Fields,
 }
 
 impl Returning {
     pub fn peek(input: ParseStream) -> bool {
         input.peek(kw::returning)
-    }
-
-    pub fn fields(&self) -> &Fields {
-        &self.fields
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {

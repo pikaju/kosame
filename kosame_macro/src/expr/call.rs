@@ -9,9 +9,9 @@ use syn::{
 };
 
 pub struct Call {
-    function: Ident,
-    paren: syn::token::Paren,
-    params: Punctuated<Expr, Token![,]>,
+    pub function: Ident,
+    pub paren: syn::token::Paren,
+    pub params: Punctuated<Expr, Token![,]>,
 }
 
 impl Call {

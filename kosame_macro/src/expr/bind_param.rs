@@ -7,15 +7,11 @@ use syn::{
 };
 
 pub struct BindParam {
-    colon: Token![:],
-    name: Ident,
+    pub colon: Token![:],
+    pub name: Ident,
 }
 
 impl BindParam {
-    pub fn name(&self) -> &Ident {
-        &self.name
-    }
-
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
         visitor.visit_bind_param(self);
     }

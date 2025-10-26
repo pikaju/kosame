@@ -9,9 +9,9 @@ use syn::{
 };
 
 pub struct Binary {
-    lhs: Box<Expr>,
-    op: BinOp,
-    rhs: Box<Expr>,
+    pub lhs: Box<Expr>,
+    pub op: BinOp,
+    pub rhs: Box<Expr>,
 }
 
 impl Binary {

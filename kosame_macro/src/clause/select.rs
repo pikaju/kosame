@@ -11,17 +11,13 @@ mod kw {
 }
 
 pub struct Select {
-    _select: kw::select,
-    fields: Fields,
+    pub _select: kw::select,
+    pub fields: Fields,
 }
 
 impl Select {
     pub fn peek(input: ParseStream) -> bool {
         input.peek(kw::select)
-    }
-
-    pub fn fields(&self) -> &Fields {
-        &self.fields
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {

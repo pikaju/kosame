@@ -59,7 +59,7 @@ impl ToTokens for Column {
         let rust_name = self.rust_name();
 
         let data_type = &self.data_type;
-        let data_type_string = data_type.name().to_string();
+        let data_type_string = data_type.name.to_string();
         let rust_type_not_null = match meta.type_override {
             Some(type_override) => type_override.value.to_call_site(3).to_token_stream(),
             None => quote! { #data_type },

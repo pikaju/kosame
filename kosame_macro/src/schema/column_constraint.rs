@@ -96,8 +96,8 @@ mod kw {
 }
 
 pub struct NotNull {
-    _not: kw::not,
-    _null: kw::null,
+    pub _not: kw::not,
+    pub _null: kw::null,
 }
 
 impl Parse for NotNull {
@@ -110,8 +110,8 @@ impl Parse for NotNull {
 }
 
 pub struct PrimaryKey {
-    _primary: kw::primary,
-    _key: kw::key,
+    pub _primary: kw::primary,
+    pub _key: kw::key,
 }
 
 impl Parse for PrimaryKey {
@@ -124,8 +124,8 @@ impl Parse for PrimaryKey {
 }
 
 pub struct Default {
-    _default: kw::default,
-    expr: Expr,
+    pub _default: kw::default,
+    pub expr: Expr,
 }
 
 impl Default {

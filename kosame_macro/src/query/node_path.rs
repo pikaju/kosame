@@ -4,7 +4,7 @@ use syn::{Ident, Path, PathSegment};
 
 #[derive(Clone)]
 pub struct QueryNodePath {
-    segments: Vec<Ident>,
+    pub segments: Vec<Ident>,
 }
 
 impl QueryNodePath {

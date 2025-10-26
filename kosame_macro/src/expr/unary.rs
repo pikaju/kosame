@@ -1,15 +1,12 @@
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
-use syn::{
-    parse::{Parse, ParseStream},
-    spanned::Spanned,
-};
+use syn::parse::{Parse, ParseStream};
 
 use super::{Expr, Visitor};
 
 pub struct Unary {
-    op: UnaryOp,
-    operand: Box<Expr>,
+    pub op: UnaryOp,
+    pub operand: Box<Expr>,
 }
 
 impl Unary {

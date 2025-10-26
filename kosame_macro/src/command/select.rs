@@ -6,22 +6,22 @@ use syn::{
 };
 
 use crate::{
-    clause::{self, Fields, From, GroupBy, Having, Limit, Offset, OrderBy, Where},
+    clause::{self, From, GroupBy, Having, Limit, Offset, OrderBy, Where},
     quote_option::QuoteOption,
     scope::Scope,
     visitor::Visitor,
 };
 
 pub struct Select {
-    attrs: Vec<Attribute>,
-    select: clause::Select,
-    from: Option<From>,
-    r#where: Option<Where>,
-    group_by: Option<GroupBy>,
-    having: Option<Having>,
-    order_by: Option<OrderBy>,
-    limit: Option<Limit>,
-    offset: Option<Offset>,
+    pub attrs: Vec<Attribute>,
+    pub select: clause::Select,
+    pub from: Option<From>,
+    pub r#where: Option<Where>,
+    pub group_by: Option<GroupBy>,
+    pub having: Option<Having>,
+    pub order_by: Option<OrderBy>,
+    pub limit: Option<Limit>,
+    pub offset: Option<Offset>,
 }
 
 impl Select {
@@ -32,14 +32,6 @@ impl Select {
             return false;
         }
         clause::Select::peek(&input)
-    }
-
-    pub fn attrs(&self) -> &[Attribute] {
-        &self.attrs
-    }
-
-    pub fn fields(&self) -> &Fields {
-        self.select.fields()
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {

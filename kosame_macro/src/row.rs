@@ -3,9 +3,9 @@ use quote::{ToTokens, quote};
 use syn::{Attribute, Ident};
 
 pub struct Row {
-    attrs: Vec<Attribute>,
-    name: Ident,
-    fields: Vec<RowField>,
+    pub attrs: Vec<Attribute>,
+    pub name: Ident,
+    pub fields: Vec<RowField>,
 }
 
 impl Row {
@@ -45,9 +45,9 @@ impl ToTokens for Row {
 }
 
 pub struct RowField {
-    attrs: Vec<Attribute>,
-    name: Ident,
-    r#type: TokenStream,
+    pub attrs: Vec<Attribute>,
+    pub name: Ident,
+    pub r#type: TokenStream,
 }
 
 impl RowField {

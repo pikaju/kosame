@@ -13,10 +13,10 @@ use crate::{
 };
 
 pub struct Field {
-    attrs: Vec<Attribute>,
-    expr: Expr,
-    alias: Option<Alias>,
-    type_override: Option<TypeOverride>,
+    pub attrs: Vec<Attribute>,
+    pub expr: Expr,
+    pub alias: Option<Alias>,
+    pub type_override: Option<TypeOverride>,
 }
 
 impl Field {
@@ -32,8 +32,8 @@ impl Field {
         };
         RowField::new(
             self.attrs.clone(),
-            alias.ident().clone(),
-            type_override.type_path().to_call_site(1).to_token_stream(),
+            alias.ident.clone(),
+            type_override.type_path.to_call_site(1).to_token_stream(),
         )
     }
 
@@ -63,7 +63,7 @@ impl ToTokens for Field {
     }
 }
 
-pub struct Fields(Punctuated<Field, Token![,]>);
+pub struct Fields(pub Punctuated<Field, Token![,]>);
 
 impl Fields {
     pub fn iter(&self) -> impl Iterator<Item = &Field> {

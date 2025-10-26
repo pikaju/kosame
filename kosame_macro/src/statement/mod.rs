@@ -20,9 +20,9 @@ mod kw {
 }
 
 pub struct Statement {
-    _inner_attrs: Vec<Attribute>,
-    command: Command,
-    alias: Option<Alias>,
+    pub _inner_attrs: Vec<Attribute>,
+    pub command: Command,
+    pub alias: Option<Alias>,
 }
 
 impl Parse for Statement {
@@ -42,7 +42,7 @@ impl Parse for Statement {
 impl ToTokens for Statement {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let module_name = match &self.alias {
-            Some(alias) => alias.ident(),
+            Some(alias) => &alias.ident,
             None => &Ident::new("internal", Span::call_site()),
         };
 

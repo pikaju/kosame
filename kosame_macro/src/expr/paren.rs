@@ -9,8 +9,8 @@ use syn::{
 };
 
 pub struct Paren {
-    paren: syn::token::Paren,
-    expr: Box<Expr>,
+    pub paren: syn::token::Paren,
+    pub expr: Box<Expr>,
 }
 
 impl Paren {

@@ -11,15 +11,11 @@ mod kw {
 }
 
 pub struct Limit {
-    _limit: kw::limit,
-    expr: Expr,
+    pub _limit: kw::limit,
+    pub expr: Expr,
 }
 
 impl Limit {
-    pub fn expr(&self) -> &Expr {
-        &self.expr
-    }
-
     pub fn parse_optional(input: ParseStream) -> syn::Result<Option<Self>> {
         Self::peek(input).then(|| input.parse()).transpose()
     }

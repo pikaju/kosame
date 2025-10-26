@@ -6,13 +6,7 @@ use syn::{
 };
 
 pub struct DataType {
-    name: Ident,
-}
-
-impl DataType {
-    pub fn name(&self) -> &Ident {
-        &self.name
-    }
+    pub name: Ident,
 }
 
 impl Parse for DataType {

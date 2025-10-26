@@ -14,15 +14,11 @@ mod kw {
 }
 
 pub struct Having {
-    _having: kw::having,
-    expr: Expr,
+    pub _having: kw::having,
+    pub expr: Expr,
 }
 
 impl Having {
-    pub fn expr(&self) -> &Expr {
-        &self.expr
-    }
-
     pub fn parse_optional(input: ParseStream) -> syn::Result<Option<Self>> {
         Self::peek(input).then(|| input.parse()).transpose()
     }

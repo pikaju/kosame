@@ -21,8 +21,8 @@ impl<'a> BindParamsBuilder<'a> {
 
 impl<'a> Visitor<'a> for BindParamsBuilder<'a> {
     fn visit_bind_param(&mut self, bind_param: &'a expr::BindParam) {
-        if !self.params.contains(&bind_param.name()) {
-            self.params.push(bind_param.name());
+        if !self.params.contains(&&bind_param.name) {
+            self.params.push(&bind_param.name);
         }
     }
 }

@@ -232,7 +232,9 @@ impl FromItem {
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
         match self {
-            Self::Table { .. } => {}
+            Self::Table { table, .. } => {
+                visitor.visit_table_ref(table);
+            }
             Self::Join {
                 left, right, on, ..
             } => {

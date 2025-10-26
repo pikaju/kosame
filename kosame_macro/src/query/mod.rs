@@ -21,11 +21,11 @@ use crate::{
 };
 
 pub struct Query {
-    _inner_attrs: Vec<Attribute>,
-    outer_attrs: Vec<Attribute>,
-    table: syn::Path,
-    body: Node,
-    alias: Option<Alias>,
+    pub _inner_attrs: Vec<Attribute>,
+    pub outer_attrs: Vec<Attribute>,
+    pub table: syn::Path,
+    pub body: Node,
+    pub alias: Option<Alias>,
 }
 
 impl Parse for Query {
@@ -51,7 +51,7 @@ impl Parse for Query {
 impl ToTokens for Query {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let module_name = match &self.alias {
-            Some(alias) => alias.ident(),
+            Some(alias) => &alias.ident,
             None => &Ident::new("internal", Span::call_site()),
         };
 

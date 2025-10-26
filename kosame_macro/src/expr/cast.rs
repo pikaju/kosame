@@ -10,11 +10,11 @@ use syn::{
 use super::{Expr, Visitor};
 
 pub struct Cast {
-    cast: kw::cast,
-    paren: Paren,
-    value: Box<Expr>,
-    _as: Token![as],
-    data_type: Ident,
+    pub cast: kw::cast,
+    pub paren: Paren,
+    pub value: Box<Expr>,
+    pub _as: Token![as],
+    pub data_type: Ident,
 }
 
 impl Cast {

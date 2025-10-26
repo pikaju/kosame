@@ -11,15 +11,11 @@ mod kw {
 }
 
 pub struct Offset {
-    _offset: kw::offset,
-    expr: Expr,
+    pub _offset: kw::offset,
+    pub expr: Expr,
 }
 
 impl Offset {
-    pub fn expr(&self) -> &Expr {
-        &self.expr
-    }
-
     pub fn parse_optional(input: ParseStream) -> syn::Result<Option<Self>> {
         Self::peek(input).then(|| input.parse()).transpose()
     }

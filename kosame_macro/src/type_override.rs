@@ -4,15 +4,11 @@ use syn::{
 };
 
 pub struct TypeOverride {
-    _colon: Token![:],
-    type_path: Path,
+    pub _colon: Token![:],
+    pub type_path: Path,
 }
 
 impl TypeOverride {
-    pub fn type_path(&self) -> &Path {
-        &self.type_path
-    }
-
     pub fn parse_optional(input: ParseStream) -> syn::Result<Option<Self>> {
         Self::peek(input).then(|| input.parse()).transpose()
     }

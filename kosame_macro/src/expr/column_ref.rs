@@ -7,8 +7,8 @@ use syn::{
 };
 
 pub struct ColumnRef {
-    correlation: Option<Correlation>,
-    name: Ident,
+    pub correlation: Option<Correlation>,
+    pub name: Ident,
 }
 
 impl ColumnRef {
@@ -74,6 +74,6 @@ impl ToTokens for ColumnRef {
 }
 
 pub struct Correlation {
-    name: Ident,
-    _period_token: Token![.],
+    pub name: Ident,
+    pub _period_token: Token![.],
 }

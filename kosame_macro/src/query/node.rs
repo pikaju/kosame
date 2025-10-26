@@ -17,13 +17,13 @@ use syn::{
 };
 
 pub struct Node {
-    _brace: syn::token::Brace,
-    star: Option<Star>,
-    fields: Punctuated<Field, Token![,]>,
-    r#where: Option<Where>,
-    order_by: Option<OrderBy>,
-    limit: Option<Limit>,
-    offset: Option<Offset>,
+    pub _brace: syn::token::Brace,
+    pub star: Option<Star>,
+    pub fields: Punctuated<Field, Token![,]>,
+    pub r#where: Option<Where>,
+    pub order_by: Option<OrderBy>,
+    pub limit: Option<Limit>,
+    pub offset: Option<Offset>,
 }
 
 impl Node {
@@ -36,10 +36,18 @@ impl Node {
             }
         }
 
-        self.r#where.as_ref().map(|inner| inner.accept(visitor));
-        self.order_by.as_ref().map(|inner| inner.accept(visitor));
-        self.limit.as_ref().map(|inner| inner.accept(visitor));
-        self.offset.as_ref().map(|inner| inner.accept(visitor));
+        if let Some(inner) = self.r#where.as_ref() {
+            inner.accept(visitor)
+        }
+        if let Some(inner) = self.order_by.as_ref() {
+            inner.accept(visitor)
+        }
+        if let Some(inner) = self.limit.as_ref() {
+            inner.accept(visitor)
+        }
+        if let Some(inner) = self.offset.as_ref() {
+            inner.accept(visitor)
+        }
     }
 
     pub fn to_row_tokens(
@@ -151,7 +159,7 @@ impl Node {
         for field in &self.fields {
             match field {
                 Field::Column { name, alias, .. } => {
-                    let alias = QuoteOption(alias.as_ref().map(|alias| alias.ident().to_string()));
+                    let alias = QuoteOption(alias.as_ref().map(|alias| alias.ident.to_string()));
                     fields.push(quote! {
                         ::kosame::repr::query::Field::Column {
                             column: &#table_path_call_site::columns::#name::COLUMN,
@@ -162,7 +170,7 @@ impl Node {
                 Field::Relation {
                     name, node, alias, ..
                 } => {
-                    let alias = QuoteOption(alias.as_ref().map(|alias| alias.ident().to_string()));
+                    let alias = QuoteOption(alias.as_ref().map(|alias| alias.ident.to_string()));
 
                     let node_path = node_path.clone().appended(name.clone());
 
@@ -186,7 +194,7 @@ impl Node {
                     });
                 }
                 Field::Expr { expr, alias, .. } => {
-                    let alias = alias.ident().to_string();
+                    let alias = alias.ident.to_string();
 
                     fields.push(quote! {
                         {
@@ -268,7 +276,7 @@ impl Parse for Node {
 
             let name_string = field
                 .alias()
-                .map(|alias| alias.ident())
+                .map(|alias| &alias.ident)
                 .unwrap_or(name)
                 .to_string();
             if existing.contains(&name_string) {

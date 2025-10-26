@@ -37,7 +37,7 @@ impl Field {
         match self {
             Self::Column { name, .. } => name,
             Self::Relation { name, .. } => name,
-            Self::Expr { alias, .. } => alias.ident(),
+            Self::Expr { alias, .. } => &alias.ident,
         }
     }
 
@@ -53,7 +53,7 @@ impl Field {
         match self {
             Self::Column { name, .. } => name.span(),
             Self::Relation { name, .. } => name.span(),
-            Self::Expr { alias, .. } => alias.ident().span(),
+            Self::Expr { alias, .. } => alias.ident.span(),
         }
     }
 
@@ -76,13 +76,13 @@ impl Field {
             } => {
                 let alias_or_name = alias
                     .as_ref()
-                    .map(|alias| alias.ident())
+                    .map(|alias| &alias.ident)
                     .unwrap_or(name)
                     .clone();
 
                 let type_override_or_default = type_override
                     .as_ref()
-                    .map(|type_override| type_override.type_path().to_call_site(1))
+                    .map(|type_override| type_override.type_path.to_call_site(1))
                     .unwrap_or_else(|| parse_quote! { #table_path::columns::#name::Type });
 
                 RowField::new(
@@ -96,7 +96,7 @@ impl Field {
             } => {
                 let alias_or_name = alias
                     .as_ref()
-                    .map(|alias| alias.ident())
+                    .map(|alias| &alias.ident)
                     .unwrap_or(name)
                     .clone();
 
@@ -117,8 +117,8 @@ impl Field {
                 ..
             } => RowField::new(
                 attrs.clone(),
-                alias.ident().clone(),
-                type_override.type_path().to_call_site(1).to_token_stream(),
+                alias.ident.clone(),
+                type_override.type_path.to_call_site(1).to_token_stream(),
             ),
         }
     }

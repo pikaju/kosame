@@ -54,7 +54,7 @@ fn main() {
             title as smep: ::std::string::String,
         from schema::posts
         inner join schema::comments as kek on posts.id = kek.post_id
-        where posts.id > 4
+        where posts.id = :kek
     };
     use kosame::sql::FmtSql;
     let sql = statement

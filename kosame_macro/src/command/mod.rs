@@ -18,13 +18,13 @@ pub enum Command {
 impl Command {
     pub fn attrs(&self) -> &[Attribute] {
         match self {
-            Self::Select(inner) => inner.attrs(),
+            Self::Select(inner) => &inner.attrs,
         }
     }
 
     pub fn fields(&self) -> &Fields {
         match self {
-            Self::Select(inner) => inner.fields(),
+            Self::Select(inner) => &inner.select.fields,
         }
     }
 

@@ -4,15 +4,11 @@ use syn::{
 };
 
 pub struct Alias {
-    _as: Token![as],
-    ident: Ident,
+    pub _as: Token![as],
+    pub ident: Ident,
 }
 
 impl Alias {
-    pub fn ident(&self) -> &Ident {
-        &self.ident
-    }
-
     pub fn parse_optional(input: ParseStream) -> syn::Result<Option<Self>> {
         Self::peek(input).then(|| input.parse()).transpose()
     }

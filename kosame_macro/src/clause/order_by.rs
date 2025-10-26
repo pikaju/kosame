@@ -23,9 +23,9 @@ mod kw {
 }
 
 pub struct OrderBy {
-    _order: kw::order,
-    _by: kw::by,
-    entries: Punctuated<OrderByEntry, Token![,]>,
+    pub _order: kw::order,
+    pub _by: kw::by,
+    pub entries: Punctuated<OrderByEntry, Token![,]>,
 }
 
 impl OrderBy {
@@ -81,9 +81,9 @@ impl ToTokens for OrderBy {
 }
 
 pub struct OrderByEntry {
-    expr: Expr,
-    dir: Option<OrderByDir>,
-    nulls: Option<OrderByNulls>,
+    pub expr: Expr,
+    pub dir: Option<OrderByDir>,
+    pub nulls: Option<OrderByNulls>,
 }
 
 impl Parse for OrderByEntry {
