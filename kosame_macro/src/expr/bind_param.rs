@@ -41,6 +41,6 @@ impl Parse for BindParam {
 impl ToTokens for BindParam {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let name = &self.name;
-        quote! { scope::params::#name::BIND_PARAM }.to_tokens(tokens)
+        quote! { params::#name::BIND_PARAM }.to_tokens(tokens)
     }
 }

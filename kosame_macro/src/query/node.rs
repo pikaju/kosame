@@ -1,9 +1,9 @@
 use crate::clause::peek_clause;
-use crate::expr::Visitor;
-use crate::quote_option::QuoteOption;
 use crate::{
     clause::{Limit, Offset, OrderBy, Where},
+    quote_option::QuoteOption,
     row::Row,
+    visitor::Visitor,
 };
 
 use super::star::Star;
@@ -27,30 +27,19 @@ pub struct Node {
 }
 
 impl Node {
-    pub fn accept_expr<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
+    pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
         for field in &self.fields {
             match field {
-                Field::Relation { node, .. } => node.accept_expr(visitor),
+                Field::Relation { node, .. } => node.accept(visitor),
                 Field::Expr { expr, .. } => expr.accept(visitor),
                 _ => {}
             }
         }
 
-        if let Some(r#where) = &self.r#where {
-            r#where.expr().accept(visitor);
-        }
-
-        if let Some(order_by) = &self.order_by {
-            order_by.accept_expr(visitor);
-        }
-
-        if let Some(limit) = &self.limit {
-            limit.expr().accept(visitor);
-        }
-
-        if let Some(offset) = &self.offset {
-            offset.expr().accept(visitor);
-        }
+        self.r#where.as_ref().map(|inner| inner.accept(visitor));
+        self.order_by.as_ref().map(|inner| inner.accept(visitor));
+        self.limit.as_ref().map(|inner| inner.accept(visitor));
+        self.offset.as_ref().map(|inner| inner.accept(visitor));
     }
 
     pub fn to_row_tokens(

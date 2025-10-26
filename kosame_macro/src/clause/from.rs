@@ -6,7 +6,9 @@ use syn::{
     punctuated::Punctuated,
 };
 
-use crate::{clause::peek_clause, expr::Expr, path_ext::PathExt, quote_option::QuoteOption};
+use crate::{
+    clause::peek_clause, expr::Expr, path_ext::PathExt, quote_option::QuoteOption, visitor::Visitor,
+};
 
 mod kw {
     use syn::custom_keyword;
@@ -36,6 +38,10 @@ impl From {
 
     pub fn peek(input: ParseStream) -> bool {
         input.peek(kw::from)
+    }
+
+    pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
+        self.item.accept(visitor);
     }
 }
 
@@ -222,6 +228,19 @@ impl FromItem {
             table: input.parse()?,
             alias: input.call(TableAlias::parse_optional)?,
         })
+    }
+
+    pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
+        match self {
+            Self::Table { .. } => {}
+            Self::Join {
+                left, right, on, ..
+            } => {
+                on.expr.accept(visitor);
+                left.accept(visitor);
+                right.accept(visitor);
+            }
+        }
     }
 }
 

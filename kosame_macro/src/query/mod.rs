@@ -57,7 +57,7 @@ impl ToTokens for Query {
 
         let bind_params = {
             let mut builder = BindParamsBuilder::new();
-            self.body.accept_expr(&mut builder);
+            self.body.accept(&mut builder);
             builder.build()
         };
         let closure_tokens = self

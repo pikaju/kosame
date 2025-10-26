@@ -9,7 +9,7 @@ use syn::{
 
 pub use select::*;
 
-use crate::clause::Fields;
+use crate::{clause::Fields, visitor::Visitor};
 
 pub enum Command {
     Select(Select),
@@ -25,6 +25,12 @@ impl Command {
     pub fn fields(&self) -> &Fields {
         match self {
             Self::Select(inner) => inner.fields(),
+        }
+    }
+
+    pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
+        match self {
+            Self::Select(inner) => inner.accept(visitor),
         }
     }
 }

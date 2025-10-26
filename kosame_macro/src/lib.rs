@@ -14,6 +14,7 @@ mod schema;
 mod scope;
 mod statement;
 mod type_override;
+mod visitor;
 
 use proc_macro_error::proc_macro_error;
 use quote::{ToTokens, quote};

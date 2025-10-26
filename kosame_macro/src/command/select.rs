@@ -9,6 +9,7 @@ use crate::{
     clause::{self, Fields, From, GroupBy, Having, Limit, Offset, OrderBy, Where},
     quote_option::QuoteOption,
     scope::Scope,
+    visitor::Visitor,
 };
 
 pub struct Select {
@@ -39,6 +40,31 @@ impl Select {
 
     pub fn fields(&self) -> &Fields {
         self.select.fields()
+    }
+
+    pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
+        self.select.accept(visitor);
+        if let Some(inner) = self.from.as_ref() {
+            inner.accept(visitor)
+        }
+        if let Some(inner) = self.r#where.as_ref() {
+            inner.accept(visitor)
+        }
+        if let Some(inner) = self.group_by.as_ref() {
+            inner.accept(visitor)
+        }
+        if let Some(inner) = self.having.as_ref() {
+            inner.accept(visitor)
+        }
+        if let Some(inner) = self.order_by.as_ref() {
+            inner.accept(visitor)
+        }
+        if let Some(inner) = self.limit.as_ref() {
+            inner.accept(visitor)
+        }
+        if let Some(inner) = self.offset.as_ref() {
+            inner.accept(visitor)
+        }
     }
 }
 

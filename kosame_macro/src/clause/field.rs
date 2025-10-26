@@ -8,12 +8,8 @@ use syn::{
 };
 
 use crate::{
-    alias::Alias,
-    clause::{From, GroupBy, Having, Limit, Offset, OrderBy, Where, peek_clause},
-    expr::Expr,
-    path_ext::PathExt,
-    row::RowField,
-    type_override::TypeOverride,
+    alias::Alias, clause::peek_clause, expr::Expr, path_ext::PathExt, row::RowField,
+    type_override::TypeOverride, visitor::Visitor,
 };
 
 pub struct Field {
@@ -39,6 +35,10 @@ impl Field {
             alias.ident().clone(),
             type_override.type_path().to_call_site(1).to_token_stream(),
         )
+    }
+
+    pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
+        self.expr.accept(visitor);
     }
 }
 
@@ -68,6 +68,12 @@ pub struct Fields(Punctuated<Field, Token![,]>);
 impl Fields {
     pub fn iter(&self) -> impl Iterator<Item = &Field> {
         self.0.iter()
+    }
+
+    pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
+        for field in self.iter() {
+            field.accept(visitor);
+        }
     }
 }
 

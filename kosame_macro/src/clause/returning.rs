@@ -2,7 +2,7 @@ use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::parse::{Parse, ParseStream};
 
-use crate::clause::Fields;
+use crate::{clause::Fields, visitor::Visitor};
 
 mod kw {
     use syn::custom_keyword;
@@ -22,6 +22,10 @@ impl Returning {
 
     pub fn fields(&self) -> &Fields {
         &self.fields
+    }
+
+    pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
+        self.fields.accept(visitor);
     }
 }
 

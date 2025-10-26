@@ -7,8 +7,6 @@ mod lit;
 mod paren;
 mod unary;
 
-mod visitor;
-
 pub use binary::*;
 pub use bind_param::*;
 pub use call::*;
@@ -17,7 +15,6 @@ pub use column_ref::*;
 pub use lit::*;
 pub use paren::*;
 pub use unary::*;
-pub use visitor::*;
 
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
@@ -25,6 +22,8 @@ use syn::{
     parse::{Parse, ParseStream},
     spanned::Spanned,
 };
+
+use crate::visitor::Visitor;
 
 pub enum Expr {
     Binary(Binary),

@@ -47,8 +47,8 @@ impl ToTokens for Statement {
         };
 
         let bind_params = {
-            let builder = BindParamsBuilder::new();
-            // self.body.accept_expr(&mut builder);
+            let mut builder = BindParamsBuilder::new();
+            self.command.accept(&mut builder);
             builder.build()
         };
         let closure_tokens = self
@@ -64,7 +64,7 @@ impl ToTokens for Statement {
             fields.iter().map(|field| field.to_row_field()).collect(),
         );
 
-        let lifetime = (false).then_some(quote! { <'a> });
+        let lifetime = (!bind_params.is_empty()).then_some(quote! { <'a> });
 
         let module_tokens = quote! {
             pub mod #module_name {

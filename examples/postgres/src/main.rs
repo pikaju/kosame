@@ -47,8 +47,10 @@ fn main() {
     // .exec_sync(&mut client, &mut RecordArrayRunner {})
     // .unwrap();
 
+    let kek = 5i32;
     let statement = kosame::pg_statement! {
         select
+            cast(:kek as int) as kek: i32,
             title as smep: ::std::string::String,
         from schema::posts
         inner join schema::comments as kek on posts.id = kek.post_id

@@ -6,10 +6,7 @@ use syn::{
     punctuated::Punctuated,
 };
 
-use crate::{
-    clause::peek_clause,
-    expr::{Expr, Visitor},
-};
+use crate::{clause::peek_clause, expr::Expr, visitor::Visitor};
 
 mod kw {
     use syn::custom_keyword;
@@ -33,7 +30,7 @@ impl GroupBy {
         input.peek(kw::group) && input.peek2(kw::by)
     }
 
-    pub fn accept_expr<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
+    pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
         for entry in &self.entries {
             entry.expr.accept(visitor);
         }
