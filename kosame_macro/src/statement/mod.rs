@@ -5,7 +5,13 @@ use syn::{
     parse::{Parse, ParseStream},
 };
 
-use crate::{alias::Alias, bind_params::BindParamsBuilder, command::Command, row::Row};
+use crate::{
+    alias::Alias,
+    attribute::{CustomMeta, MetaLocation},
+    bind_params::BindParamsBuilder,
+    command::Command,
+    row::Row,
+};
 
 mod kw {
     use syn::custom_keyword;
@@ -22,7 +28,11 @@ pub struct Statement {
 impl Parse for Statement {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            _inner_attrs: input.call(Attribute::parse_inner)?,
+            _inner_attrs: {
+                let attrs = input.call(Attribute::parse_inner)?;
+                CustomMeta::parse_attrs(&attrs, MetaLocation::StatementInner)?;
+                attrs
+            },
             command: input.parse()?,
             alias: input.call(Alias::parse_optional)?,
         })
@@ -37,7 +47,7 @@ impl ToTokens for Statement {
         };
 
         let bind_params = {
-            let mut builder = BindParamsBuilder::new();
+            let builder = BindParamsBuilder::new();
             // self.body.accept_expr(&mut builder);
             builder.build()
         };

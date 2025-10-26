@@ -24,6 +24,8 @@ mod kw {
 }
 
 pub struct Table {
+    _token_stream: TokenStream,
+
     pub _inner_attrs: Vec<Attribute>,
     pub _outer_attrs: Vec<Attribute>,
 
@@ -42,8 +44,11 @@ pub struct Table {
 
 impl Parse for Table {
     fn parse(input: ParseStream) -> syn::Result<Self> {
+        let token_stream = input.fork().parse()?;
         let content;
         Ok(Self {
+            _token_stream: token_stream,
+
             _inner_attrs: {
                 let attrs = Attribute::parse_inner(input)?;
                 CustomMeta::parse_attrs(&attrs, MetaLocation::TableInner)?;
@@ -99,7 +104,7 @@ impl ToTokens for Table {
                 .collect(),
         );
 
-        let star_macro = {
+        let inject_macro = {
             static AUTO_INCREMENT: std::sync::atomic::AtomicU32 =
                 std::sync::atomic::AtomicU32::new(0);
             let increment = AUTO_INCREMENT.fetch_add(1, Ordering::Relaxed);
@@ -113,33 +118,28 @@ impl ToTokens for Table {
                 increment.hash(&mut hasher);
                 hasher.finish()
             };
-            let unique_macro_name = format_ident!("__kosame_star_{}", hash);
+            let unique_macro_name = format_ident!("__kosame_inject_{}", hash);
 
-            let fields = self.columns.iter().map(|column| {
-                let column_name = column.rust_name();
-                RowField::new(
-                    vec![],
-                    column_name.clone(),
-                    quote! { $($table_path)* ::columns::#column_name::Type },
-                )
-            });
+            let token_stream = &self._token_stream;
 
             quote! {
                 #[macro_export]
                 macro_rules! #unique_macro_name {
                     (
+                        $(#![$acc:meta])*
+                        $child:path {
+                            $($content:tt)*
+                        }
                         ($($table_path:tt)*)
-                        $(#[$meta:meta])* pub struct $name:ident { $($tokens:tt)* }
                     ) => {
-                        $(#[$meta])*
-                        pub struct $name {
-                            #(#fields,)*
-                            $($tokens)*
+                        $child {
+                            #![kosame(table($($table_path)* = #token_stream))]
+                            $(#![$acc:meta])*
                         }
                     }
                 }
 
-                pub use #unique_macro_name as star;
+                pub use #unique_macro_name as inject;
             }
         };
 
@@ -167,7 +167,7 @@ impl ToTokens for Table {
 
                 #select_struct
 
-                #star_macro
+                #inject_macro
             }
         }
         .to_tokens(tokens);

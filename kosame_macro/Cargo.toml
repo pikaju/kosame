@@ -27,4 +27,4 @@ convert_case = "0.8.0"
 proc-macro-error = "1.0.4"
 proc-macro2 = { version = "1.0.101", features = ["span-locations"] }
 quote = "1.0.40"
-syn = "2.0.106"
+syn = { version = "2.0.106", features = ["extra-traits"] }

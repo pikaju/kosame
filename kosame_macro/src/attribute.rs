@@ -1,11 +1,13 @@
+use std::collections::HashMap;
+
 use proc_macro_error::emit_call_site_error;
 use syn::{
-    Ident, LitStr, Path, Token,
+    Ident, LitInt, LitStr, Path, Token,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
 };
 
-use crate::driver::Driver;
+use crate::{driver::Driver, schema::Table};
 
 mod kw {
     use syn::custom_keyword;
@@ -15,6 +17,9 @@ mod kw {
     custom_keyword!(driver);
     custom_keyword!(rename);
     custom_keyword!(ty);
+
+    custom_keyword!(__pass);
+    custom_keyword!(__table);
 }
 
 #[derive(Default)]
@@ -22,6 +27,9 @@ pub struct CustomMeta {
     pub driver: Option<MetaDriver>,
     pub rename: Option<MetaRename>,
     pub type_override: Option<MetaTypeOverride>,
+
+    pub pass: u32,
+    pub tables: HashMap<Path, Table>,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -31,6 +39,8 @@ pub enum MetaLocation {
     Column,
     QueryInner,
     QueryOuter,
+    StatementInner,
+    StatementOuter,
 }
 
 impl CustomMeta {
@@ -72,6 +82,7 @@ impl CustomMeta {
                                 "driver",
                                 location == MetaLocation::TableInner
                                     || location == MetaLocation::QueryInner
+                                    || location == MetaLocation::StatementInner
                             );
                         }
                         MetaItem::Rename(rename) => {
@@ -80,13 +91,21 @@ impl CustomMeta {
                         MetaItem::TypeOverride(type_override) => {
                             fill_or_error!(type_override, "ty", location == MetaLocation::Column);
                         }
+                        MetaItem::Pass(pass) => {
+                            result.pass = pass.value.base10_parse()?;
+                        }
+                        MetaItem::Table(table) => {
+                            result.tables.insert(table.path, *table.value);
+                        }
                     }
                 }
             }
         }
 
         match location {
-            MetaLocation::TableInner | MetaLocation::QueryInner if result.driver.is_none() => {
+            MetaLocation::TableInner | MetaLocation::QueryInner | MetaLocation::StatementInner
+                if result.driver.is_none() =>
+            {
                 emit_call_site_error!(
                     "missing `driver` attribute, e.g. #[kosame(driver = \"tokio-postgres\")]"
                 );
@@ -102,10 +121,19 @@ enum MetaItem {
     Driver(MetaDriver),
     Rename(MetaRename),
     TypeOverride(MetaTypeOverride),
+    Pass(MetaPass),
+    Table(MetaTable),
 }
 
 impl Parse for MetaItem {
     fn parse(input: ParseStream) -> syn::Result<Self> {
+        if input.peek(kw::__pass) {
+            return Ok(Self::Pass(input.parse()?));
+        }
+        if input.peek(kw::__table) {
+            return Ok(Self::Table(input.parse()?));
+        }
+
         let lookahead = input.lookahead1();
         if lookahead.peek(kw::driver) {
             Ok(Self::Driver(input.parse()?))
@@ -169,6 +197,38 @@ impl Parse for MetaTypeOverride {
             path: input.parse()?,
             _eq_token: input.parse()?,
             value: input.parse()?,
+        })
+    }
+}
+
+pub struct MetaPass {
+    pub path: kw::__pass,
+    pub _eq_token: Token![=],
+    pub value: LitInt,
+}
+
+impl Parse for MetaPass {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        Ok(Self {
+            path: input.parse()?,
+            _eq_token: input.parse()?,
+            value: input.parse()?,
+        })
+    }
+}
+
+pub struct MetaTable {
+    pub path: Path,
+    pub _eq_token: Token![=],
+    pub value: Box<Table>,
+}
+
+impl Parse for MetaTable {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        Ok(Self {
+            path: input.parse()?,
+            _eq_token: input.parse()?,
+            value: Box::new(input.parse()?),
         })
     }
 }

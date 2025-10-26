@@ -7,7 +7,7 @@ mod schema {
         // Kosame uses the familiar SQL syntax to define tables.
         create table posts (
             id int primary key default uuidv7(),
-            #[kosame(rename = posts, ty = ::std::string::String)]
+            #[kosame(rename = title, ty = ::std::string::String)]
             title text not null,
             content text,
         );
@@ -49,7 +49,7 @@ fn main() {
 
     let statement = kosame::pg_statement! {
         select
-            posts as smep: ::std::string::String,
+            title as smep: ::std::string::String,
         from schema::posts
         inner join schema::comments as kek on posts.id = kek.post_id
         where posts.id > 4
