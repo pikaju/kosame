@@ -1,4 +1,5 @@
 mod delete;
+mod insert;
 mod select;
 mod update;
 
@@ -10,6 +11,7 @@ use syn::{
 };
 
 pub use delete::*;
+pub use insert::*;
 pub use select::*;
 pub use update::*;
 
@@ -17,7 +19,8 @@ use crate::{clause::Fields, visitor::Visitor};
 
 pub enum Command {
     Delete(Delete),
-    Select(Select),
+    Insert(Insert),
+    Select(Box<Select>),
     Update(Update),
 }
 
@@ -25,6 +28,7 @@ impl Command {
     pub fn attrs(&self) -> &[Attribute] {
         match self {
             Self::Delete(inner) => &inner.attrs,
+            Self::Insert(inner) => &inner.attrs,
             Self::Select(inner) => &inner.attrs,
             Self::Update(inner) => &inner.attrs,
         }
@@ -33,6 +37,7 @@ impl Command {
     pub fn fields(&self) -> Option<&Fields> {
         match self {
             Self::Delete(inner) => None,
+            Self::Insert(inner) => None,
             Self::Select(inner) => Some(&inner.select.fields),
             Self::Update(inner) => None,
         }
@@ -41,6 +46,7 @@ impl Command {
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
         match self {
             Self::Delete(inner) => inner.accept(visitor),
+            Self::Insert(inner) => inner.accept(visitor),
             Self::Select(inner) => inner.accept(visitor),
             Self::Update(inner) => inner.accept(visitor),
         }
@@ -51,6 +57,8 @@ impl Parse for Command {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         if Delete::peek(input) {
             Ok(Self::Delete(input.parse()?))
+        } else if Insert::peek(input) {
+            Ok(Self::Insert(input.parse()?))
         } else if Select::peek(input) {
             Ok(Self::Select(input.parse()?))
         } else if Update::peek(input) {
@@ -66,6 +74,9 @@ impl ToTokens for Command {
         match self {
             Self::Delete(inner) => quote! {
                 ::kosame::repr::command::Command::Delete(#inner)
+            },
+            Self::Insert(inner) => quote! {
+                ::kosame::repr::command::Command::Insert(#inner)
             },
             Self::Select(inner) => quote! {
                 ::kosame::repr::command::Command::Select(#inner)

@@ -54,12 +54,9 @@ fn main() {
     // .exec_sync(&mut client, &mut RecordArrayRunner {})
     // .unwrap();
 
-    let id = 3;
+    let id = 7;
     let statement = kosame::pg_statement! {
-        update schema::kek
-        set id = comments.id
-        from schema::comments
-        where kek.id = comments.post_id or kek.id = :id
+        insert into schema::kek values (:id), (8)
     };
 
     use kosame::sql::FmtSql;
