@@ -14,9 +14,9 @@ pub struct Scope<'a> {
 }
 
 impl<'a> Scope<'a> {
-    pub fn new(from_item: Option<&clause::FromItem>) -> Self {
+    pub fn new<'b>(from_items: impl IntoIterator<Item = &'b clause::FromItem>) -> Self {
         let mut tables = vec![];
-        if let Some(from_item) = from_item {
+        for from_item in from_items {
             fn collect(tables: &mut Vec<ScopeTable>, item: &FromItem) {
                 match item {
                     FromItem::Table { table, alias } => match alias {

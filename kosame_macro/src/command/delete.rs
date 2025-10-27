@@ -72,7 +72,13 @@ impl ToTokens for Delete {
         let r#where = QuoteOption(self.r#where.as_ref());
         let returning = QuoteOption(self.returning.as_ref());
 
-        let scope = Scope::new(self.using.as_ref().map(|using| &using.item));
+        let scope = Scope::new(
+            std::iter::once(&FromItem::Table {
+                table: self.table.clone(),
+                alias: None,
+            })
+            .chain(self.using.as_ref().map(|using| &using.item)),
+        );
 
         quote! {
             {

@@ -54,8 +54,10 @@ fn main() {
     // .exec_sync(&mut client, &mut RecordArrayRunner {})
     // .unwrap();
 
+    let id = 3;
     let statement = kosame::pg_statement! {
         delete from schema::kek
+        where id = :id
     };
     use kosame::sql::FmtSql;
     let sql = statement
