@@ -3,13 +3,13 @@ use std::fmt::Write;
 use crate::expr::Expr;
 
 pub struct OrderBy<'a> {
-    entries: &'a [OrderByEntry<'a>],
+    items: &'a [OrderByItem<'a>],
 }
 
 impl<'a> OrderBy<'a> {
     #[inline]
-    pub const fn new(entries: &'a [OrderByEntry]) -> Self {
-        Self { entries }
+    pub const fn new(items: &'a [OrderByItem]) -> Self {
+        Self { items }
     }
 }
 
@@ -20,9 +20,9 @@ impl kosame_sql::FmtSql for OrderBy<'_> {
         formatter: &mut kosame_sql::Formatter<D>,
     ) -> kosame_sql::Result {
         formatter.write_str(" order by ")?;
-        for (index, entry) in self.entries.iter().enumerate() {
-            entry.fmt_sql(formatter)?;
-            if index != self.entries.len() - 1 {
+        for (index, item) in self.items.iter().enumerate() {
+            item.fmt_sql(formatter)?;
+            if index != self.items.len() - 1 {
                 formatter.write_str(", ")?;
             }
         }
@@ -30,20 +30,20 @@ impl kosame_sql::FmtSql for OrderBy<'_> {
     }
 }
 
-pub struct OrderByEntry<'a> {
+pub struct OrderByItem<'a> {
     expr: Expr<'a>,
     dir: Option<OrderByDir>,
     nulls: Option<OrderByNulls>,
 }
 
-impl<'a> OrderByEntry<'a> {
+impl<'a> OrderByItem<'a> {
     #[inline]
     pub const fn new(expr: Expr<'a>, dir: Option<OrderByDir>, nulls: Option<OrderByNulls>) -> Self {
         Self { expr, dir, nulls }
     }
 }
 
-impl kosame_sql::FmtSql for OrderByEntry<'_> {
+impl kosame_sql::FmtSql for OrderByItem<'_> {
     #[inline]
     fn fmt_sql<D: kosame_sql::Dialect>(
         &self,

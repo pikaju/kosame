@@ -56,9 +56,12 @@ fn main() {
 
     let id = 3;
     let statement = kosame::pg_statement! {
-        delete from schema::kek
-        where id = :id
+        update schema::kek
+        set id = comments.id
+        from schema::comments
+        where kek.id = comments.post_id or kek.id = :id
     };
+
     use kosame::sql::FmtSql;
     let sql = statement
         .repr()

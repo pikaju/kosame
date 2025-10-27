@@ -18,7 +18,7 @@ mod kw {
 pub struct GroupBy {
     pub _group: kw::group,
     pub _by: kw::by,
-    pub entries: Punctuated<GroupByEntry, Token![,]>,
+    pub items: Punctuated<GroupByItem, Token![,]>,
 }
 
 impl GroupBy {
@@ -31,8 +31,8 @@ impl GroupBy {
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
-        for entry in &self.entries {
-            entry.expr.accept(visitor);
+        for item in &self.items {
+            item.expr.accept(visitor);
         }
     }
 }
@@ -42,7 +42,7 @@ impl Parse for GroupBy {
         Ok(Self {
             _group: input.parse()?,
             _by: input.parse()?,
-            entries: {
+            items: {
                 let mut punctuated = Punctuated::new();
                 while !input.is_empty() {
                     if peek_clause(input) {
@@ -68,16 +68,16 @@ impl Parse for GroupBy {
 
 impl ToTokens for GroupBy {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let entries = self.entries.iter().map(GroupByEntry::to_token_stream);
-        quote! { ::kosame::repr::clause::GroupBy::new(&[#(#entries),*]) }.to_tokens(tokens)
+        let items = self.items.iter().map(GroupByItem::to_token_stream);
+        quote! { ::kosame::repr::clause::GroupBy::new(&[#(#items),*]) }.to_tokens(tokens)
     }
 }
 
-pub struct GroupByEntry {
+pub struct GroupByItem {
     pub expr: Expr,
 }
 
-impl Parse for GroupByEntry {
+impl Parse for GroupByItem {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             expr: input.parse()?,
@@ -85,9 +85,9 @@ impl Parse for GroupByEntry {
     }
 }
 
-impl ToTokens for GroupByEntry {
+impl ToTokens for GroupByItem {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let expr = &self.expr;
-        quote! { ::kosame::repr::clause::GroupByEntry::new(#expr) }.to_tokens(tokens);
+        quote! { ::kosame::repr::clause::GroupByItem::new(#expr) }.to_tokens(tokens);
     }
 }

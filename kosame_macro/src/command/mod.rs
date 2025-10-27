@@ -1,5 +1,6 @@
 mod delete;
 mod select;
+mod update;
 
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
@@ -10,12 +11,14 @@ use syn::{
 
 pub use delete::*;
 pub use select::*;
+pub use update::*;
 
 use crate::{clause::Fields, visitor::Visitor};
 
 pub enum Command {
     Delete(Delete),
     Select(Select),
+    Update(Update),
 }
 
 impl Command {
@@ -23,6 +26,7 @@ impl Command {
         match self {
             Self::Delete(inner) => &inner.attrs,
             Self::Select(inner) => &inner.attrs,
+            Self::Update(inner) => &inner.attrs,
         }
     }
 
@@ -30,6 +34,7 @@ impl Command {
         match self {
             Self::Delete(inner) => None,
             Self::Select(inner) => Some(&inner.select.fields),
+            Self::Update(inner) => None,
         }
     }
 
@@ -37,6 +42,7 @@ impl Command {
         match self {
             Self::Delete(inner) => inner.accept(visitor),
             Self::Select(inner) => inner.accept(visitor),
+            Self::Update(inner) => inner.accept(visitor),
         }
     }
 }
@@ -47,6 +53,8 @@ impl Parse for Command {
             Ok(Self::Delete(input.parse()?))
         } else if Select::peek(input) {
             Ok(Self::Select(input.parse()?))
+        } else if Update::peek(input) {
+            Ok(Self::Update(input.parse()?))
         } else {
             Err(syn::Error::new(input.span(), "expected command"))
         }
@@ -61,6 +69,9 @@ impl ToTokens for Command {
             },
             Self::Select(inner) => quote! {
                 ::kosame::repr::command::Command::Select(#inner)
+            },
+            Self::Update(inner) => quote! {
+                ::kosame::repr::command::Command::Update(#inner)
             },
         }
         .to_tokens(tokens)

@@ -25,7 +25,7 @@ mod kw {
 pub struct OrderBy {
     pub _order: kw::order,
     pub _by: kw::by,
-    pub entries: Punctuated<OrderByEntry, Token![,]>,
+    pub items: Punctuated<OrderByItem, Token![,]>,
 }
 
 impl OrderBy {
@@ -38,8 +38,8 @@ impl OrderBy {
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
-        for entry in &self.entries {
-            entry.expr.accept(visitor);
+        for item in &self.items {
+            item.expr.accept(visitor);
         }
     }
 }
@@ -49,7 +49,7 @@ impl Parse for OrderBy {
         Ok(Self {
             _order: input.parse()?,
             _by: input.parse()?,
-            entries: {
+            items: {
                 let mut punctuated = Punctuated::new();
                 while !input.is_empty() {
                     if peek_clause(input) {
@@ -75,18 +75,18 @@ impl Parse for OrderBy {
 
 impl ToTokens for OrderBy {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let entries = self.entries.iter().map(OrderByEntry::to_token_stream);
-        quote! { ::kosame::repr::clause::OrderBy::new(&[#(#entries),*]) }.to_tokens(tokens)
+        let items = self.items.iter().map(OrderByItem::to_token_stream);
+        quote! { ::kosame::repr::clause::OrderBy::new(&[#(#items),*]) }.to_tokens(tokens)
     }
 }
 
-pub struct OrderByEntry {
+pub struct OrderByItem {
     pub expr: Expr,
     pub dir: Option<OrderByDir>,
     pub nulls: Option<OrderByNulls>,
 }
 
-impl Parse for OrderByEntry {
+impl Parse for OrderByItem {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             expr: input.parse()?,
@@ -96,7 +96,7 @@ impl Parse for OrderByEntry {
     }
 }
 
-impl ToTokens for OrderByEntry {
+impl ToTokens for OrderByItem {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let expr = &self.expr;
         let dir = match self.dir {
@@ -114,7 +114,7 @@ impl ToTokens for OrderByEntry {
             None => quote! { None },
         };
 
-        quote! { ::kosame::repr::clause::OrderByEntry::new(#expr, #dir, #nulls) }.to_tokens(tokens);
+        quote! { ::kosame::repr::clause::OrderByItem::new(#expr, #dir, #nulls) }.to_tokens(tokens);
     }
 }
 

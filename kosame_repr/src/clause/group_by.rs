@@ -3,13 +3,13 @@ use std::fmt::Write;
 use crate::expr::Expr;
 
 pub struct GroupBy<'a> {
-    entries: &'a [GroupByEntry<'a>],
+    items: &'a [GroupByItem<'a>],
 }
 
 impl<'a> GroupBy<'a> {
     #[inline]
-    pub const fn new(entries: &'a [GroupByEntry]) -> Self {
-        Self { entries }
+    pub const fn new(items: &'a [GroupByItem]) -> Self {
+        Self { items }
     }
 }
 
@@ -20,9 +20,9 @@ impl kosame_sql::FmtSql for GroupBy<'_> {
         formatter: &mut kosame_sql::Formatter<D>,
     ) -> kosame_sql::Result {
         formatter.write_str(" group by ")?;
-        for (index, entry) in self.entries.iter().enumerate() {
-            entry.fmt_sql(formatter)?;
-            if index != self.entries.len() - 1 {
+        for (index, item) in self.items.iter().enumerate() {
+            item.fmt_sql(formatter)?;
+            if index != self.items.len() - 1 {
                 formatter.write_str(", ")?;
             }
         }
@@ -30,18 +30,18 @@ impl kosame_sql::FmtSql for GroupBy<'_> {
     }
 }
 
-pub struct GroupByEntry<'a> {
+pub struct GroupByItem<'a> {
     expr: Expr<'a>,
 }
 
-impl<'a> GroupByEntry<'a> {
+impl<'a> GroupByItem<'a> {
     #[inline]
     pub const fn new(expr: Expr<'a>) -> Self {
         Self { expr }
     }
 }
 
-impl kosame_sql::FmtSql for GroupByEntry<'_> {
+impl kosame_sql::FmtSql for GroupByItem<'_> {
     #[inline]
     fn fmt_sql<D: kosame_sql::Dialect>(
         &self,

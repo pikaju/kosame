@@ -3,18 +3,18 @@ use std::fmt::Write;
 use crate::expr::Expr;
 
 pub struct Set<'a> {
-    entries: &'a [SetEntry<'a>],
+    items: &'a [SetItem<'a>],
 }
 
 impl<'a> Set<'a> {
     #[inline]
-    pub const fn new(entries: &'a [SetEntry<'a>]) -> Self {
-        Self { entries }
+    pub const fn new(items: &'a [SetItem<'a>]) -> Self {
+        Self { items }
     }
 
     #[inline]
-    pub const fn entries(&self) -> &'a [SetEntry<'a>] {
-        self.entries
+    pub const fn items(&self) -> &'a [SetItem<'a>] {
+        self.items
     }
 }
 
@@ -24,9 +24,9 @@ impl kosame_sql::FmtSql for Set<'_> {
         D: kosame_sql::Dialect,
     {
         formatter.write_str(" set ")?;
-        for (index, entry) in self.entries.into_iter().enumerate() {
-            entry.fmt_sql(formatter)?;
-            if index < self.entries.len() - 1 {
+        for (index, item) in self.items.iter().enumerate() {
+            item.fmt_sql(formatter)?;
+            if index < self.items.len() - 1 {
                 formatter.write_str(", ")?;
             }
         }
@@ -34,12 +34,12 @@ impl kosame_sql::FmtSql for Set<'_> {
     }
 }
 
-pub enum SetEntry<'a> {
+pub enum SetItem<'a> {
     Default { column: &'a str },
     Expr { column: &'a str, expr: Expr<'a> },
 }
 
-impl kosame_sql::FmtSql for SetEntry<'_> {
+impl kosame_sql::FmtSql for SetItem<'_> {
     fn fmt_sql<D>(&self, formatter: &mut kosame_sql::Formatter<D>) -> kosame_sql::Result
     where
         D: kosame_sql::Dialect,
