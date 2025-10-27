@@ -24,7 +24,7 @@ impl Having {
     }
 
     pub fn peek(input: ParseStream) -> bool {
-        input.peek(Token![where])
+        input.peek(kw::having)
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
