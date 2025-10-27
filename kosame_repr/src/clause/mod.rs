@@ -7,6 +7,7 @@ mod offset;
 mod order_by;
 mod returning;
 mod select;
+mod set;
 mod r#where;
 
 pub use field::*;
@@ -18,4 +19,5 @@ pub use offset::*;
 pub use order_by::*;
 pub use returning::*;
 pub use select::*;
+pub use set::*;
 pub use r#where::*;

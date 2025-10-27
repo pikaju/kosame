@@ -5,6 +5,13 @@ use kosame::statement::Statement;
 mod schema {
     kosame::pg_table! {
         // Kosame uses the familiar SQL syntax to define tables.
+        create table kek (
+            id int primary key,
+        );
+    }
+
+    kosame::pg_table! {
+        // Kosame uses the familiar SQL syntax to define tables.
         create table posts (
             id int primary key default uuidv7(),
             #[kosame(rename = title, ty = ::std::string::String)]
@@ -47,14 +54,8 @@ fn main() {
     // .exec_sync(&mut client, &mut RecordArrayRunner {})
     // .unwrap();
 
-    let kek = 5i32;
     let statement = kosame::pg_statement! {
-        select
-            cast(:kek as int) as kek: i32,
-            title as smep: ::std::string::String,
-        from schema::posts
-        inner join schema::comments as kek on posts.id = kek.post_id
-        where posts.id = :kek
+        delete from schema::kek
     };
     use kosame::sql::FmtSql;
     let sql = statement

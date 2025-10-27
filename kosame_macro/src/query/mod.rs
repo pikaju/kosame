@@ -107,7 +107,7 @@ impl ToTokens for Query {
         if self.alias.is_some() {
             module_tokens.to_tokens(tokens);
         } else {
-            let bind_params_closure = BindParamsClosure::new(&module_name, &bind_params);
+            let bind_params_closure = BindParamsClosure::new(module_name, &bind_params);
             quote! {
                 {
                     #bind_params_closure

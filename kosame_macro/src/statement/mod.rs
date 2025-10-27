@@ -15,12 +15,6 @@ use crate::{
     visitor::Visitor,
 };
 
-mod kw {
-    use syn::custom_keyword;
-
-    custom_keyword!(select);
-}
-
 pub struct Statement {
     token_stream: TokenStream,
 
@@ -108,11 +102,17 @@ impl ToTokens for Statement {
 
         let command = &self.command;
         let fields = command.fields();
-        let row = Row::new(
-            command.attrs().to_owned(),
-            Ident::new("Row", Span::call_site()),
-            fields.iter().map(|field| field.to_row_field()).collect(),
-        );
+        let row = match fields {
+            Some(fields) => {
+                let row = Row::new(
+                    command.attrs().to_owned(),
+                    Ident::new("Row", Span::call_site()),
+                    fields.iter().map(|field| field.to_row_field()).collect(),
+                );
+                quote! { #row }
+            }
+            None => quote! { pub enum Row {} },
+        };
 
         let lifetime = (!bind_params.is_empty()).then_some(quote! { <'a> });
 
@@ -146,7 +146,7 @@ impl ToTokens for Statement {
         if self.alias.is_some() {
             module_tokens.to_tokens(tokens);
         } else {
-            let bind_params_closure = BindParamsClosure::new(&module_name, &bind_params);
+            let bind_params_closure = BindParamsClosure::new(module_name, &bind_params);
             quote! {
                 {
                     #bind_params_closure

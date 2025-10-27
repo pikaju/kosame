@@ -14,6 +14,12 @@ pub trait Connection {
     type Row;
     type Error: std::error::Error + 'static;
 
+    fn exec(
+        &mut self,
+        sql: &str,
+        params: &Self::Params<'_>,
+    ) -> impl Future<Output = Result<u64, Self::Error>> + Send;
+
     fn query(
         &mut self,
         sql: &str,

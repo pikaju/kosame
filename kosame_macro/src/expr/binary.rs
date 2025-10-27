@@ -118,7 +118,7 @@ impl BinOp {
         }
     }
 
-    fn span(&self) -> Span {
+    pub fn span(&self) -> Span {
         match self {
             Self::Multiply(inner) => inner.span,
             Self::Divide(inner) => inner.span,

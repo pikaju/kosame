@@ -14,9 +14,9 @@ pub struct Scope<'a> {
 }
 
 impl<'a> Scope<'a> {
-    pub fn new(from: Option<&clause::From>) -> Self {
+    pub fn new(from_item: Option<&clause::FromItem>) -> Self {
         let mut tables = vec![];
-        if let Some(from) = from {
+        if let Some(from_item) = from_item {
             fn collect(tables: &mut Vec<ScopeTable>, item: &FromItem) {
                 match item {
                     FromItem::Table { table, alias } => match alias {
@@ -50,7 +50,7 @@ impl<'a> Scope<'a> {
                     }
                 }
             }
-            collect(&mut tables, &from.item);
+            collect(&mut tables, from_item);
         }
         Self {
             parent: None,

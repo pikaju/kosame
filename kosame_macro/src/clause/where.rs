@@ -8,15 +8,11 @@ use syn::{
 use crate::{expr::Expr, visitor::Visitor};
 
 pub struct Where {
-    _where: Token![where],
-    expr: Expr,
+    pub _where: Token![where],
+    pub expr: Expr,
 }
 
 impl Where {
-    pub fn expr(&self) -> &Expr {
-        &self.expr
-    }
-
     pub fn parse_optional(input: ParseStream) -> syn::Result<Option<Self>> {
         Self::peek(input).then(|| input.parse()).transpose()
     }

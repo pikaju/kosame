@@ -1,3 +1,4 @@
+mod delete;
 mod select;
 
 use proc_macro2::TokenStream;
@@ -7,29 +8,34 @@ use syn::{
     parse::{Parse, ParseStream},
 };
 
+pub use delete::*;
 pub use select::*;
 
 use crate::{clause::Fields, visitor::Visitor};
 
 pub enum Command {
+    Delete(Delete),
     Select(Select),
 }
 
 impl Command {
     pub fn attrs(&self) -> &[Attribute] {
         match self {
+            Self::Delete(inner) => &inner.attrs,
             Self::Select(inner) => &inner.attrs,
         }
     }
 
-    pub fn fields(&self) -> &Fields {
+    pub fn fields(&self) -> Option<&Fields> {
         match self {
-            Self::Select(inner) => &inner.select.fields,
+            Self::Delete(inner) => None,
+            Self::Select(inner) => Some(&inner.select.fields),
         }
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
         match self {
+            Self::Delete(inner) => inner.accept(visitor),
             Self::Select(inner) => inner.accept(visitor),
         }
     }
@@ -37,7 +43,9 @@ impl Command {
 
 impl Parse for Command {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        if Select::peek(input) {
+        if Delete::peek(input) {
+            Ok(Self::Delete(input.parse()?))
+        } else if Select::peek(input) {
             Ok(Self::Select(input.parse()?))
         } else {
             Err(syn::Error::new(input.span(), "expected command"))
@@ -48,6 +56,9 @@ impl Parse for Command {
 impl ToTokens for Command {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match self {
+            Self::Delete(inner) => quote! {
+                ::kosame::repr::command::Command::Delete(#inner)
+            },
             Self::Select(inner) => quote! {
                 ::kosame::repr::command::Command::Select(#inner)
             },

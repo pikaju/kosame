@@ -6,6 +6,10 @@ impl Connection for postgres::Client {
     type Row = postgres::Row;
     type Error = postgres::Error;
 
+    async fn exec(&mut self, sql: &str, params: &Self::Params<'_>) -> Result<u64, Self::Error> {
+        postgres::Client::execute(self, sql, params)
+    }
+
     async fn query(
         &mut self,
         sql: &str,
@@ -20,6 +24,10 @@ impl Connection for postgres::Transaction<'_> {
     type Params<'a> = Vec<&'a (dyn postgres_types::ToSql + std::marker::Sync + 'a)>;
     type Row = postgres::Row;
     type Error = postgres::Error;
+
+    async fn exec(&mut self, sql: &str, params: &Self::Params<'_>) -> Result<u64, Self::Error> {
+        postgres::Transaction::execute(self, sql, params)
+    }
 
     async fn query(
         &mut self,
