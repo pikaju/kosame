@@ -69,7 +69,7 @@ pub struct TableAlias {
 
 impl TableAlias {
     fn parse_optional(input: ParseStream) -> syn::Result<Option<Self>> {
-        if peek_clause(input) {
+        if input.is_empty() || peek_clause(input) {
             return Ok(None);
         }
         macro_rules! check {

@@ -21,8 +21,17 @@ pub struct Field {
 
 impl Field {
     pub fn to_row_field(&self) -> RowField {
-        let Some(alias) = self.alias.as_ref() else {
-            abort!(self.expr.span(), "field requires alias using `as my_alias`");
+        let Some(alias) = self
+            .alias
+            .as_ref()
+            .map(|alias| &alias.ident)
+            .or_else(|| self.expr.infer_name())
+        else {
+            abort!(
+                self.expr.span(),
+                "field name cannot be inferred";
+                help = "consider adding an alias using `as my_alias`"
+            );
         };
         let Some(type_override) = self.type_override.as_ref() else {
             abort!(
@@ -32,7 +41,7 @@ impl Field {
         };
         RowField::new(
             self.attrs.clone(),
-            alias.ident.clone(),
+            alias.clone(),
             type_override.type_path.to_call_site(1).to_token_stream(),
         )
     }

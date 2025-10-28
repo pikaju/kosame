@@ -55,8 +55,13 @@ fn main() {
     // .unwrap();
 
     let id = 7;
-    let statement = kosame::pg_statement! {
-        insert into schema::kek values (9 + 5)
+    kosame::pg_statement! {
+        select
+            id: i32,
+            title as my_title: ::std::string::String,
+            cast(content as text): ::core::option::Option<String>,
+            id + 5: i32
+        from schema::posts
     };
 
     use kosame::sql::FmtSql;
@@ -66,7 +71,7 @@ fn main() {
         .unwrap();
     println!("{}", sql);
 
-    let rows = statement.exec_sync(&mut client).unwrap();
+    let rows = statement.exec_vec_sync(&mut client).unwrap();
 
     println!("{:#?}", rows);
 }

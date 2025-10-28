@@ -26,6 +26,10 @@ impl Cast {
         self.value.accept(visitor);
     }
 
+    pub fn infer_name(&self) -> Option<&Ident> {
+        self.value.infer_name()
+    }
+
     pub fn span(&self) -> Span {
         self.cast
             .span

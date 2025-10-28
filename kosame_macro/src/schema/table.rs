@@ -105,7 +105,6 @@ impl ToTokens for Table {
 
         let inject_macro = {
             let unique_macro_name = unique_macro!("__kosame_inject_{}", self.name.span());
-
             let token_stream = &self._token_stream;
 
             quote! {

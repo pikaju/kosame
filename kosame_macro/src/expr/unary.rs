@@ -1,6 +1,9 @@
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
-use syn::parse::{Parse, ParseStream};
+use syn::{
+    Ident,
+    parse::{Parse, ParseStream},
+};
 
 use super::{Expr, Visitor};
 
@@ -19,6 +22,10 @@ impl Unary {
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
         self.operand.accept(visitor);
+    }
+
+    pub fn infer_name(&self) -> Option<&Ident> {
+        None
     }
 }
 

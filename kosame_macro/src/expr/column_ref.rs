@@ -14,6 +14,10 @@ pub struct ColumnRef {
 impl ColumnRef {
     pub fn accept<'a>(&'a self, _visitor: &mut impl Visitor<'a>) {}
 
+    pub fn infer_name(&self) -> Option<&Ident> {
+        Some(&self.name)
+    }
+
     pub fn span(&self) -> Span {
         if let Some(correlation) = &self.correlation {
             correlation

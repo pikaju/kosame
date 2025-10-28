@@ -2,6 +2,7 @@ use super::Expr;
 use super::Visitor;
 use proc_macro2::Span;
 use quote::{ToTokens, quote};
+use syn::Ident;
 use syn::spanned::Spanned;
 use syn::{
     parenthesized,
@@ -18,6 +19,10 @@ impl Paren {
 
     pub fn span(&self) -> Span {
         self.paren.span.span()
+    }
+
+    pub fn infer_name(&self) -> Option<&Ident> {
+        self.expr.infer_name()
     }
 }
 

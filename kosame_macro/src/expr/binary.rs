@@ -1,10 +1,8 @@
-use super::Expr;
-use super::Visitor;
-use proc_macro2::Span;
-use proc_macro2::TokenStream;
+use super::{Expr, Visitor};
+use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
 use syn::{
-    Token,
+    Ident, Token,
     parse::{Parse, ParseStream},
 };
 
@@ -26,6 +24,10 @@ impl Binary {
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
         self.lhs.accept(visitor);
         self.rhs.accept(visitor);
+    }
+
+    pub fn infer_name(&self) -> Option<&Ident> {
+        None
     }
 
     pub fn span(&self) -> Span {
@@ -115,27 +117,6 @@ impl BinOp {
             Self::IsDistinctFrom(..) => 4,
             Self::And(_) => 2,
             Self::Or(_) => 1,
-        }
-    }
-
-    pub fn span(&self) -> Span {
-        match self {
-            Self::Multiply(inner) => inner.span,
-            Self::Divide(inner) => inner.span,
-            Self::Modulo(inner) => inner.span,
-            Self::Add(inner) => inner.span,
-            Self::Subtract(inner) => inner.span,
-            Self::Eq(inner) => inner.span,
-            Self::Uneq(lt, gt) => lt.span.join(gt.span).expect("same file"),
-            Self::LessThan(inner) => inner.span,
-            Self::GreaterThan(inner) => inner.span,
-            Self::LessThanOrEq(lt, eq) => lt.span.join(eq.span).expect("same file"),
-            Self::GreaterThanOrEq(gt, eq) => gt.span.join(eq.span).expect("same file"),
-            Self::Is(inner) => inner.span,
-            Self::IsNot(is, not) => is.span.join(not.span).expect("same file"),
-            Self::IsDistinctFrom(is, .., from) => is.span.join(from.span).expect("same file"),
-            Self::And(inner) => inner.span,
-            Self::Or(inner) => inner.span,
         }
     }
 }

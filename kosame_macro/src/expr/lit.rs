@@ -2,6 +2,7 @@ use super::Visitor;
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
 use syn::{
+    Ident,
     parse::{Parse, ParseStream},
     spanned::Spanned,
 };
@@ -23,6 +24,10 @@ pub enum Lit {
 
 impl Lit {
     pub fn accept<'a>(&'a self, _visitor: &mut impl Visitor<'a>) {}
+
+    pub fn infer_name(&self) -> Option<&Ident> {
+        None
+    }
 
     pub fn span(&self) -> Span {
         match self {

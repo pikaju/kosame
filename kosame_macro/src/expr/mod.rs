@@ -19,6 +19,7 @@ pub use unary::*;
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
 use syn::{
+    Ident,
     parse::{Parse, ParseStream},
     spanned::Spanned,
 };
@@ -62,6 +63,18 @@ impl Expr {
         }
 
         variants!(branches!());
+    }
+
+    pub fn infer_name(&self) -> Option<&Ident> {
+        macro_rules! branches {
+            ($($variant:ident)*) => {
+                match self {
+                    $(Self::$variant(inner) => inner.infer_name()),*
+                }
+            };
+        }
+
+        variants!(branches!())
     }
 
     fn parse_prefix(input: ParseStream) -> syn::Result<Expr> {

@@ -1,9 +1,6 @@
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
-use syn::{
-    Token,
-    parse::{Parse, ParseStream},
-};
+use syn::parse::{Parse, ParseStream};
 
 use crate::{expr::Expr, visitor::Visitor};
 

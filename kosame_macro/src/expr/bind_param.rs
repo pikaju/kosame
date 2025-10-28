@@ -16,6 +16,10 @@ impl BindParam {
         visitor.visit_bind_param(self);
     }
 
+    pub fn infer_name(&self) -> Option<&Ident> {
+        Some(&self.name)
+    }
+
     pub fn peek(input: ParseStream) -> bool {
         input.peek(Token![:])
     }

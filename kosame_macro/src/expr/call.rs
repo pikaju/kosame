@@ -19,6 +19,10 @@ impl Call {
         input.peek(Ident) && input.peek2(syn::token::Paren)
     }
 
+    pub fn infer_name(&self) -> Option<&Ident> {
+        Some(&self.function)
+    }
+
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
         for param in self.params.iter() {
             param.accept(visitor);
