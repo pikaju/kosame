@@ -15,6 +15,7 @@ mod scope;
 mod statement;
 mod table_refs;
 mod type_override;
+mod unique_macro;
 mod visitor;
 
 use proc_macro_error::proc_macro_error;

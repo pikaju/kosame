@@ -56,7 +56,7 @@ fn main() {
 
     let id = 7;
     let statement = kosame::pg_statement! {
-        insert into schema::kek values (:id), (8)
+        insert into schema::kek values (9 + 5)
     };
 
     use kosame::sql::FmtSql;

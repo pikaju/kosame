@@ -6,6 +6,7 @@ use std::{
 use crate::{
     attribute::{CustomMeta, MetaLocation},
     row::{Row, RowField},
+    unique_macro::{self, unique_macro},
 };
 
 use super::{column::Column, relation::Relation};
@@ -103,20 +104,7 @@ impl ToTokens for Table {
         );
 
         let inject_macro = {
-            static AUTO_INCREMENT: std::sync::atomic::AtomicU32 =
-                std::sync::atomic::AtomicU32::new(0);
-            let increment = AUTO_INCREMENT.fetch_add(1, Ordering::Relaxed);
-            let file = self.name.span().file();
-            let line_column = self.name.span().start();
-            let hash = {
-                let mut hasher = std::hash::DefaultHasher::new();
-                file.hash(&mut hasher);
-                line_column.line.hash(&mut hasher);
-                line_column.column.hash(&mut hasher);
-                increment.hash(&mut hasher);
-                hasher.finish()
-            };
-            let unique_macro_name = format_ident!("__kosame_inject_{}", hash);
+            let unique_macro_name = unique_macro!("__kosame_inject_{}", self.name.span());
 
             let token_stream = &self._token_stream;
 
