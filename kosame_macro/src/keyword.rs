@@ -24,6 +24,30 @@ macro_rules! custom_keyword {
     };
 }
 
+macro_rules! keyword_group {
+    ($group:ident { $($kw:ident),* }) => {
+        #[allow(non_camel_case_types)]
+        pub struct $group {}
+        impl $group {
+            #[allow(unused)]
+            pub fn error(input: ::syn::parse::ParseStream) -> ! {
+                let lookahead = input.lookahead1();
+                $(lookahead.peek($kw);)*
+                let error = lookahead.error();
+
+                let Ok(ident) = input.parse::<::syn::Ident>() else {
+                    ::proc_macro_error::abort_call_site!(error.to_string());
+                };
+
+                ::proc_macro_error::dummy::set_dummy(::quote::quote! {
+                    use ::kosame::keyword::$group::#ident;
+                });
+                ::proc_macro_error::abort!(ident.span(), error.to_string());
+            }
+        }
+    };
+}
+
 // Table
 
 custom_keyword!(create);
@@ -40,6 +64,13 @@ custom_keyword!(primary);
 custom_keyword!(key);
 
 custom_keyword!(references);
+
+keyword_group!(column_constraint {
+    not,
+    default,
+    primary,
+    references
+});
 
 // Clause
 

@@ -67,7 +67,7 @@ impl Parse for ColumnConstraint {
         } else if lookahead.peek(keyword::default) {
             Ok(Self::Default(input.parse()?))
         } else {
-            Err(lookahead.error())
+            keyword::column_constraint::error(input);
         }
     }
 }

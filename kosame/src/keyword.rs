@@ -6,6 +6,16 @@ macro_rules! custom_keyword {
     };
 }
 
+macro_rules! keyword_group {
+    ($group:ident { $($kw:ident),* }) => {
+        pub mod $group {
+            $(
+                pub use super::$kw::*;
+            )*
+        }
+    };
+}
+
 // Table
 
 custom_keyword!(create);
@@ -22,6 +32,13 @@ custom_keyword!(primary);
 custom_keyword!(key);
 
 custom_keyword!(references);
+
+keyword_group!(column_constraint {
+    not,
+    default,
+    primary,
+    references
+});
 
 // Clause
 
