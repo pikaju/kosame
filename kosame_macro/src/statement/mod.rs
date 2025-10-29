@@ -1,7 +1,7 @@
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
 use syn::{
-    Attribute, Ident,
+    Attribute, Ident, parenthesized,
     parse::{Parse, ParseStream},
 };
 
@@ -19,6 +19,7 @@ pub struct Statement {
     token_stream: TokenStream,
 
     pub inner_attrs: Vec<Attribute>,
+    pub _paren_token: Option<syn::token::Paren>,
     pub command: Command,
     pub alias: Option<Alias>,
 }
@@ -36,16 +37,30 @@ impl Statement {
 
 impl Parse for Statement {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        Ok(Self {
-            token_stream: input.fork().parse()?,
-            inner_attrs: {
-                let attrs = input.call(Attribute::parse_inner)?;
-                CustomMeta::parse_attrs(&attrs, MetaLocation::StatementInner)?;
-                attrs
-            },
-            command: input.parse()?,
-            alias: input.call(Alias::parse_optional)?,
-        })
+        let token_stream = input.fork().parse()?;
+        let inner_attrs = {
+            let attrs = input.call(Attribute::parse_inner)?;
+            CustomMeta::parse_attrs(&attrs, MetaLocation::StatementInner)?;
+            attrs
+        };
+        if input.peek(syn::token::Paren) {
+            let content;
+            Ok(Self {
+                token_stream,
+                inner_attrs,
+                _paren_token: Some(parenthesized!(content in input)),
+                command: content.parse()?,
+                alias: input.call(Alias::parse_optional)?,
+            })
+        } else {
+            Ok(Self {
+                token_stream,
+                inner_attrs,
+                _paren_token: None,
+                command: input.parse()?,
+                alias: input.call(Alias::parse_optional)?,
+            })
+        }
     }
 }
 

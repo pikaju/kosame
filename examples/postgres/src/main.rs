@@ -55,13 +55,17 @@ fn main() {
     // .unwrap();
 
     let id = 7;
-    let statement = kosame::pg_statement! {
-        select
-            posts.id: i32,
-            comments.id as comment_id: ::core::option::Option<i32>,
-        from schema::posts
-        natural left join schema::comments
+    kosame::pg_statement! {
+        (
+            select
+                posts.id: i32,
+                comments.id as comment_id: ::core::option::Option<i32>,
+            from schema::posts
+            natural left join schema::comments
+        )
+        as my_statement
     };
+    let statement = my_statement::Statement::new(my_statement::Params {});
 
     use kosame::sql::FmtSql;
     let sql = statement
