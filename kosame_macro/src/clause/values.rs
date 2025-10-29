@@ -6,23 +6,16 @@ use syn::{
     punctuated::Punctuated,
 };
 
-use crate::{clause::peek_clause, expr::Expr, visitor::Visitor};
-
-mod kw {
-    use syn::custom_keyword;
-
-    custom_keyword!(values);
-    custom_keyword!(default);
-}
+use crate::{clause::peek_clause, expr::Expr, keyword, visitor::Visitor};
 
 pub struct Values {
-    pub _values_kw: kw::values,
+    pub _values_keyword: keyword::values,
     pub rows: Punctuated<ValuesRow, Token![,]>,
 }
 
 impl Values {
     pub fn peek(input: ParseStream) -> bool {
-        input.peek(kw::values)
+        input.peek(keyword::values)
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
@@ -35,7 +28,7 @@ impl Values {
 impl Parse for Values {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            _values_kw: input.parse()?,
+            _values_keyword: input.parse()?,
             rows: {
                 let mut punctuated = Punctuated::new();
                 while !input.is_empty() {
@@ -96,7 +89,7 @@ impl ToTokens for ValuesRow {
 
 #[allow(unused)]
 pub enum ValuesItem {
-    Default(kw::default),
+    Default(keyword::default),
     Expr(Expr),
 }
 
@@ -111,7 +104,7 @@ impl ValuesItem {
 
 impl Parse for ValuesItem {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        if input.peek(kw::default) {
+        if input.peek(keyword::default) {
             Ok(Self::Default(input.parse()?))
         } else {
             Ok(Self::Expr(input.parse()?))

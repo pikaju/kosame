@@ -1,4 +1,4 @@
-use crate::data_type::InferredType;
+use crate::{data_type::InferredType, keyword};
 
 use super::{Expr, Visitor};
 use proc_macro2::{Span, TokenStream};
@@ -58,18 +58,6 @@ pub enum Associativity {
     Left,
 }
 
-mod kw {
-    use syn::custom_keyword;
-
-    custom_keyword!(is);
-    custom_keyword!(not);
-    custom_keyword!(distinct);
-    custom_keyword!(from);
-
-    custom_keyword!(and);
-    custom_keyword!(or);
-}
-
 #[allow(unused)]
 pub enum BinOp {
     // multiplication, division, modulo
@@ -87,12 +75,12 @@ pub enum BinOp {
     LessThanOrEq(Token![<], Token![=]),
     GreaterThanOrEq(Token![>], Token![=]),
     // is
-    Is(kw::is),
-    IsNot(kw::is, kw::not),
-    IsDistinctFrom(kw::is, kw::distinct, kw::from),
+    Is(keyword::is),
+    IsNot(keyword::is, keyword::not),
+    IsDistinctFrom(keyword::is, keyword::distinct, keyword::from),
     // logical
-    And(kw::and),
-    Or(kw::or),
+    And(keyword::and),
+    Or(keyword::or),
 }
 
 impl BinOp {
@@ -140,17 +128,17 @@ impl Parse for BinOp {
             return Ok(Self::Divide(input.parse()?));
         } else if lookahead.peek(Token![%]) {
             return Ok(Self::Modulo(input.parse()?));
-        } else if lookahead.peek(kw::and) {
+        } else if lookahead.peek(keyword::and) {
             return Ok(Self::And(input.parse()?));
-        } else if lookahead.peek(kw::or) {
+        } else if lookahead.peek(keyword::or) {
             return Ok(Self::Or(input.parse()?));
         }
 
-        if lookahead.peek(kw::is) {
-            if input.peek2(kw::not) {
+        if lookahead.peek(keyword::is) {
+            if input.peek2(keyword::not) {
                 return Ok(Self::IsNot(input.parse()?, input.parse()?));
             }
-            if input.peek2(kw::distinct) {
+            if input.peek2(keyword::distinct) {
                 return Ok(Self::IsDistinctFrom(
                     input.parse()?,
                     input.parse()?,

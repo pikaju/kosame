@@ -1,4 +1,4 @@
-use crate::data_type::InferredType;
+use crate::{data_type::InferredType, keyword};
 
 use super::Visitor;
 use proc_macro2::{Span, TokenStream};
@@ -9,19 +9,13 @@ use syn::{
     spanned::Spanned,
 };
 
-mod kw {
-    use syn::custom_keyword;
-
-    custom_keyword!(null);
-}
-
 #[allow(unused)]
 pub enum Lit {
     Int(syn::LitInt),
     Float(syn::LitFloat),
     Str(syn::LitStr),
     Bool(syn::LitBool),
-    Null(kw::null),
+    Null(keyword::null),
 }
 
 impl Lit {
@@ -48,7 +42,7 @@ impl Lit {
 
 impl Parse for Lit {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        if input.peek(kw::null) {
+        if input.peek(keyword::null) {
             return Ok(Self::Null(input.parse()?));
         }
         let lit = input.parse::<syn::Lit>()?;

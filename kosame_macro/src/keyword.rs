@@ -75,7 +75,36 @@ keyword_group!(column_constraint {
 // Clause
 
 custom_keyword!(select);
+
 custom_keyword!(update);
+custom_keyword!(set);
+
+custom_keyword!(insert);
+custom_keyword!(into);
+
+custom_keyword!(delete);
+custom_keyword!(using);
+
+custom_keyword!(group);
+custom_keyword!(by);
+
+custom_keyword!(having);
+custom_keyword!(values);
+
+custom_keyword!(offset);
+
+custom_keyword!(limit);
+
+custom_keyword!(order);
+
+custom_keyword!(asc);
+custom_keyword!(desc);
+
+custom_keyword!(nulls);
+custom_keyword!(first);
+custom_keyword!(last);
+
+custom_keyword!(returning);
 
 // From
 
@@ -103,3 +132,11 @@ custom_keyword!(ty);
 
 custom_keyword!(__pass);
 custom_keyword!(__table);
+
+// Expr
+
+custom_keyword!(is);
+custom_keyword!(distinct);
+custom_keyword!(and);
+custom_keyword!(or);
+custom_keyword!(cast);

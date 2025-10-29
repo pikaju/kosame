@@ -2,16 +2,10 @@ use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::parse::{Parse, ParseStream};
 
-use crate::{expr::Expr, visitor::Visitor};
-
-mod kw {
-    use syn::custom_keyword;
-
-    custom_keyword!(offset);
-}
+use crate::{expr::Expr, keyword, visitor::Visitor};
 
 pub struct Offset {
-    pub _offset: kw::offset,
+    pub _offset: keyword::offset,
     pub expr: Expr,
 }
 
@@ -21,7 +15,7 @@ impl Offset {
     }
 
     pub fn peek(input: ParseStream) -> bool {
-        input.peek(kw::offset)
+        input.peek(keyword::offset)
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {

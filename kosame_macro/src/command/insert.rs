@@ -6,20 +6,14 @@ use syn::{
 };
 
 use crate::{
-    clause::*, path_ext::PathExt, quote_option::QuoteOption, scope::Scope, visitor::Visitor,
+    clause::*, keyword, path_ext::PathExt, quote_option::QuoteOption, scope::Scope,
+    visitor::Visitor,
 };
-
-mod kw {
-    use syn::custom_keyword;
-
-    custom_keyword!(insert);
-    custom_keyword!(into);
-}
 
 pub struct Insert {
     pub attrs: Vec<Attribute>,
-    pub _insert_kw: kw::insert,
-    pub _into_kw: kw::into,
+    pub _insert_keyword: keyword::insert,
+    pub _into_keyword: keyword::into,
     pub table: Path,
     pub values: Values,
     pub returning: Option<Returning>,
@@ -32,7 +26,7 @@ impl Insert {
         if attrs.is_err() {
             return false;
         }
-        input.peek(kw::insert)
+        input.peek(keyword::insert)
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
@@ -48,8 +42,8 @@ impl Parse for Insert {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             attrs: input.call(Attribute::parse_outer)?,
-            _insert_kw: input.parse()?,
-            _into_kw: input.parse()?,
+            _insert_keyword: input.parse()?,
+            _into_keyword: input.parse()?,
             table: input.parse()?,
             values: input.parse()?,
             returning: input.call(Returning::parse_optional)?,

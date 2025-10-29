@@ -2,16 +2,10 @@ use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::parse::{Parse, ParseStream};
 
-use crate::{expr::Expr, visitor::Visitor};
-
-mod kw {
-    use syn::custom_keyword;
-
-    custom_keyword!(having);
-}
+use crate::{expr::Expr, keyword, visitor::Visitor};
 
 pub struct Having {
-    pub _having: kw::having,
+    pub _having: keyword::having,
     pub expr: Expr,
 }
 
@@ -21,7 +15,7 @@ impl Having {
     }
 
     pub fn peek(input: ParseStream) -> bool {
-        input.peek(kw::having)
+        input.peek(keyword::having)
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {

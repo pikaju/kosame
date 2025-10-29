@@ -5,7 +5,7 @@ use syn::{
     parse::{Parse, ParseStream},
 };
 
-use crate::data_type::InferredType;
+use crate::{data_type::InferredType, keyword};
 
 use super::{Expr, Visitor};
 
@@ -46,15 +46,9 @@ impl ToTokens for Unary {
     }
 }
 
-mod kw {
-    use syn::custom_keyword;
-
-    custom_keyword!(not);
-}
-
 #[allow(unused)]
 pub enum UnaryOp {
-    Not(kw::not),
+    Not(keyword::not),
 }
 
 impl UnaryOp {
@@ -79,7 +73,7 @@ impl UnaryOp {
 impl Parse for UnaryOp {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let lookahead = input.lookahead1();
-        if lookahead.peek(kw::not) {
+        if lookahead.peek(keyword::not) {
             return Ok(Self::Not(input.parse()?));
         }
 

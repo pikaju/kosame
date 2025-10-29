@@ -2,16 +2,10 @@ use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::parse::{Parse, ParseStream};
 
-use crate::{expr::Expr, visitor::Visitor};
-
-mod kw {
-    use syn::custom_keyword;
-
-    custom_keyword!(limit);
-}
+use crate::{expr::Expr, keyword, visitor::Visitor};
 
 pub struct Limit {
-    pub _limit: kw::limit,
+    pub _limit: keyword::limit,
     pub expr: Expr,
 }
 
@@ -21,7 +15,7 @@ impl Limit {
     }
 
     pub fn peek(input: ParseStream) -> bool {
-        input.peek(kw::limit)
+        input.peek(keyword::limit)
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {

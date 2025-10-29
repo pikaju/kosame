@@ -7,12 +7,15 @@ use syn::{
     token::Paren,
 };
 
-use crate::data_type::{DataType, InferredType};
+use crate::{
+    data_type::{DataType, InferredType},
+    keyword,
+};
 
 use super::{Expr, Visitor};
 
 pub struct Cast {
-    pub cast: kw::cast,
+    pub cast: keyword::cast,
     pub paren: Paren,
     pub value: Box<Expr>,
     pub _as: Token![as],
@@ -21,7 +24,7 @@ pub struct Cast {
 
 impl Cast {
     pub fn peek(input: ParseStream) -> bool {
-        input.peek(kw::cast)
+        input.peek(keyword::cast)
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
@@ -69,10 +72,4 @@ impl ToTokens for Cast {
         }
         .to_tokens(tokens);
     }
-}
-
-mod kw {
-    use syn::custom_keyword;
-
-    custom_keyword!(cast);
 }

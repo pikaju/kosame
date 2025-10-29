@@ -6,25 +6,11 @@ use syn::{
     punctuated::Punctuated,
 };
 
-use crate::{clause::peek_clause, expr::Expr, visitor::Visitor};
-
-mod kw {
-    use syn::custom_keyword;
-
-    custom_keyword!(order);
-    custom_keyword!(by);
-
-    custom_keyword!(asc);
-    custom_keyword!(desc);
-
-    custom_keyword!(nulls);
-    custom_keyword!(first);
-    custom_keyword!(last);
-}
+use crate::{clause::peek_clause, expr::Expr, keyword, visitor::Visitor};
 
 pub struct OrderBy {
-    pub _order: kw::order,
-    pub _by: kw::by,
+    pub _order: keyword::order,
+    pub _by: keyword::by,
     pub items: Punctuated<OrderByItem, Token![,]>,
 }
 
@@ -34,7 +20,7 @@ impl OrderBy {
     }
 
     pub fn peek(input: ParseStream) -> bool {
-        input.peek(kw::order) && input.peek2(kw::by)
+        input.peek(keyword::order) && input.peek2(keyword::by)
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
@@ -120,8 +106,8 @@ impl ToTokens for OrderByItem {
 
 #[allow(unused)]
 pub enum OrderByDir {
-    Asc(kw::asc),
-    Desc(kw::desc),
+    Asc(keyword::asc),
+    Desc(keyword::desc),
 }
 
 impl OrderByDir {
@@ -130,16 +116,16 @@ impl OrderByDir {
     }
 
     pub fn peek(input: ParseStream) -> bool {
-        input.peek(kw::asc) || input.peek(kw::desc)
+        input.peek(keyword::asc) || input.peek(keyword::desc)
     }
 }
 
 impl Parse for OrderByDir {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let lookahead = input.lookahead1();
-        if lookahead.peek(kw::asc) {
+        if lookahead.peek(keyword::asc) {
             Ok(Self::Asc(input.parse()?))
-        } else if lookahead.peek(kw::desc) {
+        } else if lookahead.peek(keyword::desc) {
             Ok(Self::Desc(input.parse()?))
         } else {
             Err(lookahead.error())
@@ -149,8 +135,8 @@ impl Parse for OrderByDir {
 
 #[allow(unused)]
 pub enum OrderByNulls {
-    First(kw::nulls, kw::first),
-    Last(kw::nulls, kw::last),
+    First(keyword::nulls, keyword::first),
+    Last(keyword::nulls, keyword::last),
 }
 
 impl OrderByNulls {
@@ -159,7 +145,7 @@ impl OrderByNulls {
     }
 
     pub fn peek(input: ParseStream) -> bool {
-        input.peek(kw::nulls)
+        input.peek(keyword::nulls)
     }
 }
 
@@ -167,9 +153,9 @@ impl Parse for OrderByNulls {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let nulls = input.parse()?;
         let lookahead = input.lookahead1();
-        if lookahead.peek(kw::first) {
+        if lookahead.peek(keyword::first) {
             Ok(Self::First(nulls, input.parse()?))
-        } else if lookahead.peek(kw::last) {
+        } else if lookahead.peek(keyword::last) {
             Ok(Self::Last(nulls, input.parse()?))
         } else {
             Err(lookahead.error())

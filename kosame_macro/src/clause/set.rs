@@ -6,17 +6,10 @@ use syn::{
     punctuated::Punctuated,
 };
 
-use crate::{clause::peek_clause, expr::Expr, visitor::Visitor};
-
-mod kw {
-    use syn::custom_keyword;
-
-    custom_keyword!(set);
-    custom_keyword!(default);
-}
+use crate::{clause::peek_clause, expr::Expr, keyword, visitor::Visitor};
 
 pub struct Set {
-    _set_kw: kw::set,
+    _set_keyword: keyword::set,
     items: Punctuated<SetItem, Token![,]>,
 }
 
@@ -26,7 +19,7 @@ impl Set {
     }
 
     pub fn peek(input: ParseStream) -> bool {
-        input.peek(kw::set)
+        input.peek(keyword::set)
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
@@ -39,7 +32,7 @@ impl Set {
 impl Parse for Set {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            _set_kw: input.parse()?,
+            _set_keyword: input.parse()?,
             items: {
                 let mut items = Punctuated::<SetItem, _>::new();
                 while !input.is_empty() {
@@ -75,7 +68,7 @@ pub enum SetItem {
     Default {
         column: Ident,
         _eq_token: Token![=],
-        _default_kw: kw::default,
+        _default_keyword: keyword::default,
     },
     Expr {
         column: Ident,
@@ -100,11 +93,11 @@ impl Parse for SetItem {
         let column: Ident = input.parse()?;
         let eq_token = input.parse()?;
 
-        if input.peek(kw::default) {
+        if input.peek(keyword::default) {
             Ok(Self::Default {
                 column,
                 _eq_token: eq_token,
-                _default_kw: input.parse()?,
+                _default_keyword: input.parse()?,
             })
         } else {
             Ok(Self::Expr {

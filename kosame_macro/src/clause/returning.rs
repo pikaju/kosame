@@ -2,16 +2,10 @@ use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::parse::{Parse, ParseStream};
 
-use crate::{clause::Fields, visitor::Visitor};
-
-mod kw {
-    use syn::custom_keyword;
-
-    custom_keyword!(returning);
-}
+use crate::{clause::Fields, keyword, visitor::Visitor};
 
 pub struct Returning {
-    pub _returning: kw::returning,
+    pub _returning: keyword::returning,
     pub fields: Fields,
 }
 
@@ -21,7 +15,7 @@ impl Returning {
     }
 
     pub fn peek(input: ParseStream) -> bool {
-        input.peek(kw::returning)
+        input.peek(keyword::returning)
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {

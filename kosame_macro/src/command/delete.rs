@@ -6,21 +6,14 @@ use syn::{
 };
 
 use crate::{
-    clause::*, path_ext::PathExt, quote_option::QuoteOption, scope::Scope, visitor::Visitor,
+    clause::*, keyword, path_ext::PathExt, quote_option::QuoteOption, scope::Scope,
+    visitor::Visitor,
 };
-
-mod kw {
-    use syn::custom_keyword;
-
-    custom_keyword!(delete);
-    custom_keyword!(from);
-    custom_keyword!(using);
-}
 
 pub struct Delete {
     pub attrs: Vec<Attribute>,
-    pub _delete_kw: kw::delete,
-    pub _from_kw: kw::from,
+    pub _delete_keyword: keyword::delete,
+    pub _from_keyword: keyword::from,
     pub table: Path,
     pub using: Option<Using>,
     pub r#where: Option<Where>,
@@ -34,7 +27,7 @@ impl Delete {
         if attrs.is_err() {
             return false;
         }
-        input.peek(kw::delete)
+        input.peek(keyword::delete)
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
@@ -55,8 +48,8 @@ impl Parse for Delete {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             attrs: input.call(Attribute::parse_outer)?,
-            _delete_kw: input.parse()?,
-            _from_kw: input.parse()?,
+            _delete_keyword: input.parse()?,
+            _from_keyword: input.parse()?,
             table: input.parse()?,
             using: input.call(Using::parse_optional)?,
             r#where: input.call(Where::parse_optional)?,
@@ -97,7 +90,7 @@ impl ToTokens for Delete {
 }
 
 pub struct Using {
-    _using_kw: kw::using,
+    _using_keyword: keyword::using,
     item: FromItem,
 }
 
@@ -107,7 +100,7 @@ impl Using {
     }
 
     pub fn peek(input: ParseStream) -> bool {
-        input.peek(kw::using)
+        input.peek(keyword::using)
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
@@ -118,7 +111,7 @@ impl Using {
 impl Parse for Using {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            _using_kw: input.parse()?,
+            _using_keyword: input.parse()?,
             item: input.parse()?,
         })
     }
