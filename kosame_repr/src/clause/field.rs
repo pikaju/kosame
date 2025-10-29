@@ -31,6 +31,10 @@ impl kosame_sql::FmtSql for Field<'_> {
         D: kosame_sql::Dialect,
     {
         self.expr.fmt_sql(formatter)?;
+        if let Some(alias) = &self.alias {
+            formatter.write_str(" as ")?;
+            formatter.write_ident(alias)?;
+        }
         Ok(())
     }
 }

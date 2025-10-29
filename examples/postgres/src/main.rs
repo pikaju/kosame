@@ -58,10 +58,15 @@ fn main() {
     kosame::pg_statement! {
         (
             select
-                posts.id: i32,
-                comments.id as comment_id: ::core::option::Option<i32>,
-            from schema::posts
-            natural left join schema::comments
+                posts.id as kek: i32,
+                kek.id as comment_id: ::core::option::Option<i32>,
+            from schema::posts as posts
+            left join (
+                select
+                    id,
+                from
+                    schema::comments
+            ) as kek on true
         )
         as my_statement
     };

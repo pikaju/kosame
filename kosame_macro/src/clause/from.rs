@@ -7,7 +7,8 @@ use syn::{
 };
 
 use crate::{
-    clause::peek_clause, expr::Expr, path_ext::PathExt, quote_option::QuoteOption, visitor::Visitor,
+    clause::peek_clause, command::Select, expr::Expr, path_ext::PathExt, quote_option::QuoteOption,
+    visitor::Visitor,
 };
 
 mod kw {
@@ -24,6 +25,8 @@ mod kw {
 
     custom_keyword!(natural);
     custom_keyword!(cross);
+
+    custom_keyword!(lateral);
 }
 
 pub struct From {
@@ -214,6 +217,12 @@ pub enum FromItem {
         table: Path,
         alias: Option<TableAlias>,
     },
+    Subquery {
+        lateral_kw: Option<kw::lateral>,
+        _paren_token: syn::token::Paren,
+        select: Box<Select>,
+        alias: Option<TableAlias>,
+    },
     Join {
         left: Box<FromItem>,
         join_type: JoinType,
@@ -236,16 +245,33 @@ pub enum FromItem {
 
 impl FromItem {
     fn parse_prefix(input: ParseStream) -> syn::Result<Self> {
-        Ok(Self::Table {
-            table: input.parse()?,
-            alias: input.call(TableAlias::parse_optional)?,
-        })
+        let lateral_kw = input.peek(kw::lateral).then(|| input.parse()).transpose()?;
+        let lookahead = input.lookahead1();
+        if lookahead.peek(syn::token::Paren) {
+            let content;
+            Ok(Self::Subquery {
+                lateral_kw,
+                _paren_token: parenthesized!(content in input),
+                select: content.parse()?,
+                alias: input.call(TableAlias::parse_optional)?,
+            })
+        } else if lookahead.peek(Ident) {
+            Ok(Self::Table {
+                table: input.parse()?,
+                alias: input.call(TableAlias::parse_optional)?,
+            })
+        } else {
+            Err(lookahead.error())
+        }
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
         match self {
             Self::Table { table, .. } => {
                 visitor.visit_table_ref(table);
+            }
+            Self::Subquery { select, .. } => {
+                select.accept(visitor);
             }
             Self::Join {
                 left, right, on, ..
@@ -310,6 +336,22 @@ impl ToTokens for FromItem {
                 quote! {
                     ::kosame::repr::clause::FromItem::Table {
                         table: &#table::TABLE,
+                        alias: #alias,
+                    }
+                }
+            }
+            Self::Subquery {
+                lateral_kw: _lateral_kw,
+                select,
+                alias,
+                ..
+            } => {
+                let lateral = _lateral_kw.is_some();
+                let alias = QuoteOption(alias.as_ref());
+                quote! {
+                    ::kosame::repr::clause::FromItem::Subquery {
+                        lateral: #lateral,
+                        select: &#select,
                         alias: #alias,
                     }
                 }

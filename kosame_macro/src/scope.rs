@@ -44,6 +44,26 @@ impl<'a> Scope<'a> {
                             tables.push(ScopeTable::Existing(table.clone()));
                         }
                     },
+                    FromItem::Subquery { select, alias, .. } => {
+                        if let Some(alias) = alias {
+                            if let Some(columns) = &alias.columns {
+                                tables.push(ScopeTable::Custom {
+                                    correlation: alias.name.clone(),
+                                    columns: columns.columns.iter().cloned().collect(),
+                                });
+                            } else {
+                                tables.push(ScopeTable::Custom {
+                                    correlation: alias.name.clone(),
+                                    columns: select
+                                        .select
+                                        .fields
+                                        .iter()
+                                        .filter_map(|field| field.infer_name().cloned())
+                                        .collect(),
+                                });
+                            }
+                        }
+                    }
                     FromItem::Join { left, right, .. } => {
                         collect(tables, left);
                         collect(tables, right);
