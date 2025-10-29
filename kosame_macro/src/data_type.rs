@@ -1,10 +1,14 @@
 use proc_macro_error::abort;
 use quote::{ToTokens, quote};
 use syn::{
-    Ident,
+    Ident, Path,
     parse::{Parse, ParseStream},
+    parse_quote,
 };
 
+use crate::path_ext::PathExt;
+
+#[derive(Clone)]
 pub struct DataType {
     pub name: Ident,
 }
@@ -47,5 +51,21 @@ impl ToTokens for DataType {
             }
         }
         .to_tokens(tokens);
+    }
+}
+
+pub enum InferredType {
+    DataType(DataType),
+    RustType(Path),
+    Column(Path),
+}
+
+impl InferredType {
+    pub fn to_call_site(&self, nesting_levels: usize) -> Path {
+        match self {
+            Self::DataType(data_type) => parse_quote! { #data_type },
+            Self::RustType(rust_type) => rust_type.to_call_site(nesting_levels),
+            Self::Column(column) => column.to_call_site(nesting_levels),
+        }
     }
 }

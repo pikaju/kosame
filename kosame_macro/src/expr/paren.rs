@@ -1,3 +1,5 @@
+use crate::data_type::InferredType;
+
 use super::Expr;
 use super::Visitor;
 use proc_macro2::Span;
@@ -23,6 +25,10 @@ impl Paren {
 
     pub fn infer_name(&self) -> Option<&Ident> {
         self.expr.infer_name()
+    }
+
+    pub fn infer_type(&self) -> Option<InferredType> {
+        self.expr.infer_type()
     }
 }
 

@@ -5,6 +5,8 @@ use syn::{
     parse::{Parse, ParseStream},
 };
 
+use crate::data_type::InferredType;
+
 use super::{Expr, Visitor};
 
 pub struct Unary {
@@ -25,6 +27,10 @@ impl Unary {
     }
 
     pub fn infer_name(&self) -> Option<&Ident> {
+        None
+    }
+
+    pub fn infer_type(&self) -> Option<InferredType> {
         None
     }
 }

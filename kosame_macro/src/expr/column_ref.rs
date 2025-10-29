@@ -1,3 +1,5 @@
+use crate::data_type::InferredType;
+
 use super::Visitor;
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
@@ -16,6 +18,10 @@ impl ColumnRef {
 
     pub fn infer_name(&self) -> Option<&Ident> {
         Some(&self.name)
+    }
+
+    pub fn infer_type(&self) -> Option<InferredType> {
+        None
     }
 
     pub fn span(&self) -> Span {

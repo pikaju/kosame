@@ -3,6 +3,7 @@ mod attribute;
 mod bind_params;
 mod clause;
 mod command;
+mod data_type;
 mod docs;
 mod driver;
 mod expr;

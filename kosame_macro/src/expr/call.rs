@@ -1,3 +1,5 @@
+use crate::data_type::InferredType;
+
 use super::{Expr, Visitor};
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
@@ -21,6 +23,10 @@ impl Call {
 
     pub fn infer_name(&self) -> Option<&Ident> {
         Some(&self.function)
+    }
+
+    pub fn infer_type(&self) -> Option<InferredType> {
+        None
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {

@@ -1,10 +1,11 @@
 use crate::{
     attribute::{CustomMeta, MetaLocation},
+    data_type::DataType,
     path_ext::PathExt,
     quote_option::QuoteOption,
 };
 
-use super::{column_constraint::ColumnConstraints, data_type::DataType};
+use super::column_constraint::ColumnConstraints;
 use convert_case::{Case, Casing};
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};

@@ -2,14 +2,14 @@ use proc_macro_error::abort;
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::{
-    Attribute, Token,
+    Attribute, Ident, Token,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
 };
 
 use crate::{
-    alias::Alias, clause::peek_clause, expr::Expr, path_ext::PathExt, row::RowField,
-    type_override::TypeOverride, visitor::Visitor,
+    alias::Alias, clause::peek_clause, data_type::InferredType, expr::Expr, path_ext::PathExt,
+    row::RowField, type_override::TypeOverride, visitor::Visitor,
 };
 
 pub struct Field {
@@ -21,19 +21,14 @@ pub struct Field {
 
 impl Field {
     pub fn to_row_field(&self) -> RowField {
-        let Some(alias) = self
-            .alias
-            .as_ref()
-            .map(|alias| &alias.ident)
-            .or_else(|| self.expr.infer_name())
-        else {
+        let Some(name) = self.infer_name() else {
             abort!(
                 self.expr.span(),
                 "field name cannot be inferred";
                 help = "consider adding an alias using `as my_alias`"
             );
         };
-        let Some(type_override) = self.type_override.as_ref() else {
+        let Some(inferred_type) = self.infer_type() else {
             abort!(
                 self.expr.span(),
                 "field requires type override using `: RustType`"
@@ -41,13 +36,27 @@ impl Field {
         };
         RowField::new(
             self.attrs.clone(),
-            alias.clone(),
-            type_override.type_path.to_call_site(1).to_token_stream(),
+            name.clone(),
+            inferred_type.to_call_site(1).to_token_stream(),
         )
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
         self.expr.accept(visitor);
+    }
+
+    pub fn infer_name(&self) -> Option<&Ident> {
+        self.alias
+            .as_ref()
+            .map(|alias| &alias.ident)
+            .or_else(|| self.expr.infer_name())
+    }
+
+    pub fn infer_type(&self) -> Option<InferredType> {
+        self.type_override
+            .as_ref()
+            .map(|type_override| InferredType::RustType(type_override.type_path.clone()))
+            .or_else(|| self.expr.infer_type())
     }
 }
 

@@ -1,3 +1,5 @@
+use crate::data_type::InferredType;
+
 use super::{Expr, Visitor};
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens, quote};
@@ -27,6 +29,10 @@ impl Binary {
     }
 
     pub fn infer_name(&self) -> Option<&Ident> {
+        None
+    }
+
+    pub fn infer_type(&self) -> Option<InferredType> {
         None
     }
 

@@ -55,12 +55,12 @@ fn main() {
     // .unwrap();
 
     let id = 7;
-    kosame::pg_statement! {
+    let statement = kosame::pg_statement! {
         select
             id: i32,
-            title as my_title: ::std::string::String,
+            cast(title as text): ::std::string::String,
             cast(content as text): ::core::option::Option<String>,
-            id + 5: i32
+            id + 5 as kek: i32
         from schema::posts
     };
 
