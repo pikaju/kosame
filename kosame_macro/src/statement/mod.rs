@@ -68,41 +68,41 @@ impl ToTokens for Statement {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         // Prepass to get table schemas
         let custom_meta = self.custom_meta();
-        if custom_meta.pass == 0 {
-            let mut table_refs = TableRefs::new();
-            self.accept(&mut table_refs);
-            let table_refs = table_refs.build();
-            if !table_refs.is_empty() {
-                let token_stream = self.token_stream.clone();
-                let mut result = quote! {
-                    (::kosame::statement!) {
-                        #![kosame(__pass = 1)]
-                        #token_stream
-                    }
-                };
-
-                for (index, table_ref) in table_refs.iter().enumerate() {
-                    if index == table_refs.len() - 1 {
-                        result = quote! {
-                            #table_ref::inject! {
-                                #result
-                                (#table_ref)
-                            }
-                        }
-                    } else {
-                        result = quote! {
-                            (#table_ref::inject!) {
-                                #result
-                                (#table_ref)
-                            }
-                        }
-                    }
-                }
-
-                result.to_tokens(tokens);
-                return;
-            }
-        }
+        // if custom_meta.pass == 0 {
+        //     let mut table_refs = TableRefs::new();
+        //     self.accept(&mut table_refs);
+        //     let table_refs = table_refs.build();
+        //     if !table_refs.is_empty() {
+        //         let token_stream = self.token_stream.clone();
+        //         let mut result = quote! {
+        //             (::kosame::statement!) {
+        //                 #![kosame(__pass = 1)]
+        //                 #token_stream
+        //             }
+        //         };
+        //
+        //         for (index, table_ref) in table_refs.iter().enumerate() {
+        //             if index == table_refs.len() - 1 {
+        //                 result = quote! {
+        //                     #table_ref::inject! {
+        //                         #result
+        //                         (#table_ref)
+        //                     }
+        //                 }
+        //             } else {
+        //                 result = quote! {
+        //                     (#table_ref::inject!) {
+        //                         #result
+        //                         (#table_ref)
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //
+        //         result.to_tokens(tokens);
+        //         return;
+        //     }
+        // }
 
         let module_name = match &self.alias {
             Some(alias) => &alias.ident,

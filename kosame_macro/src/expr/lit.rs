@@ -10,7 +10,7 @@ use syn::{
 };
 
 mod kw {
-    use syn::custom_keyword;
+    use crate::autocomplete::custom_keyword;
 
     custom_keyword!(null);
 }

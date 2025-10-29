@@ -64,7 +64,8 @@ fn main() {
             from schema::posts as posts
             left join (
                 select
-                    comments.id,
+                    id,
+                    content
                 from
                     schema::comments
             ) as kek on true

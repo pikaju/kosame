@@ -20,8 +20,10 @@ use syn::{
 };
 
 mod kw {
-    syn::custom_keyword!(create);
-    syn::custom_keyword!(table);
+    use crate::autocomplete::custom_keyword;
+
+    custom_keyword!(create);
+    custom_keyword!(table);
 }
 
 pub struct Table {

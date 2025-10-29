@@ -9,7 +9,7 @@ use syn::{
 use crate::{clause::peek_clause, expr::Expr, visitor::Visitor};
 
 mod kw {
-    use syn::custom_keyword;
+    use crate::autocomplete::custom_keyword;
 
     custom_keyword!(values);
     custom_keyword!(default);

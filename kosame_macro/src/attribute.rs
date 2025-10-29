@@ -10,7 +10,7 @@ use syn::{
 use crate::{driver::Driver, schema::Table};
 
 mod kw {
-    use syn::custom_keyword;
+    use crate::autocomplete::custom_keyword;
 
     custom_keyword!(kosame);
 

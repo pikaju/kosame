@@ -84,15 +84,17 @@ impl Display for ColumnConstraint {
 }
 
 mod kw {
-    syn::custom_keyword!(not);
-    syn::custom_keyword!(null);
+    use crate::autocomplete::custom_keyword;
 
-    syn::custom_keyword!(default);
+    custom_keyword!(not);
+    custom_keyword!(null);
 
-    syn::custom_keyword!(primary);
-    syn::custom_keyword!(key);
+    custom_keyword!(default);
 
-    syn::custom_keyword!(references);
+    custom_keyword!(primary);
+    custom_keyword!(key);
+
+    custom_keyword!(references);
 }
 
 pub struct NotNull {
