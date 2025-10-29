@@ -33,8 +33,8 @@ impl OrderBy {
 impl Parse for OrderBy {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            _order: input.parse()?,
-            _by: input.parse()?,
+            _order: input.call(keyword::order::parse_autocomplete)?,
+            _by: input.call(keyword::by::parse_autocomplete)?,
             items: {
                 let mut punctuated = Punctuated::new();
                 while !input.is_empty() {
@@ -128,7 +128,7 @@ impl Parse for OrderByDir {
         } else if lookahead.peek(keyword::desc) {
             Ok(Self::Desc(input.parse()?))
         } else {
-            Err(lookahead.error())
+            keyword::group_order_by_dir::error(input);
         }
     }
 }
@@ -151,14 +151,14 @@ impl OrderByNulls {
 
 impl Parse for OrderByNulls {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let nulls = input.parse()?;
+        let nulls = input.call(keyword::nulls::parse_autocomplete)?;
         let lookahead = input.lookahead1();
         if lookahead.peek(keyword::first) {
             Ok(Self::First(nulls, input.parse()?))
         } else if lookahead.peek(keyword::last) {
             Ok(Self::Last(nulls, input.parse()?))
         } else {
-            Err(lookahead.error())
+            keyword::group_order_by_nulls::error(input);
         }
     }
 }

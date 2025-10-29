@@ -67,7 +67,7 @@ impl Parse for ColumnConstraint {
         } else if lookahead.peek(keyword::default) {
             Ok(Self::Default(input.parse()?))
         } else {
-            keyword::column_constraint::error(input);
+            keyword::group_column_constraint::error(input);
         }
     }
 }
@@ -91,8 +91,8 @@ pub struct NotNull {
 impl Parse for NotNull {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            _not: input.parse()?,
-            _null: input.parse()?,
+            _not: input.call(keyword::not::parse_autocomplete)?,
+            _null: input.call(keyword::null::parse_autocomplete)?,
         })
     }
 }
@@ -105,8 +105,8 @@ pub struct PrimaryKey {
 impl Parse for PrimaryKey {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            _primary: input.parse()?,
-            _key: input.parse()?,
+            _primary: input.call(keyword::primary::parse_autocomplete)?,
+            _key: input.call(keyword::key::parse_autocomplete)?,
         })
     }
 }
@@ -125,7 +125,7 @@ impl Default {
 impl Parse for Default {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            _default: input.parse()?,
+            _default: input.call(keyword::default::parse_autocomplete)?,
             expr: input.parse()?,
         })
     }

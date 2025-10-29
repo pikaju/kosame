@@ -9,14 +9,13 @@ macro_rules! custom_keyword {
                 match result {
                     Ok(result) => Ok(Self { span: result.span }),
                     Err(error) => {
-                        let Ok(ident) = input.parse::<::syn::Ident>() else {
-                            return Err(error);
-                        };
+                        let span = input.cursor().span();
+                        let ident = input.parse::<::syn::Ident>().ok();
 
                         ::proc_macro_error::dummy::set_dummy(::quote::quote! {
-                            use ::kosame::keyword::$kw::#ident;
+                            { use ::kosame::keyword::$kw::#ident; () }
                         });
-                        ::proc_macro_error::abort!(ident.span(), error.to_string());
+                        ::proc_macro_error::abort!(span, error.to_string());
                     }
                 }
             }
@@ -35,14 +34,13 @@ macro_rules! keyword_group {
                 $(lookahead.peek($kw);)*
                 let error = lookahead.error();
 
-                let Ok(ident) = input.parse::<::syn::Ident>() else {
-                    ::proc_macro_error::abort_call_site!(error.to_string());
-                };
+                let span = input.cursor().span();
+                let ident = input.parse::<::syn::Ident>().ok();
 
                 ::proc_macro_error::dummy::set_dummy(::quote::quote! {
-                    use ::kosame::keyword::$group::#ident;
+                    { use ::kosame::keyword::$group::#ident; () }
                 });
-                ::proc_macro_error::abort!(ident.span(), error.to_string());
+                ::proc_macro_error::abort!(span, error.to_string());
             }
         }
     };
@@ -98,9 +96,25 @@ custom_keyword!(update);
 custom_keyword!(using);
 custom_keyword!(values);
 
-keyword_group!(column_constraint {
+keyword_group!(group_column_constraint {
     not,
     default,
     primary,
     references
 });
+keyword_group!(group_command {
+    select,
+    insert,
+    update,
+    delete
+});
+keyword_group!(group_join {
+    left,
+    right,
+    inner,
+    full,
+    natural,
+    cross
+});
+keyword_group!(group_order_by_dir { asc, desc });
+keyword_group!(group_order_by_nulls { first, last });

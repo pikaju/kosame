@@ -55,13 +55,6 @@ fn main() {
     // .unwrap();
     //
 
-    kosame::pg_table! {
-        // Kosame uses the familiar SQL syntax to define tables.
-        create table kek (
-            id int primary key,
-        );
-    }
-
     let id = 7;
     let statement = kosame::pg_statement! {
         select

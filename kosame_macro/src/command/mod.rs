@@ -15,7 +15,7 @@ pub use insert::*;
 pub use select::*;
 pub use update::*;
 
-use crate::{clause::Fields, visitor::Visitor};
+use crate::{clause::Fields, keyword, visitor::Visitor};
 
 pub enum Command {
     Delete(Delete),
@@ -64,7 +64,7 @@ impl Parse for Command {
         } else if Update::peek(input) {
             Ok(Self::Update(input.parse()?))
         } else {
-            Err(syn::Error::new(input.span(), "expected command"))
+            keyword::group_command::error(input);
         }
     }
 }

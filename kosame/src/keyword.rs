@@ -66,9 +66,25 @@ custom_keyword!(update);
 custom_keyword!(using);
 custom_keyword!(values);
 
-keyword_group!(column_constraint {
+keyword_group!(group_column_constraint {
     not,
     default,
     primary,
     references
 });
+keyword_group!(group_command {
+    select,
+    insert,
+    update,
+    delete
+});
+keyword_group!(group_join {
+    left,
+    right,
+    inner,
+    full,
+    natural,
+    cross
+});
+keyword_group!(group_order_by_dir { asc, desc });
+keyword_group!(group_order_by_nulls { first, last });

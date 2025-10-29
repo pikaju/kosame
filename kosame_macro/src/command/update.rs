@@ -46,7 +46,7 @@ impl Parse for Update {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             attrs: input.call(Attribute::parse_outer)?,
-            _update_keyword: input.parse()?,
+            _update_keyword: input.call(keyword::update::parse_autocomplete)?,
             table: input.parse()?,
             set: input.parse()?,
             from: input.call(From::parse_optional)?,

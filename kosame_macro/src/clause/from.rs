@@ -155,13 +155,25 @@ impl Parse for JoinType {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let lookahead = input.lookahead1();
         if lookahead.peek(keyword::inner) {
-            Ok(Self::Inner(input.parse()?, input.parse()?))
+            Ok(Self::Inner(
+                input.call(keyword::inner::parse_autocomplete)?,
+                input.call(keyword::join::parse_autocomplete)?,
+            ))
         } else if lookahead.peek(keyword::left) {
-            Ok(Self::Left(input.parse()?, input.parse()?))
+            Ok(Self::Left(
+                input.call(keyword::left::parse_autocomplete)?,
+                input.call(keyword::join::parse_autocomplete)?,
+            ))
         } else if lookahead.peek(keyword::right) {
-            Ok(Self::Right(input.parse()?, input.parse()?))
+            Ok(Self::Right(
+                input.call(keyword::right::parse_autocomplete)?,
+                input.call(keyword::join::parse_autocomplete)?,
+            ))
         } else if lookahead.peek(keyword::full) {
-            Ok(Self::Full(input.parse()?, input.parse()?))
+            Ok(Self::Full(
+                input.call(keyword::full::parse_autocomplete)?,
+                input.call(keyword::join::parse_autocomplete)?,
+            ))
         } else {
             Err(lookahead.error())
         }
@@ -292,7 +304,7 @@ impl Parse for FromItem {
             }
             if input.peek(keyword::natural) {
                 item = FromItem::NaturalJoin {
-                    _natural_keyword: input.parse()?,
+                    _natural_keyword: input.call(keyword::natural::parse_autocomplete)?,
                     left: Box::new(item),
                     join_type: input.parse()?,
                     right: Box::new(Self::parse_prefix(input)?),
@@ -301,8 +313,8 @@ impl Parse for FromItem {
             if input.peek(keyword::cross) {
                 item = FromItem::CrossJoin {
                     left: Box::new(item),
-                    _cross_keyword: input.parse()?,
-                    _join_keyword: input.parse()?,
+                    _cross_keyword: input.call(keyword::cross::parse_autocomplete)?,
+                    _join_keyword: input.call(keyword::join::parse_autocomplete)?,
                     right: Box::new(Self::parse_prefix(input)?),
                 };
             }

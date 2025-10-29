@@ -33,8 +33,8 @@ impl GroupBy {
 impl Parse for GroupBy {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            _group: input.parse()?,
-            _by: input.parse()?,
+            _group: input.call(keyword::group::parse_autocomplete)?,
+            _by: input.call(keyword::by::parse_autocomplete)?,
             items: {
                 let mut punctuated = Punctuated::new();
                 while !input.is_empty() {
