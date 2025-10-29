@@ -91,9 +91,7 @@ impl ToTokens for Select {
 
         quote! {
             {
-                #scope
-
-                ::kosame::repr::command::Select::new(
+                const select: ::kosame::repr::command::Select<'static> = ::kosame::repr::command::Select::new(
                     #select,
                     #from,
                     #r#where,
@@ -102,7 +100,11 @@ impl ToTokens for Select {
                     #order_by,
                     #limit,
                     #offset,
-                )
+                );
+
+                #scope
+
+                select
             }
         }
         .to_tokens(tokens);

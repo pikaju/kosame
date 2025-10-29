@@ -60,10 +60,11 @@ fn main() {
             select
                 posts.id as kek: i32,
                 kek.id as comment_id: ::core::option::Option<i32>,
+                kek.id: i32,
             from schema::posts as posts
             left join (
                 select
-                    id,
+                    comments.id,
                 from
                     schema::comments
             ) as kek on true
