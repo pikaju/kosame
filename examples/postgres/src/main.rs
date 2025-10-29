@@ -57,11 +57,10 @@ fn main() {
     let id = 7;
     let statement = kosame::pg_statement! {
         select
-            id: i32,
-            cast(title as text): ::std::string::String,
-            cast(content as text): ::core::option::Option<String>,
-            id + 5 as kek: i32
+            posts.id: i32,
+            comments.id as comment_id: ::core::option::Option<i32>,
         from schema::posts
+        natural left join schema::comments
     };
 
     use kosame::sql::FmtSql;

@@ -220,6 +220,18 @@ pub enum FromItem {
         right: Box<FromItem>,
         on: On,
     },
+    NaturalJoin {
+        _natural_kw: kw::natural,
+        left: Box<FromItem>,
+        join_type: JoinType,
+        right: Box<FromItem>,
+    },
+    CrossJoin {
+        left: Box<FromItem>,
+        _cross_kw: kw::cross,
+        _join_kw: kw::join,
+        right: Box<FromItem>,
+    },
 }
 
 impl FromItem {
@@ -242,6 +254,14 @@ impl FromItem {
                 left.accept(visitor);
                 right.accept(visitor);
             }
+            Self::NaturalJoin { left, right, .. } => {
+                left.accept(visitor);
+                right.accept(visitor);
+            }
+            Self::CrossJoin { left, right, .. } => {
+                left.accept(visitor);
+                right.accept(visitor);
+            }
         }
     }
 }
@@ -249,13 +269,33 @@ impl FromItem {
 impl Parse for FromItem {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let mut item = Self::parse_prefix(input)?;
-        while JoinType::peek(input) {
-            item = FromItem::Join {
-                left: Box::new(item),
-                join_type: input.parse()?,
-                right: Box::new(Self::parse_prefix(input)?),
-                on: input.parse()?,
+        loop {
+            if JoinType::peek(input) {
+                item = FromItem::Join {
+                    left: Box::new(item),
+                    join_type: input.parse()?,
+                    right: Box::new(Self::parse_prefix(input)?),
+                    on: input.parse()?,
+                };
+                continue;
             }
+            if input.peek(kw::natural) {
+                item = FromItem::NaturalJoin {
+                    _natural_kw: input.parse()?,
+                    left: Box::new(item),
+                    join_type: input.parse()?,
+                    right: Box::new(Self::parse_prefix(input)?),
+                };
+            }
+            if input.peek(kw::cross) {
+                item = FromItem::CrossJoin {
+                    left: Box::new(item),
+                    _cross_kw: input.parse()?,
+                    _join_kw: input.parse()?,
+                    right: Box::new(Self::parse_prefix(input)?),
+                };
+            }
+            break;
         }
         Ok(item)
     }
@@ -273,7 +313,6 @@ impl ToTokens for FromItem {
                         alias: #alias,
                     }
                 }
-                .to_tokens(tokens);
             }
             Self::Join {
                 left,
@@ -290,8 +329,30 @@ impl ToTokens for FromItem {
                         on: #on,
                     }
                 }
-                .to_tokens(tokens);
+            }
+            Self::NaturalJoin {
+                left,
+                join_type,
+                right,
+                ..
+            } => {
+                quote! {
+                    ::kosame::repr::clause::FromItem::NaturalJoin {
+                        left: &#left,
+                        join_type: #join_type,
+                        right: &#right,
+                    }
+                }
+            }
+            Self::CrossJoin { left, right, .. } => {
+                quote! {
+                    ::kosame::repr::clause::FromItem::CrossJoin {
+                        left: &#left,
+                        right: &#right,
+                    }
+                }
             }
         }
+        .to_tokens(tokens);
     }
 }

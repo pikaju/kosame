@@ -48,6 +48,14 @@ impl<'a> Scope<'a> {
                         collect(tables, left);
                         collect(tables, right);
                     }
+                    FromItem::NaturalJoin { left, right, .. } => {
+                        collect(tables, left);
+                        collect(tables, right);
+                    }
+                    FromItem::CrossJoin { left, right, .. } => {
+                        collect(tables, left);
+                        collect(tables, right);
+                    }
                 }
             }
             collect(&mut tables, from_item);

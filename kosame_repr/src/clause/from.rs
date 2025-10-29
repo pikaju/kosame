@@ -100,15 +100,15 @@ pub enum FromItem<'a> {
         right: &'a FromItem<'a>,
         on: Expr<'a>,
     },
-    // NaturalJoin {
-    //     left: &'a FromItem<'a>,
-    //     join_type: JoinType,
-    //     right: &'a FromItem<'a>,
-    // },
-    // CrossJoin {
-    //     left: &'a FromItem<'a>,
-    //     right: &'a FromItem<'a>,
-    // },
+    NaturalJoin {
+        left: &'a FromItem<'a>,
+        join_type: JoinType,
+        right: &'a FromItem<'a>,
+    },
+    CrossJoin {
+        left: &'a FromItem<'a>,
+        right: &'a FromItem<'a>,
+    },
 }
 
 impl kosame_sql::FmtSql for FromItem<'_> {
@@ -134,6 +134,21 @@ impl kosame_sql::FmtSql for FromItem<'_> {
                 right.fmt_sql(formatter)?;
                 formatter.write_str(" on ")?;
                 on.fmt_sql(formatter)?;
+            }
+            Self::NaturalJoin {
+                left,
+                join_type,
+                right,
+            } => {
+                left.fmt_sql(formatter)?;
+                formatter.write_str(" natural")?;
+                join_type.fmt_sql(formatter)?;
+                right.fmt_sql(formatter)?;
+            }
+            Self::CrossJoin { left, right } => {
+                left.fmt_sql(formatter)?;
+                formatter.write_str(" cross join ")?;
+                right.fmt_sql(formatter)?;
             }
         }
 
