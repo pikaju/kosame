@@ -5,8 +5,9 @@ use std::{
 
 use crate::{
     attribute::{CustomMeta, MetaLocation},
+    keyword,
     row::{Row, RowField},
-    unique_macro::{self, unique_macro},
+    unique_macro::unique_macro,
 };
 
 use super::{column::Column, relation::Relation};
@@ -19,21 +20,14 @@ use syn::{
     punctuated::Punctuated,
 };
 
-mod kw {
-    use crate::autocomplete::custom_keyword;
-
-    custom_keyword!(create);
-    custom_keyword!(table);
-}
-
 pub struct Table {
     _token_stream: TokenStream,
 
     pub _inner_attrs: Vec<Attribute>,
     pub _outer_attrs: Vec<Attribute>,
 
-    pub _create: kw::create,
-    pub _table: kw::table,
+    pub _create: keyword::create,
+    pub _table: keyword::table,
     pub name: Ident,
 
     pub _paren: syn::token::Paren,
@@ -60,8 +54,8 @@ impl Parse for Table {
                 CustomMeta::parse_attrs(&attrs, MetaLocation::TableOuter)?;
                 attrs
             },
-            _create: input.parse()?,
-            _table: input.parse()?,
+            _create: input.call(keyword::create::parse_autocomplete)?,
+            _table: input.call(keyword::table::parse_autocomplete)?,
             name: input.parse()?,
             _paren: syn::parenthesized!(content in input),
             columns: content.parse_terminated(Column::parse, Token![,])?,

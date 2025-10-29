@@ -7,20 +7,7 @@ use syn::{
     punctuated::Punctuated,
 };
 
-use crate::{driver::Driver, schema::Table};
-
-mod kw {
-    use crate::autocomplete::custom_keyword;
-
-    custom_keyword!(kosame);
-
-    custom_keyword!(driver);
-    custom_keyword!(rename);
-    custom_keyword!(ty);
-
-    custom_keyword!(__pass);
-    custom_keyword!(__table);
-}
+use crate::{driver::Driver, keyword, schema::Table};
 
 #[derive(Default)]
 pub struct CustomMeta {
@@ -127,19 +114,19 @@ enum MetaItem {
 
 impl Parse for MetaItem {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        if input.peek(kw::__pass) {
+        if input.peek(keyword::__pass) {
             return Ok(Self::Pass(input.parse()?));
         }
-        if input.peek(kw::__table) {
+        if input.peek(keyword::__table) {
             return Ok(Self::Table(input.parse()?));
         }
 
         let lookahead = input.lookahead1();
-        if lookahead.peek(kw::driver) {
+        if lookahead.peek(keyword::driver) {
             Ok(Self::Driver(input.parse()?))
-        } else if lookahead.peek(kw::rename) {
+        } else if lookahead.peek(keyword::rename) {
             Ok(Self::Rename(input.parse()?))
-        } else if lookahead.peek(kw::ty) {
+        } else if lookahead.peek(keyword::ty) {
             Ok(Self::TypeOverride(input.parse()?))
         } else {
             Err(lookahead.error())
@@ -148,7 +135,7 @@ impl Parse for MetaItem {
 }
 
 pub struct MetaDriver {
-    pub path: kw::driver,
+    pub path: keyword::driver,
     pub _eq_token: Token![=],
     pub _value: LitStr,
 }
@@ -170,7 +157,7 @@ impl Parse for MetaDriver {
 }
 
 pub struct MetaRename {
-    pub path: kw::rename,
+    pub path: keyword::rename,
     pub _eq_token: Token![=],
     pub value: Ident,
 }
@@ -186,7 +173,7 @@ impl Parse for MetaRename {
 }
 
 pub struct MetaTypeOverride {
-    pub path: kw::ty,
+    pub path: keyword::ty,
     pub _eq_token: Token![=],
     pub value: Path,
 }
@@ -202,7 +189,7 @@ impl Parse for MetaTypeOverride {
 }
 
 pub struct MetaPass {
-    pub _pass_kw: kw::__pass,
+    pub _pass_keyword: keyword::__pass,
     pub _eq_token: Token![=],
     pub value: LitInt,
 }
@@ -210,7 +197,7 @@ pub struct MetaPass {
 impl Parse for MetaPass {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
-            _pass_kw: input.parse()?,
+            _pass_keyword: input.parse()?,
             _eq_token: input.parse()?,
             value: input.parse()?,
         })
@@ -218,7 +205,7 @@ impl Parse for MetaPass {
 }
 
 pub struct MetaTable {
-    pub _table_kw: kw::__table,
+    pub _table_keyword: keyword::__table,
     pub _paren_token: syn::token::Paren,
     pub path: Path,
     pub _eq_token: Token![=],
@@ -229,7 +216,7 @@ impl Parse for MetaTable {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let content;
         Ok(Self {
-            _table_kw: input.parse()?,
+            _table_keyword: input.parse()?,
             _paren_token: parenthesized!(content in input),
             path: content.parse()?,
             _eq_token: content.parse()?,

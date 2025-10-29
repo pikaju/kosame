@@ -5,7 +5,7 @@ use syn::{
     parse::{Parse, ParseStream},
 };
 
-use crate::expr::Expr;
+use crate::{expr::Expr, keyword};
 
 pub struct ColumnConstraints(pub Vec<ColumnConstraint>);
 
@@ -60,11 +60,11 @@ pub enum ColumnConstraint {
 impl Parse for ColumnConstraint {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let lookahead = input.lookahead1();
-        if lookahead.peek(kw::not) {
+        if lookahead.peek(keyword::not) {
             Ok(Self::NotNull(input.parse()?))
-        } else if lookahead.peek(kw::primary) {
+        } else if lookahead.peek(keyword::primary) {
             Ok(Self::PrimaryKey(input.parse()?))
-        } else if lookahead.peek(kw::default) {
+        } else if lookahead.peek(keyword::default) {
             Ok(Self::Default(input.parse()?))
         } else {
             Err(lookahead.error())
@@ -83,23 +83,9 @@ impl Display for ColumnConstraint {
     }
 }
 
-mod kw {
-    use crate::autocomplete::custom_keyword;
-
-    custom_keyword!(not);
-    custom_keyword!(null);
-
-    custom_keyword!(default);
-
-    custom_keyword!(primary);
-    custom_keyword!(key);
-
-    custom_keyword!(references);
-}
-
 pub struct NotNull {
-    pub _not: kw::not,
-    pub _null: kw::null,
+    pub _not: keyword::not,
+    pub _null: keyword::null,
 }
 
 impl Parse for NotNull {
@@ -112,8 +98,8 @@ impl Parse for NotNull {
 }
 
 pub struct PrimaryKey {
-    pub _primary: kw::primary,
-    pub _key: kw::key,
+    pub _primary: keyword::primary,
+    pub _key: keyword::key,
 }
 
 impl Parse for PrimaryKey {
@@ -126,7 +112,7 @@ impl Parse for PrimaryKey {
 }
 
 pub struct Default {
-    pub _default: kw::default,
+    pub _default: keyword::default,
     pub expr: Expr,
 }
 

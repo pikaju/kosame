@@ -1,6 +1,5 @@
 mod alias;
 mod attribute;
-mod autocomplete;
 mod bind_params;
 mod clause;
 mod command;
@@ -8,6 +7,7 @@ mod data_type;
 mod docs;
 mod driver;
 mod expr;
+mod keyword;
 mod path_ext;
 mod query;
 mod quote_option;

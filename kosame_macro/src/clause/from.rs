@@ -7,30 +7,12 @@ use syn::{
 };
 
 use crate::{
-    clause::peek_clause, command::Select, expr::Expr, path_ext::PathExt, quote_option::QuoteOption,
-    visitor::Visitor,
+    clause::peek_clause, command::Select, expr::Expr, keyword, path_ext::PathExt,
+    quote_option::QuoteOption, visitor::Visitor,
 };
 
-mod kw {
-    use crate::autocomplete::custom_keyword;
-
-    custom_keyword!(from);
-
-    custom_keyword!(join);
-    custom_keyword!(inner);
-    custom_keyword!(left);
-    custom_keyword!(right);
-    custom_keyword!(full);
-    custom_keyword!(on);
-
-    custom_keyword!(natural);
-    custom_keyword!(cross);
-
-    custom_keyword!(lateral);
-}
-
 pub struct From {
-    pub _from: kw::from,
+    pub _from: keyword::from,
     pub item: FromItem,
 }
 
@@ -40,7 +22,7 @@ impl From {
     }
 
     pub fn peek(input: ParseStream) -> bool {
-        input.peek(kw::from)
+        input.peek(keyword::from)
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
@@ -82,14 +64,14 @@ impl TableAlias {
                 }
             };
         }
-        check!(kw::inner);
-        check!(kw::left);
-        check!(kw::right);
-        check!(kw::full);
-        check!(kw::on);
+        check!(keyword::inner);
+        check!(keyword::left);
+        check!(keyword::right);
+        check!(keyword::full);
+        check!(keyword::on);
 
-        check!(kw::natural);
-        check!(kw::cross);
+        check!(keyword::natural);
+        check!(keyword::cross);
 
         Ok(Some(input.parse()?))
     }
@@ -146,10 +128,10 @@ impl ToTokens for TableAliasColumns {
 
 #[allow(unused)]
 pub enum JoinType {
-    Inner(kw::inner, kw::join),
-    Left(kw::left, kw::join),
-    Right(kw::right, kw::join),
-    Full(kw::full, kw::join),
+    Inner(keyword::inner, keyword::join),
+    Left(keyword::left, keyword::join),
+    Right(keyword::right, keyword::join),
+    Full(keyword::full, keyword::join),
 }
 
 impl JoinType {
@@ -161,10 +143,10 @@ impl JoinType {
                 }
             };
         }
-        check!(kw::inner);
-        check!(kw::left);
-        check!(kw::right);
-        check!(kw::full);
+        check!(keyword::inner);
+        check!(keyword::left);
+        check!(keyword::right);
+        check!(keyword::full);
         false
     }
 }
@@ -172,13 +154,13 @@ impl JoinType {
 impl Parse for JoinType {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let lookahead = input.lookahead1();
-        if lookahead.peek(kw::inner) {
+        if lookahead.peek(keyword::inner) {
             Ok(Self::Inner(input.parse()?, input.parse()?))
-        } else if lookahead.peek(kw::left) {
+        } else if lookahead.peek(keyword::left) {
             Ok(Self::Left(input.parse()?, input.parse()?))
-        } else if lookahead.peek(kw::right) {
+        } else if lookahead.peek(keyword::right) {
             Ok(Self::Right(input.parse()?, input.parse()?))
-        } else if lookahead.peek(kw::full) {
+        } else if lookahead.peek(keyword::full) {
             Ok(Self::Full(input.parse()?, input.parse()?))
         } else {
             Err(lookahead.error())
@@ -199,7 +181,7 @@ impl ToTokens for JoinType {
 }
 
 pub struct On {
-    pub _on_token: kw::on,
+    pub _on_token: keyword::on,
     pub expr: Expr,
 }
 
@@ -218,7 +200,7 @@ pub enum FromItem {
         alias: Option<TableAlias>,
     },
     Subquery {
-        lateral_kw: Option<kw::lateral>,
+        lateral_keyword: Option<keyword::lateral>,
         _paren_token: syn::token::Paren,
         select: Box<Select>,
         alias: Option<TableAlias>,
@@ -230,27 +212,30 @@ pub enum FromItem {
         on: On,
     },
     NaturalJoin {
-        _natural_kw: kw::natural,
+        _natural_keyword: keyword::natural,
         left: Box<FromItem>,
         join_type: JoinType,
         right: Box<FromItem>,
     },
     CrossJoin {
         left: Box<FromItem>,
-        _cross_kw: kw::cross,
-        _join_kw: kw::join,
+        _cross_keyword: keyword::cross,
+        _join_keyword: keyword::join,
         right: Box<FromItem>,
     },
 }
 
 impl FromItem {
     fn parse_prefix(input: ParseStream) -> syn::Result<Self> {
-        let lateral_kw = input.peek(kw::lateral).then(|| input.parse()).transpose()?;
+        let lateral_keyword = input
+            .peek(keyword::lateral)
+            .then(|| input.parse())
+            .transpose()?;
         let lookahead = input.lookahead1();
         if lookahead.peek(syn::token::Paren) {
             let content;
             Ok(Self::Subquery {
-                lateral_kw,
+                lateral_keyword,
                 _paren_token: parenthesized!(content in input),
                 select: content.parse()?,
                 alias: input.call(TableAlias::parse_optional)?,
@@ -305,19 +290,19 @@ impl Parse for FromItem {
                 };
                 continue;
             }
-            if input.peek(kw::natural) {
+            if input.peek(keyword::natural) {
                 item = FromItem::NaturalJoin {
-                    _natural_kw: input.parse()?,
+                    _natural_keyword: input.parse()?,
                     left: Box::new(item),
                     join_type: input.parse()?,
                     right: Box::new(Self::parse_prefix(input)?),
                 };
             }
-            if input.peek(kw::cross) {
+            if input.peek(keyword::cross) {
                 item = FromItem::CrossJoin {
                     left: Box::new(item),
-                    _cross_kw: input.parse()?,
-                    _join_kw: input.parse()?,
+                    _cross_keyword: input.parse()?,
+                    _join_keyword: input.parse()?,
                     right: Box::new(Self::parse_prefix(input)?),
                 };
             }
@@ -341,12 +326,12 @@ impl ToTokens for FromItem {
                 }
             }
             Self::Subquery {
-                lateral_kw: _lateral_kw,
+                lateral_keyword: _lateral_keyword,
                 select,
                 alias,
                 ..
             } => {
-                let lateral = _lateral_kw.is_some();
+                let lateral = _lateral_keyword.is_some();
                 let alias = QuoteOption(alias.as_ref());
                 quote! {
                     ::kosame::repr::clause::FromItem::Subquery {

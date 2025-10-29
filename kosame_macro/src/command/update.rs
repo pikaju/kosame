@@ -6,18 +6,13 @@ use syn::{
 };
 
 use crate::{
-    clause::*, path_ext::PathExt, quote_option::QuoteOption, scope::Scope, visitor::Visitor,
+    clause::*, keyword, path_ext::PathExt, quote_option::QuoteOption, scope::Scope,
+    visitor::Visitor,
 };
-
-mod kw {
-    use crate::autocomplete::custom_keyword;
-
-    custom_keyword!(update);
-}
 
 pub struct Update {
     pub attrs: Vec<Attribute>,
-    pub _update_kw: kw::update,
+    pub _update_keyword: keyword::update,
     pub table: Path,
     pub set: Set,
     pub from: Option<From>,
@@ -32,7 +27,7 @@ impl Update {
         if attrs.is_err() {
             return false;
         }
-        input.peek(kw::update)
+        input.peek(keyword::update)
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
@@ -51,7 +46,7 @@ impl Parse for Update {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(Self {
             attrs: input.call(Attribute::parse_outer)?,
-            _update_kw: input.parse()?,
+            _update_keyword: input.parse()?,
             table: input.parse()?,
             set: input.parse()?,
             from: input.call(From::parse_optional)?,

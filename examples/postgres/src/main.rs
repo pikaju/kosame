@@ -53,26 +53,30 @@ fn main() {
     // }
     // .exec_sync(&mut client, &mut RecordArrayRunner {})
     // .unwrap();
+    //
+
+    kosame::pg_table! {
+        // Kosame uses the familiar SQL syntax to define tables.
+        create table kek (
+            id int primary key,
+        );
+    }
 
     let id = 7;
-    kosame::pg_statement! {
-        (
+    let statement = kosame::pg_statement! {
+        select
+            posts.id as kek: i32,
+            kek.id as comment_id: ::core::option::Option<i32>,
+            kek.id: i32,
+        from schema::posts as posts
+        left join (
             select
-                posts.id as kek: i32,
-                kek.id as comment_id: ::core::option::Option<i32>,
-                kek.id: i32,
-            from schema::posts as posts
-            left join (
-                select
-                    id,
-                    content
-                from
-                    schema::comments
-            ) as kek on true
-        )
-        as my_statement
+                id,
+                content
+            from
+                schema::comments
+        ) as kek on true
     };
-    let statement = my_statement::Statement::new(my_statement::Params {});
 
     use kosame::sql::FmtSql;
     let sql = statement

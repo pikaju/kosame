@@ -47,7 +47,7 @@ impl ToTokens for Unary {
 }
 
 mod kw {
-    use crate::autocomplete::custom_keyword;
+    use syn::custom_keyword;
 
     custom_keyword!(not);
 }

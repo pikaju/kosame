@@ -72,7 +72,7 @@ impl ToTokens for Cast {
 }
 
 mod kw {
-    use crate::autocomplete::custom_keyword;
+    use syn::custom_keyword;
 
     custom_keyword!(cast);
 }

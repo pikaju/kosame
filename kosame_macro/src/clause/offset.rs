@@ -5,7 +5,7 @@ use syn::parse::{Parse, ParseStream};
 use crate::{expr::Expr, visitor::Visitor};
 
 mod kw {
-    use crate::autocomplete::custom_keyword;
+    use syn::custom_keyword;
 
     custom_keyword!(offset);
 }

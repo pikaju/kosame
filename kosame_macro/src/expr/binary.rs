@@ -59,7 +59,7 @@ pub enum Associativity {
 }
 
 mod kw {
-    use crate::autocomplete::custom_keyword;
+    use syn::custom_keyword;
 
     custom_keyword!(is);
     custom_keyword!(not);
