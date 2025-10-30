@@ -66,6 +66,7 @@ custom_keyword!(update);
 custom_keyword!(using);
 custom_keyword!(values);
 
+keyword_group!(group_attribute { driver, rename, ty });
 keyword_group!(group_column_constraint {
     not,
     default,

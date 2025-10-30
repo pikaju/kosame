@@ -129,7 +129,7 @@ impl Parse for MetaItem {
         } else if lookahead.peek(keyword::ty) {
             Ok(Self::TypeOverride(input.parse()?))
         } else {
-            Err(lookahead.error())
+            keyword::group_attribute::error(input);
         }
     }
 }
