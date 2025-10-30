@@ -15,7 +15,11 @@ pub use insert::*;
 pub use select::*;
 pub use update::*;
 
-use crate::{clause::Fields, keyword, visitor::Visitor};
+use crate::{
+    clause::{Fields, With},
+    keyword,
+    visitor::Visitor,
+};
 
 pub enum Command {
     Delete(Delete),
@@ -25,6 +29,10 @@ pub enum Command {
 }
 
 impl Command {
+    pub fn peek(input: ParseStream) -> bool {
+        Delete::peek(input) || Insert::peek(input) || Select::peek(input) || Update::peek(input)
+    }
+
     pub fn attrs(&self) -> &[Attribute] {
         match self {
             Self::Delete(inner) => &inner.attrs,
@@ -55,14 +63,16 @@ impl Command {
 
 impl Parse for Command {
     fn parse(input: ParseStream) -> syn::Result<Self> {
+        let attrs = input.call(Attribute::parse_outer)?;
+        let with = input.call(With::parse_optional)?;
         if Delete::peek(input) {
-            Ok(Self::Delete(input.parse()?))
+            Ok(Self::Delete(Delete::parse(input, attrs, with)?))
         } else if Insert::peek(input) {
-            Ok(Self::Insert(input.parse()?))
+            Ok(Self::Insert(Insert::parse(input, attrs, with)?))
         } else if Select::peek(input) {
-            Ok(Self::Select(input.parse()?))
+            Ok(Self::Select(Box::new(Select::parse(input, attrs, with)?)))
         } else if Update::peek(input) {
-            Ok(Self::Update(input.parse()?))
+            Ok(Self::Update(Update::parse(input, attrs, with)?))
         } else {
             keyword::group_command::error(input);
         }

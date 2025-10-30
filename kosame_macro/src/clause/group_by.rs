@@ -61,7 +61,7 @@ impl Parse for GroupBy {
 
 impl ToTokens for GroupBy {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let items = self.items.iter().map(GroupByItem::to_token_stream);
+        let items = self.items.iter();
         quote! { ::kosame::repr::clause::GroupBy::new(&[#(#items),*]) }.to_tokens(tokens)
     }
 }

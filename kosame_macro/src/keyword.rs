@@ -95,6 +95,7 @@ custom_keyword!(ty);
 custom_keyword!(update);
 custom_keyword!(using);
 custom_keyword!(values);
+custom_keyword!(with);
 
 keyword_group!(group_attribute { driver, rename, ty });
 keyword_group!(group_column_constraint {

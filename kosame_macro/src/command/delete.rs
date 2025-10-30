@@ -11,6 +11,7 @@ use crate::{
 };
 
 pub struct Delete {
+    pub with: Option<With>,
     pub attrs: Vec<Attribute>,
     pub _delete_keyword: keyword::delete,
     pub _from_keyword: keyword::from,
@@ -22,15 +23,13 @@ pub struct Delete {
 
 impl Delete {
     pub fn peek(input: ParseStream) -> bool {
-        let input = input.fork();
-        let attrs = input.call(Attribute::parse_outer);
-        if attrs.is_err() {
-            return false;
-        }
         input.peek(keyword::delete)
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
+        if let Some(inner) = &self.with {
+            inner.accept(visitor)
+        }
         visitor.visit_table_ref(&self.table);
         if let Some(inner) = &self.using {
             inner.accept(visitor)
@@ -42,12 +41,15 @@ impl Delete {
             inner.accept(visitor)
         }
     }
-}
 
-impl Parse for Delete {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
+    pub fn parse(
+        input: ParseStream,
+        attrs: Vec<Attribute>,
+        with: Option<With>,
+    ) -> syn::Result<Self> {
         Ok(Self {
-            attrs: input.call(Attribute::parse_outer)?,
+            attrs,
+            with,
             _delete_keyword: input.parse()?,
             _from_keyword: input.parse()?,
             table: input.parse()?,
@@ -60,6 +62,7 @@ impl Parse for Delete {
 
 impl ToTokens for Delete {
     fn to_tokens(&self, tokens: &mut TokenStream) {
+        let with = QuoteOption(self.with.as_ref());
         let table = &self.table.to_call_site(1);
         let using = QuoteOption(self.using.as_ref());
         let r#where = QuoteOption(self.r#where.as_ref());
@@ -78,6 +81,7 @@ impl ToTokens for Delete {
                 #scope
 
                 ::kosame::repr::command::Delete::new(
+                    #with,
                     &#table::TABLE,
                     #using,
                     #r#where,

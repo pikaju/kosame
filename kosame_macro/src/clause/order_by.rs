@@ -61,7 +61,7 @@ impl Parse for OrderBy {
 
 impl ToTokens for OrderBy {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let items = self.items.iter().map(OrderByItem::to_token_stream);
+        let items = self.items.iter();
         quote! { ::kosame::repr::clause::OrderBy::new(&[#(#items),*]) }.to_tokens(tokens)
     }
 }

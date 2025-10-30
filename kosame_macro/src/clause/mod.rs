@@ -10,6 +10,7 @@ mod select;
 mod set;
 mod values;
 mod r#where;
+mod with;
 
 pub use field::*;
 pub use from::*;
@@ -23,9 +24,11 @@ pub use select::*;
 pub use set::*;
 pub use values::*;
 pub use r#where::*;
+pub use with::*;
 
 pub fn peek_clause(input: syn::parse::ParseStream) -> bool {
-    From::peek(input)
+    With::peek(input)
+        || From::peek(input)
         || Where::peek(input)
         || GroupBy::peek(input)
         || Having::peek(input)

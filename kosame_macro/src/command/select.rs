@@ -6,13 +6,14 @@ use syn::{
 };
 
 use crate::{
-    clause::{self, From, GroupBy, Having, Limit, Offset, OrderBy, Where},
+    clause::{self, From, GroupBy, Having, Limit, Offset, OrderBy, Where, With},
     quote_option::QuoteOption,
     scope::Scope,
     visitor::Visitor,
 };
 
 pub struct Select {
+    pub with: Option<With>,
     pub attrs: Vec<Attribute>,
     pub select: clause::Select,
     pub from: Option<From>,
@@ -26,15 +27,13 @@ pub struct Select {
 
 impl Select {
     pub fn peek(input: ParseStream) -> bool {
-        let input = input.fork();
-        let attrs = input.call(Attribute::parse_outer);
-        if attrs.is_err() {
-            return false;
-        }
-        clause::Select::peek(&input)
+        clause::Select::peek(input)
     }
 
     pub fn accept<'a>(&'a self, visitor: &mut impl Visitor<'a>) {
+        if let Some(inner) = self.with.as_ref() {
+            inner.accept(visitor)
+        }
         self.select.accept(visitor);
         if let Some(inner) = self.from.as_ref() {
             inner.accept(visitor)
@@ -58,12 +57,15 @@ impl Select {
             inner.accept(visitor)
         }
     }
-}
 
-impl Parse for Select {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
+    pub fn parse(
+        input: ParseStream,
+        attrs: Vec<Attribute>,
+        with: Option<With>,
+    ) -> syn::Result<Self> {
         Ok(Self {
-            attrs: input.call(Attribute::parse_outer)?,
+            attrs,
+            with,
             select: input.parse()?,
             from: input.call(From::parse_optional)?,
             r#where: input.call(Where::parse_optional)?,
@@ -76,8 +78,19 @@ impl Parse for Select {
     }
 }
 
+impl Parse for Select {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        Self::parse(
+            input,
+            input.call(Attribute::parse_outer)?,
+            With::parse_optional(input)?,
+        )
+    }
+}
+
 impl ToTokens for Select {
     fn to_tokens(&self, tokens: &mut TokenStream) {
+        let with = QuoteOption(self.with.as_ref());
         let select = &self.select;
         let from = QuoteOption(self.from.as_ref());
         let r#where = QuoteOption(self.r#where.as_ref());
@@ -92,6 +105,7 @@ impl ToTokens for Select {
         quote! {
             {
                 const select: ::kosame::repr::command::Select<'static> = ::kosame::repr::command::Select::new(
+                    #with,
                     #select,
                     #from,
                     #r#where,

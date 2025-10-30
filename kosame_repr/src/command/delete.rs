@@ -3,6 +3,7 @@ use std::fmt::Write;
 use crate::{clause::*, schema::Table};
 
 pub struct Delete<'a> {
+    with: Option<With<'a>>,
     table: &'a Table<'a>,
     using: Option<FromItem<'a>>,
     r#where: Option<Where<'a>>,
@@ -12,12 +13,14 @@ pub struct Delete<'a> {
 impl<'a> Delete<'a> {
     #[inline]
     pub const fn new(
+        with: Option<With<'a>>,
         table: &'a Table<'a>,
         using: Option<FromItem<'a>>,
         r#where: Option<Where<'a>>,
         returning: Option<Returning<'a>>,
     ) -> Self {
         Self {
+            with,
             table,
             using,
             r#where,
@@ -25,7 +28,13 @@ impl<'a> Delete<'a> {
         }
     }
 
-    pub fn table(&self) -> &'a Table<'a> {
+    #[inline]
+    pub const fn with(&self) -> Option<&With<'a>> {
+        self.with.as_ref()
+    }
+
+    #[inline]
+    pub const fn table(&self) -> &'a Table<'a> {
         self.table
     }
 }
