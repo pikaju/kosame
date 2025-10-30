@@ -1,13 +1,12 @@
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::{
-    Ident, Path, Token, parenthesized,
+    Ident, Path, parenthesized,
     parse::{Parse, ParseStream},
-    punctuated::Punctuated,
 };
 
 use crate::{
-    clause::peek_clause, command::Select, expr::Expr, keyword, path_ext::PathExt,
+    command::Select, expr::Expr, keyword, part::TableAlias, path_ext::PathExt,
     quote_option::QuoteOption, visitor::Visitor,
 };
 
@@ -43,86 +42,6 @@ impl ToTokens for From {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let item = &self.item;
         quote! { ::kosame::repr::clause::From::new(#item) }.to_tokens(tokens);
-    }
-}
-
-pub struct TableAlias {
-    pub _as_token: Option<Token![as]>,
-    pub name: Ident,
-    pub columns: Option<TableAliasColumns>,
-}
-
-impl TableAlias {
-    fn parse_optional(input: ParseStream) -> syn::Result<Option<Self>> {
-        if input.is_empty() || peek_clause(input) {
-            return Ok(None);
-        }
-        macro_rules! check {
-            ($kw:expr) => {
-                if input.peek($kw) {
-                    return Ok(None);
-                }
-            };
-        }
-        check!(keyword::inner);
-        check!(keyword::left);
-        check!(keyword::right);
-        check!(keyword::full);
-        check!(keyword::on);
-
-        check!(keyword::natural);
-        check!(keyword::cross);
-
-        Ok(Some(input.parse()?))
-    }
-}
-
-impl Parse for TableAlias {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        Ok(Self {
-            _as_token: input.peek(Token![as]).then(|| input.parse()).transpose()?,
-            name: input.parse()?,
-            columns: input
-                .peek(syn::token::Paren)
-                .then(|| input.parse())
-                .transpose()?,
-        })
-    }
-}
-
-impl ToTokens for TableAlias {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
-        let name = &self.name.to_string();
-        let columns = QuoteOption(self.columns.as_ref());
-        quote! {
-            ::kosame::repr::clause::TableAlias::new(#name, #columns)
-        }
-        .to_tokens(tokens);
-    }
-}
-
-pub struct TableAliasColumns {
-    pub _paren_token: syn::token::Paren,
-    pub columns: Punctuated<Ident, Token![,]>,
-}
-
-impl Parse for TableAliasColumns {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let content;
-        Ok(Self {
-            _paren_token: parenthesized!(content in input),
-            columns: content.parse_terminated(Ident::parse, Token![,])?,
-        })
-    }
-}
-
-impl ToTokens for TableAliasColumns {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
-        let columns = self.columns.iter().map(|column| column.to_string());
-        quote! {
-            &[#(#columns),*]
-        }
-        .to_tokens(tokens);
     }
 }
 

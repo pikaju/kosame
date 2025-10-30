@@ -58,7 +58,9 @@ fn main() {
     let id = 7;
 
     let statement = kosame::pg_statement! {
-        select $"now()::text" as now: ::std::string::String
+        select
+        from schema::posts
+        left join lateral (select id from schema::comments where comments.id > 5) on true
     };
 
     use kosame::sql::FmtSql;

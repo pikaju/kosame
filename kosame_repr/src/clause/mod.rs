@@ -10,6 +10,7 @@ mod select;
 mod set;
 mod values;
 mod r#where;
+mod with;
 
 pub use field::*;
 pub use from::*;
@@ -23,3 +24,5 @@ pub use select::*;
 pub use set::*;
 pub use values::*;
 pub use r#where::*;
+pub use with::*;
+

@@ -1,6 +1,6 @@
 use std::fmt::Write;
 
-use crate::{command::Select, expr::Expr, schema::Table};
+use crate::{command::Select, expr::Expr, part::TableAlias, schema::Table};
 
 pub struct From<'a> {
     item: FromItem<'a>,
@@ -51,39 +51,6 @@ impl kosame_sql::FmtSql for JoinType {
     }
 }
 
-pub struct TableAlias<'a> {
-    alias: &'a str,
-    columns: Option<&'a [&'a str]>,
-}
-
-impl<'a> TableAlias<'a> {
-    #[inline]
-    pub const fn new(alias: &'a str, columns: Option<&'a [&'a str]>) -> Self {
-        Self { alias, columns }
-    }
-}
-
-impl kosame_sql::FmtSql for TableAlias<'_> {
-    fn fmt_sql<D>(&self, formatter: &mut kosame_sql::Formatter<D>) -> kosame_sql::Result
-    where
-        D: kosame_sql::Dialect,
-    {
-        formatter.write_str(" as ")?;
-        formatter.write_ident(self.alias)?;
-        if let Some(columns) = self.columns {
-            formatter.write_str(" (")?;
-            for (index, column) in columns.iter().enumerate() {
-                formatter.write_ident(column)?;
-                if index != columns.len() - 1 {
-                    formatter.write_str(", ")?;
-                }
-            }
-            formatter.write_str(")")?;
-        }
-        Ok(())
-    }
-}
-
 pub enum FromItem<'a> {
     Table {
         table: &'a Table<'a>,
@@ -120,6 +87,7 @@ impl kosame_sql::FmtSql for FromItem<'_> {
             Self::Table { table, alias } => {
                 formatter.write_ident(table.name())?;
                 if let Some(alias) = alias {
+                    formatter.write_str(" as ")?;
                     alias.fmt_sql(formatter)?;
                 }
             }
@@ -135,6 +103,7 @@ impl kosame_sql::FmtSql for FromItem<'_> {
                 select.fmt_sql(formatter)?;
                 formatter.write_str(")")?;
                 if let Some(alias) = alias {
+                    formatter.write_str(" as ")?;
                     alias.fmt_sql(formatter)?;
                 }
             }

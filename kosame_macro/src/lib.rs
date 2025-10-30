@@ -8,6 +8,7 @@ mod docs;
 mod driver;
 mod expr;
 mod keyword;
+mod part;
 mod path_ext;
 mod query;
 mod quote_option;

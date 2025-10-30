@@ -1,20 +1,22 @@
+use std::cell::RefCell;
+
 use proc_macro2::TokenStream;
 use quote::{ToTokens, quote};
 use syn::{Ident, Path};
 
 use crate::{
-    clause::{self, FromItem, TableAlias},
+    clause::{self, FromItem},
+    part::TableAlias,
     path_ext::PathExt,
 };
 
 #[derive(Default, Clone)]
-pub struct Scope<'a> {
-    parent: Option<&'a Scope<'a>>,
+pub struct Scope {
     tables: Vec<ScopeTable>,
 }
 
-impl<'a> Scope<'a> {
-    pub fn new<'b>(from_items: impl IntoIterator<Item = &'b clause::FromItem>) -> Self {
+impl Scope {
+    pub fn new<'a>(from_items: impl IntoIterator<Item = &'a clause::FromItem>) -> Self {
         let mut tables = vec![];
         for from_item in from_items {
             fn collect(tables: &mut Vec<ScopeTable>, item: &FromItem) {
@@ -80,34 +82,37 @@ impl<'a> Scope<'a> {
             }
             collect(&mut tables, from_item);
         }
-        Self {
-            parent: None,
-            tables,
-        }
+        Self { tables }
     }
 }
 
-impl ToTokens for Scope<'_> {
+impl ToTokens for Scope {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let tables = &self.tables;
-        let columns = self.tables.iter().map(|table| {
-            let name = table.name();
+        PARENT.with_borrow(|parent| {
+            let tables = &self.tables;
+            let columns = self.tables.iter().map(|table| {
+                let name = table.name();
+                quote! {
+                    pub use super::tables::#name::columns::*;
+                }
+            });
             quote! {
-                pub use super::tables::#name::columns::*;
-            }
-        });
-        quote! {
-            mod scope {
-                pub mod tables {
-                    #(#tables)*
-                }
-                pub mod columns {
-                    #(#columns)*
+                mod scope {
+                    pub mod tables {
+                        #(#tables)*
+                    }
+                    pub mod columns {
+                        #(#columns)*
+                    }
                 }
             }
-        }
-        .to_tokens(tokens);
+            .to_tokens(tokens);
+        })
     }
+}
+
+thread_local! {
+    static PARENT: RefCell<Option<Scope>> = const { RefCell::new(None) };
 }
 
 #[derive(Clone)]
