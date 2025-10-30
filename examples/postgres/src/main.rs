@@ -56,19 +56,9 @@ fn main() {
     //
 
     let id = 7;
+
     let statement = kosame::pg_statement! {
-        select
-            posts.id as kek: i32,
-            kek.id as comment_id: ::core::option::Option<i32>,
-            kek.id: i32,
-        from schema::posts as posts
-        left join (
-            select
-                id,
-                content
-            from
-                schema::comments
-        ) as kek on true
+        select $"now()::text" as now: ::std::string::String
     };
 
     use kosame::sql::FmtSql;

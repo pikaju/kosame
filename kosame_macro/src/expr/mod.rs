@@ -5,6 +5,7 @@ mod cast;
 mod column_ref;
 mod lit;
 mod paren;
+mod raw;
 mod unary;
 
 pub use binary::*;
@@ -14,6 +15,7 @@ pub use cast::*;
 pub use column_ref::*;
 pub use lit::*;
 pub use paren::*;
+pub use raw::*;
 pub use unary::*;
 
 use proc_macro2::{Span, TokenStream};
@@ -34,6 +36,7 @@ pub enum Expr {
     ColumnRef(ColumnRef),
     Lit(Lit),
     Paren(Paren),
+    Raw(Raw),
     Unary(Unary),
 }
 
@@ -47,6 +50,7 @@ macro_rules! variants {
             ColumnRef
             Lit
             Paren
+            Raw
             Unary
         )
     };
@@ -94,6 +98,8 @@ impl Expr {
             Ok(Expr::Paren(input.parse()?))
         } else if BindParam::peek(input) {
             Ok(Expr::BindParam(input.parse()?))
+        } else if Raw::peek(input) {
+            Ok(Expr::Raw(input.parse()?))
         } else if UnaryOp::peek(input) {
             let op = input.parse::<UnaryOp>()?;
             let precedence = op.precedence();

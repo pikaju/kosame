@@ -5,6 +5,7 @@ mod cast;
 mod column_ref;
 mod lit;
 mod paren;
+mod raw;
 mod unary;
 
 pub use binary::*;
@@ -14,6 +15,7 @@ pub use cast::*;
 pub use column_ref::*;
 pub use lit::*;
 pub use paren::*;
+pub use raw::*;
 pub use unary::*;
 
 pub enum Expr<'a> {
@@ -24,6 +26,7 @@ pub enum Expr<'a> {
     ColumnRef(ColumnRef<'a>),
     Lit(Lit),
     Paren(Paren<'a>),
+    Raw(Raw<'a>),
     Unary(Unary<'a>),
 }
 
@@ -37,6 +40,7 @@ macro_rules! variants {
             ColumnRef
             Lit
             Paren
+            Raw
             Unary
         )
     };
